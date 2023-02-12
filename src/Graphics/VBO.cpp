@@ -1,35 +1,27 @@
 #include "VBO.h"
 #include <iostream>
 
-
-void VBO::Create() {
-    if (ID != 0) {
-        std::cout << "ERROR::VBO already created   ID::" << ID;
-        return;
-    }
-    glGenBuffers(1, &ID);
+GLuint CreateVBO() {
+    GLuint id;
+    glGenBuffers(1, &id);
+    return id;
 }
 
-void VBO::Add_Data(GLfloat* vertices, GLuint size, GLenum usage) {
-    glBindBuffer(GL_ARRAY_BUFFER, ID);
+/// @brief create memory for the vertex buffer
+void vbo_Add_Data(GLuint id, GLfloat* vertices, GLuint size, GLenum usage) {
+    glBindBuffer(GL_ARRAY_BUFFER, id);
     glBufferData(GL_ARRAY_BUFFER, size, vertices, usage);
 }
-
 /// @brief only for DYNAMIC buffers
-void VBO::Update_Data(GLfloat* vertices, GLuint size) {
-    glBindBuffer(GL_ARRAY_BUFFER, ID);
+void vbo_Update_Data(GLuint id, GLfloat* vertices, GLuint size) {
+    glBindBuffer(GL_ARRAY_BUFFER, id);
     glBufferSubData(GL_ARRAY_BUFFER, 0, size, vertices);
 }
+void vbo_Bind(GLuint id) {
+    glBindBuffer(GL_ARRAY_BUFFER, id);
 
-void VBO::Bind() {
-    glBindBuffer(GL_ARRAY_BUFFER, ID);
 }
-
-void VBO::UnBind() {
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
-void VBO::Delete() {
-    glDeleteBuffers(1, &ID);
+void vbo_Delete(GLuint id) {
+    glDeleteBuffers(1, &id);
 }
 

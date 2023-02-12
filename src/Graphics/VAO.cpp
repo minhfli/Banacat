@@ -1,34 +1,19 @@
 #include "VAO.h"
-#include <iostream>
+#include "VBO.h"
 
-/*VAO::VAO() {
-    glGenVertexArrays(1, &ID);
-}*/
-
-void VAO::Create() {
-    if (ID != 0) {
-        std::cout << "ERROR::VAO already created   ID::" << ID;
-        return;
-    }
-    glGenVertexArrays(1, &ID);
+GLuint CreateVAO() {
+    GLuint id;
+    glGenVertexArrays(1, &id);
+    return id;
 }
-
-void VAO::link_attrib(VBO& vbo, GLuint layout, GLuint num, GLenum type, GLsizeiptr stride, void* offset) {
-    vbo.Bind();
+void vao_link_attrib(GLuint vbo_id, GLuint layout, GLuint num, GLenum type, GLsizeiptr stride, void* offset) {
+    vbo_Bind(vbo_id);
     glEnableVertexAttribArray(layout);
     glVertexAttribPointer(layout, num, type, GL_FALSE, stride, offset);
-    vbo.UnBind();
 }
-
-void VAO::Bind() {
-    glBindVertexArray(ID);
+void vao_Bind(GLuint id) {
+    glBindVertexArray(id);
 }
-
-void VAO::UnBind() {
-    glBindVertexArray(0);
+void vao_Delete(GLuint id) {
+    glDeleteVertexArrays(1, &id);
 }
-
-void VAO::Delete() {
-    glDeleteVertexArrays(1, &ID);
-}
-

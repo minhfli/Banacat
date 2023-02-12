@@ -2,17 +2,10 @@
 
 #include <GLAD/glad.h>
 
-/// @brief Vertex Buffer
-class VBO { //? vertex buffer object 
-    public:
+GLuint CreateVBO();
+void vbo_Add_Data(GLuint id, GLfloat* vertices, GLuint size, GLenum usage);
+void vbo_Update_Data(GLuint id, GLfloat* vertices, GLuint size);
+void vbo_Bind(GLuint id);
+void vbo_Delete(GLuint id);
 
-    GLuint ID = 0;
-
-    void Create();
-    void Add_Data(GLfloat* vertices, GLuint size, GLenum usage);
-    void Update_Data(GLfloat* vertices, GLuint size);
-    void Bind();
-    void UnBind();
-    void Delete();
-};
 

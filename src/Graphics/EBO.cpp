@@ -2,28 +2,22 @@
 
 #include <iostream>
 
-void EBO::Create() {
-    if (ID != 0) {
-        std::cout << "ERROR::EBO already created   ID::" << ID;
-        return;
-    }
-    glGenBuffers(1, &ID);
+GLuint CreateEBO() {
+    GLuint id;
+    glGenBuffers(1, &id);
+    return id;
 }
-
-void EBO::AddData(GLuint* indices, GLuint size) {
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ID);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, indices, GL_DYNAMIC_DRAW);
+void ebo_Add_Data(GLuint id, GLuint* indices, GLuint size, GLenum usage) {
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, indices, usage);
 }
-
-void EBO::Bind() {
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ID);
+void ebo_Update_Data(GLuint id, GLuint* indices, GLuint size) {
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
+    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, size, indices);
 }
-
-void EBO::UnBind() {
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+void ebo_Bind(GLuint id) {
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
 }
-
-void EBO::Delete() {
-    glDeleteBuffers(1, &ID);
+void ebo_Delete(GLuint id) {
+    glDeleteBuffers(1, &id);
 }
-
