@@ -4,13 +4,7 @@
 #include <iostream>
 #include <Common/Error.h>
 
-Texture2D::Texture2D() {
-    ID = 0;
-}
-
-//std::unordered_map<std::string, GLuint> texture_id();
-
-void Texture2D::Load(const std::string path) {
+GLuint tex_Load(const std::string path) {
 
     //if (texture_id.find(path) != texture_id.end()) return;
 
@@ -20,6 +14,7 @@ void Texture2D::Load(const std::string path) {
     if (!data) FatalError("stb:: cant load image" + path);
     std::cout << width << " " << height << " " << Channels << '\n';
 
+    GLuint ID;
     //? create a texture
     glGenTextures(1, &ID);
     //texture_id[path] = ID;
@@ -42,18 +37,14 @@ void Texture2D::Load(const std::string path) {
     glGenerateMipmap(GL_TEXTURE_2D);
     //? free image data
     stbi_image_free(data);
+
+    //?return texture id
+    return ID;
 }
 
-void Texture2D::Bind() {
-    glActiveTexture(GL_TEXTURE);
-    glBindTexture(GL_TEXTURE_2D, ID);
+void tex_Bind(GLuint id, GLuint slot) {
+    glBindTextureUnit(slot, id);
 }
-
-void Texture2D::UnBind() {
-    glBindTexture(GL_TEXTURE_2D, 0);
+void tex_Delete(GLuint id) {
+    glDeleteTextures(1, &id);
 }
-
-void Texture2D::Delete() {
-    glDeleteTextures(1, &ID);
-}
-

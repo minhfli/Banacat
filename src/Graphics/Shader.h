@@ -7,8 +7,11 @@
 class Shader {
     public:
 
-    GLuint ID;
-    Shader(const char* vertFile, const char* fragFile);
+    GLuint ID = 0;
+    Shader() {};
+
+    /// @brief create and compile
+    void Compile(const char* vertFile, const char* fragFile);
 
     void    SetFloat(const char* name, float value, bool useShader = false);
     void    SetInteger(const char* name, int value, bool useShader = false);
@@ -23,3 +26,6 @@ class Shader {
     void Use();
     void Delete();
 };
+
+//GLuint createShader();
+//void CompileShader(GLenum type, std::string path, GLenum id);

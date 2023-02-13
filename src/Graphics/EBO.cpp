@@ -18,6 +18,6 @@ void ebo_Update_Data(GLuint id, GLuint* indices, GLuint size) {
 void ebo_Bind(GLuint id) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
 }
-void ebo_Delete(GLuint id) {
+void ebo_Delete(GLuint& id) {
     glDeleteBuffers(1, &id);
 }

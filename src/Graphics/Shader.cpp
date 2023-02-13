@@ -17,8 +17,7 @@ void checkCompileError(GLuint shader) {
     }
 }
 
-Shader::Shader(const char* vertFile, const char* fragFile) {
-
+void Shader::Compile(const char* vertFile, const char* fragFile) {
 
     //* Vertex shader
     GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);

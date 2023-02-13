@@ -4,18 +4,6 @@
 
 #include <GLAD/glad.h>
 
-class Texture2D {
-
-    private:
-    //static std::unordered_map<std::string, GLuint> texture_id;
-
-    public:
-
-    GLuint ID;
-
-    Texture2D();
-    void Load(std::string path);
-    void Bind();
-    void UnBind();
-    void Delete();
-};
+GLuint tex_Load(const std::string path);
+void tex_Bind(GLuint id);
+void tex_Delete(GLuint id);

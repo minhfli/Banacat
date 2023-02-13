@@ -4,6 +4,8 @@
 #include "VBO.h"
 #include "EBO.h"
 
+#include "Shader.h"
+
 #include "Vertex2D.h"
 
 static const size_t maxQuadCounts = 10000;
@@ -18,6 +20,9 @@ struct RenderData {
 
     vertex* vertices = nullptr;
 
+    GLuint Texture_slot[maxTextureCounts];
+
+    Shader shader;
 };
 
 static RenderData rdata;
@@ -50,10 +55,20 @@ void Renderer2D::Init() {
         offset += 4;
     }
     ebo_Add_Data(rdata.ebo, indices, maxInDexCounts * sizeof(GLuint), GL_STATIC_DRAW);
+
+    //* setup Shader
+    rdata.shader.Compile("Assets/Shaders/test.vert", "Assets/Shaders/test.frag");
+    rdata.shader.Use();
 }
 
 void Renderer2D::ShutDown() {
+    delete[] rdata.vertices;
 
+    vao_Delete(rdata.vao);
+    vbo_Delete(rdata.vbo);
+    ebo_Delete(rdata.ebo);
+
+    rdata.shader.Delete();
 }
 
 void Renderer2D::BeginBatch() {

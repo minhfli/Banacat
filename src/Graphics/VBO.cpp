@@ -21,7 +21,7 @@ void vbo_Bind(GLuint id) {
     glBindBuffer(GL_ARRAY_BUFFER, id);
 
 }
-void vbo_Delete(GLuint id) {
+void vbo_Delete(GLuint& id) {
     glDeleteBuffers(1, &id);
 }
 
