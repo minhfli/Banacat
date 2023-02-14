@@ -8,12 +8,13 @@ GLuint CreateVBO() {
 }
 
 /// @brief create memory for the vertex buffer
-void vbo_Add_Data(GLuint id, GLfloat* vertices, GLuint size, GLenum usage) {
+void vbo_Add_Data(GLuint id, const void* vertices, GLuint size, GLenum usage) {
     glBindBuffer(GL_ARRAY_BUFFER, id);
     glBufferData(GL_ARRAY_BUFFER, size, vertices, usage);
+
 }
 /// @brief only for DYNAMIC buffers
-void vbo_Update_Data(GLuint id, GLfloat* vertices, GLuint size) {
+void vbo_Update_Data(GLuint id, const void* vertices, GLuint size) {
     glBindBuffer(GL_ARRAY_BUFFER, id);
     glBufferSubData(GL_ARRAY_BUFFER, 0, size, vertices);
 }

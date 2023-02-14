@@ -12,6 +12,6 @@ class Sprite2D_core {
     GLuint texture_id;
     glm::vec4 tex_uv;
 
-    void load_texture(Texture2D texture, glm::vec4 uv);
+    void load_texture(GLuint id, glm::vec4 uv);
 
 };

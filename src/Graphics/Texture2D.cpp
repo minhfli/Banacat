@@ -43,7 +43,8 @@ GLuint tex_Load(const std::string path) {
 }
 
 void tex_Bind(GLuint id, GLuint slot) {
-    glBindTextureUnit(slot, id);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE0, id);
 }
 void tex_Delete(GLuint id) {
     glDeleteTextures(1, &id);

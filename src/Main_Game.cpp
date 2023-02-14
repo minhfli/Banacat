@@ -6,7 +6,7 @@
 #include "Graphics/Shader.h"
 #include "Graphics/Texture2D.h"
 #include "Graphics/Camera.h"
-
+#include "Graphics/2D_Renderer.h"
 #include <STB/stb_image.h>
 
 #include <GLM/glm.hpp>
@@ -34,8 +34,8 @@ namespace sk_engine {
         else
             std::cout << "SDL video system is ready to go\n";
 
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
@@ -58,30 +58,33 @@ namespace sk_engine {
         glEnable(GL_DEPTH_TEST);
 
         stbi_set_flip_vertically_on_load(1);
+
+        Renderer2D_Init();
+
     }
 
     void Run() {
 
+        Shader shader;
+        shader.ID = GetShaderID();
+
         Camera cam;
         cam.ProjectionP(60, window_w, window_h);
         cam.position = glm::vec3(0.0f, 0.0f, 2.0f);
-        //cam.CamMatrix(shader);
+        cam.CamMatrix(shader);
 
+        //! dadadsda
+        //? DRAW IN WIREFRAME MODE
+        //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+        //? DRAW IN Fill MODE
+        //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+        int lastime = 0, time = 0;
+        float rotation = 0;
         glm::mat4 model = glm::mat4(1);
 
-        int total_units;
-        glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &total_units);
-        std::cout << total_units << '\n';  // the result is 192
-
-                //! dadadsda
-                //? DRAW IN WIREFRAME MODE
-                //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-                //? DRAW IN Fill MODE
-                //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
         bool gameIsRunning = true;
-
         while (gameIsRunning) {
             SDL_Event event;
             while (SDL_PollEvent(&event)) {
@@ -89,17 +92,50 @@ namespace sk_engine {
                     gameIsRunning = false;
 
             }
-
-
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            /*
+            rotation = (float)SDL_GetTicks() / 10;
+            glm::mat4 model2 = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
+            shader.SetMatrix4("transform", model2);
+        */
+            Renderer2D_BeginBatch();
+            Start();
+            Renderer2D_EndBatch();
+
             SDL_GL_SwapWindow(window);
+
+            time = SDL_GetTicks();
+            float fps = (float)1000 / (time - lastime);
+
+            std::cout << time - lastime << " ";
+            std::cout << fps << '\n';
+
+            lastime = time;
+
+
+        //SDL_Delay(500);
+        //break;
         }
+
+        Renderer2D_ShutDown();
 
     }
 
     void Awake() {}
 
-    void Start() {}
+    void Start() {
+        int n = 5;
+        GLfloat dis = 0.25f;
+        GLfloat size = 0.2f;
+        for (int i = -n;i <= n; i++)
+            for (int j = -n;j <= n; j++) {
+                float r = (float)(i + n) / (2 * n);
+                float g = (float)(j + n) / (2 * n);
+                float b = 1.0f;
+                Renderer2D_AddQuad(glm::vec2(dis * i, dis * j), glm::vec2(size), glm::vec4(r, g, b, 1.0f));
+            }
+    }
 
     void Update() {}
 

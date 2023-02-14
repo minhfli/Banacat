@@ -5,16 +5,16 @@
 #include "Vertex2D.h"
 
 //? batch renderer 
-class Renderer2D {
 
-    static void Init();
-    static void ShutDown();
+void Renderer2D_Init();
+void Renderer2D_ShutDown();
 
-    static void BeginBatch();
-    static void EndBatch();
-    static void Flush();        //? draw all 
+//* Sprite batch use for draw quads
+void Renderer2D_BeginBatch();
+void Renderer2D_EndBatch();
+void Renderer2D_AddQuad(glm::vec2 pos, glm::vec2 size, glm::vec4 color = glm::vec4(1.0f));
+void Renderer2D_FlushBatch();        //? draw all 
 
-
-};
-
+//! Temporary
+GLuint GetShaderID();
 
