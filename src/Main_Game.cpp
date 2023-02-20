@@ -7,6 +7,9 @@
 #include "Graphics/Texture2D.h"
 #include "Graphics/Camera.h"
 #include "Graphics/2D_Renderer.h"
+
+#include "Window/skWindow.h"
+
 #include <STB/stb_image.h>
 
 #include <GLM/glm.hpp>
@@ -14,35 +17,23 @@
 namespace sk_engine {
     int window_w = 800, window_h = 600;
 
-    SDL_Window* window = nullptr;
+    /*
+    ? SDL_keystate only contain 0 and 1
+    ? SK _keystate have 4 state
+    ? -------- 0 key is not pressed
+    ? -------- 1 key is pressed
+    ? -------- 2 key is just pressed
+    ? -------- 3 key is just released
+    */
+    const Uint8* SDL_keystate; //= SDL_GetKeyboardState(NULL);
+    Uint8 SK_keystate[100];
+
+    Camera cam;
+    Shader shader;
 
     void Init() {
-        if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-            std::cout << "SDL could not be initialized: " << SDL_GetError();
-            FatalError("Stop");
-        }
-        else
-            std::cout << "SDL video system is ready to go\n";
+        sk_window_init("SDL window", window_w, window_h);
 
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-
-        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 32);
-
-        window = SDL_CreateWindow("C++ SDL2 Window",
-            SDL_WINDOWPOS_CENTERED,
-            SDL_WINDOWPOS_CENTERED,
-            window_w,
-            window_h,
-            SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
-
-        SDL_GL_CreateContext(window);
-
-        gladLoadGLLoader(SDL_GL_GetProcAddress);
-
-        glViewport(0, 0, window_w, window_h);
         glClearColor(0.1, 0.2, 0.3, 1.0);
 
         glEnable(GL_DEPTH_TEST);
@@ -56,79 +47,81 @@ namespace sk_engine {
 
         Renderer2D_Init();
 
+        //? get the pointer to keyboard state
+        SDL_keystate = SDL_GetKeyboardState(NULL);
     }
 
     void Run() {
 
-        Shader shader;
         shader.ID = GetShaderID();
 
-        Camera cam;
         //cam.ProjectionP(60, window_w, window_h);
-        cam.ProjectionO(2, window_w, window_h);
+        cam.ProjectionO(10, window_w, window_h);
         cam.position = glm::vec3(0.0f, 0.0f, 0.0f);
         cam.CamMatrix(shader);
 
-        int lastime = 0, time = 0;
+        glm::mat4 model = glm::mat4(1);
+
+        GLuint current_tick = SDL_GetTicks(), delta_tick;
 
         bool gameIsRunning = true;
-        while (gameIsRunning) {
-            SDL_Event event;
-            while (SDL_PollEvent(&event)) {
-                if (event.type == SDL_QUIT)
-                    gameIsRunning = false;
+        while (!sk_window_should_close()) {
+            sk_window_process_event();
 
-            }
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            delta_tick = SDL_GetTicks() - current_tick;
+            float fps = (float)1000 / delta_tick;
+            current_tick += delta_tick;
+
+            //glm::mat4 model2 = glm::rotate(model, glm::radians((float)current_tick / 10), glm::vec3());
+            //shader.SetMatrix4("transform", model2, 1);
+
+            Update(delta_tick);
+
+            sk_window_clear();
 
             Renderer2D_BeginBatch();
-            Update();
             Draw();
             Renderer2D_EndBatch();
 
-            SDL_GL_SwapWindow(window);
+            sk_window_swapbuffer();
 
-            time = SDL_GetTicks();
-            float fps = (float)1000 / (time - lastime);
+            //! std::cout reduce fps so this is not the fps
+            //std::cout << delta_tick << " " << fps << '\n';
 
-            std::cout << time - lastime << " ";
-            std::cout << fps << '\n';
-
-            lastime = time;
-
-
-        //SDL_Delay(500);
-        //break;
+            if (delta_tick < 10) SDL_Delay(10 - delta_tick);
         }
 
         Renderer2D_ShutDown();
-
     }
 
     void Awake() {}
 
     void Start() {}
 
-    void Update() {}
+    void Update(const int delta_tick) {
+        //? 1 tick = 1/1000 second
+        //? -> deltatime = deltatick/1000;
+        const float delta_time = (float)delta_tick / 1000;
+
+        //std::cout << (int)SDL_keystate[SDL_SCANCODE_A];
+        if (SDL_keystate[SDL_SCANCODE_A]) cam.position += glm::vec3(-1, 0, 0) * delta_time * 5.0f;
+        if (SDL_keystate[SDL_SCANCODE_D]) cam.position += glm::vec3(1, 0, 0) * delta_time * 5.0f;
+        if (SDL_keystate[SDL_SCANCODE_W]) cam.position += glm::vec3(0, 1, 0) * delta_time * 5.0f;
+        if (SDL_keystate[SDL_SCANCODE_S]) cam.position += glm::vec3(0, -1, 0) * delta_time * 5.0f;
+
+        cam.CamMatrix(shader);
+    }
 
     void Draw() {
-        int n = 100;
-        GLfloat dis = 0.25f;
-        GLfloat size = 0.2f;
+        int n = 10;
         for (int i = -n;i <= n; i++)
-            for (int j = -n;j <= n; j++) {
-                float r = (float)(i + n) / (2 * n);
-                float g = (float)(j + n) / (2 * n);
-                float b = 1.0f;
-                if (i == 0 && j == 0)
-                    Renderer2D_AddQuad(glm::vec2(dis * i, dis * j), glm::vec2(size), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-                else
-                    Renderer2D_AddQuad(glm::vec2(dis * i, dis * j), glm::vec2(size), glm::vec4(r, g, b, 1.0f));
-            }
+            for (int j = -n;j <= n; j++)
+                Renderer2D_AddQuad(glm::vec3(i, j, 0), glm::vec2(1));
+
+        //Renderer2D_AddQuad(glm::vec3(1), glm::vec2(30));
     }
 
     void Quit() {
-        SDL_DestroyWindow(window);
         SDL_Delay(500);
         SDL_Quit();
     }

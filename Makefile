@@ -9,7 +9,7 @@ SRC = $(call rwildcard,src,*.cpp )
 OBJ = $(SRC:.cpp=.o)
 DEP = $(OBJ:.o=.d)
 
-COMPILER_FLAGS = -std=c++14 -Wall -W -pedantic -MMD -MP
+COMPILER_FLAGS = -std=c++14 -Wall  -pedantic -MMD -MP
 
 INCLUDE_FLAGS = -Isrc -Ivendor/include
 LIB_FLAGS = 

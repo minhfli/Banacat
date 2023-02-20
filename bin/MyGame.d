@@ -211,7 +211,7 @@ bin/MyGame.exe: src/Main_Game.cpp src/Main_Game.h \
  vendor/include/glm/gtc/../gtc/../ext/vector_uint1_precision.hpp \
  vendor/include/glm/gtc/type_ptr.inl src/Graphics/Texture2D.h \
  src/Graphics/Camera.h src/Graphics/2D_Renderer.h src/Graphics/Vertex2D.h \
- vendor/include/STB/stb_image.h
+ src/Window/skWindow.h vendor/include/STB/stb_image.h
 
 src/Main_Game.h:
 
@@ -716,5 +716,7 @@ src/Graphics/Camera.h:
 src/Graphics/2D_Renderer.h:
 
 src/Graphics/Vertex2D.h:
+
+src/Window/skWindow.h:
 
 vendor/include/STB/stb_image.h:

@@ -23,7 +23,7 @@ struct RenderData {
     vertex* vertices = nullptr;
 
     GLuint Texture_slot[maxTextureCounts];
-    GLuint default_tex;
+    Texture2D default_tex;
 
     Shader shader;
 
@@ -70,12 +70,11 @@ void Renderer2D_Init() {
     rdata.shader.Use();
 
     //* setup textures
-    rdata.default_tex = tex_Load("Assets/Sprite.png");
-    memset(rdata.Texture_slot, rdata.default_tex, sizeof(rdata.Texture_slot));
-    //std::cout << "Not crashed";
-    std::cout << rdata.default_tex << '\n';
+    rdata.default_tex.load("Assets/error.png");
+    memset(rdata.Texture_slot, rdata.default_tex.ID, sizeof(rdata.Texture_slot));
 
-    tex_Bind(rdata.default_tex, 0);
+
+    rdata.default_tex.Bind(0);
 }
 
 void Renderer2D_ShutDown() {
@@ -97,7 +96,7 @@ void Renderer2D_EndBatch() {
     //std::cout << "batch ended";
 
 }
-void Renderer2D_AddQuad(glm::vec2 pos, glm::vec2 size, glm::vec4 color) {
+void Renderer2D_AddQuad(glm::vec3 pos, glm::vec2 size, glm::vec4 color) {
     //std::cout << "quad added\n";
     if (rdata.vertex_count >= maxVertexCounts) {
         Renderer2D_FlushBatch();
@@ -106,31 +105,31 @@ void Renderer2D_AddQuad(glm::vec2 pos, glm::vec2 size, glm::vec4 color) {
     glm::vec2 hsize = size / 2.0f; //? half the size
 
     //* vertex 0 
-    rdata.vertices[rdata.vertex_count].pos = glm::vec3(pos.x - hsize.x, pos.y - hsize.y, 0);
+    rdata.vertices[rdata.vertex_count].pos = glm::vec3(pos.x - hsize.x, pos.y - hsize.y, pos.z);
     rdata.vertices[rdata.vertex_count].uv = glm::vec2(0, 0);
     rdata.vertices[rdata.vertex_count].color = color;
-    rdata.vertices[rdata.vertex_count].texture = rdata.default_tex;
+    rdata.vertices[rdata.vertex_count].texture = rdata.default_tex.ID;
     rdata.vertex_count++;
 
     //* vertex 1
-    rdata.vertices[rdata.vertex_count].pos = glm::vec3(pos.x + hsize.x, pos.y - hsize.y, 0);
+    rdata.vertices[rdata.vertex_count].pos = glm::vec3(pos.x + hsize.x, pos.y - hsize.y, pos.z);
     rdata.vertices[rdata.vertex_count].uv = glm::vec2(1, 0);
     rdata.vertices[rdata.vertex_count].color = color;
-    rdata.vertices[rdata.vertex_count].texture = rdata.default_tex;
+    rdata.vertices[rdata.vertex_count].texture = rdata.default_tex.ID;
     rdata.vertex_count++;
 
     //* vertex 2 
-    rdata.vertices[rdata.vertex_count].pos = glm::vec3(pos.x - hsize.x, pos.y + hsize.y, 0);
+    rdata.vertices[rdata.vertex_count].pos = glm::vec3(pos.x - hsize.x, pos.y + hsize.y, pos.z);
     rdata.vertices[rdata.vertex_count].uv = glm::vec2(0, 1);
     rdata.vertices[rdata.vertex_count].color = color;
-    rdata.vertices[rdata.vertex_count].texture = rdata.default_tex;
+    rdata.vertices[rdata.vertex_count].texture = rdata.default_tex.ID;
     rdata.vertex_count++;
 
     //* vertex 3 
-    rdata.vertices[rdata.vertex_count].pos = glm::vec3(pos.x + hsize.x, pos.y + hsize.y, 0);
+    rdata.vertices[rdata.vertex_count].pos = glm::vec3(pos.x + hsize.x, pos.y + hsize.y, pos.z);
     rdata.vertices[rdata.vertex_count].uv = glm::vec2(1, 1);
     rdata.vertices[rdata.vertex_count].color = color;
-    rdata.vertices[rdata.vertex_count].texture = rdata.default_tex;
+    rdata.vertices[rdata.vertex_count].texture = rdata.default_tex.ID;
     rdata.vertex_count++;
 
     rdata.index_count += 6;

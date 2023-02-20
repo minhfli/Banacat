@@ -17,7 +17,7 @@ namespace sk_engine {
 
     void Start();
 
-    void Update();
+    void Update(const int delta_tick);
 
     void Draw();
 

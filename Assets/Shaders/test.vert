@@ -10,12 +10,13 @@ out vec2 v_tex_coord;
 out int v_texture;
 
 uniform mat4 CamMatrix;
-//uniform mat4 transform;
+uniform mat4 transform;
 
 void main(){
     //gl_Position = proj * view * model * vec4(a_pos,1);
     
     gl_Position = CamMatrix * vec4(a_pos,1);
+    //gl_Position = CamMatrix * transform *vec4(a_pos,1);
     //gl_Position = vec4(a_pos,1);
     
     v_color = a_color;

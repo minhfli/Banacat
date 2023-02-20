@@ -103,7 +103,16 @@
         "xlocbuf": "cpp",
         "xlocmes": "cpp",
         "xlocmon": "cpp",
-        "xloctime": "cpp"
+        "xloctime": "cpp",
+        "array": "cpp",
+        "*.tcc": "cpp",
+        "cwctype": "cpp",
+        "deque": "cpp",
+        "memory_resource": "cpp",
+        "optional": "cpp",
+        "string_view": "cpp",
+        "sstream": "cpp",
+        "cinttypes": "cpp"
     },
     "C_Cpp.intelliSenseEngineFallback": "Enabled"
 }

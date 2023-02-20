@@ -4,9 +4,9 @@
 #include <iostream>
 #include <Common/Error.h>
 
-GLuint tex_Load(const std::string path) {
+Texture2D::Texture2D() {}
 
-    //if (texture_id.find(path) != texture_id.end()) return;
+void Texture2D::load(const std::string path) {
 
     //?load image data
     int width, height, Channels;
@@ -14,11 +14,10 @@ GLuint tex_Load(const std::string path) {
     if (!data) FatalError("stb:: cant load image" + path);
     std::cout << width << " " << height << " " << Channels << '\n';
 
-    GLuint ID;
     //? create a texture
-    glGenTextures(1, &ID);
+    glGenTextures(1, &this->ID);
     //texture_id[path] = ID;
-    glBindTexture(GL_TEXTURE_2D, ID);
+    glBindTexture(GL_TEXTURE_2D, this->ID);
 
     //? texture settings
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
@@ -27,7 +26,6 @@ GLuint tex_Load(const std::string path) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     //? copy image data to texture
-
     if (Channels == 4) {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
         std::cout << "tex loaded\n";
@@ -35,17 +33,21 @@ GLuint tex_Load(const std::string path) {
     else
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
+
+    this->size.x = (float)width / PIXEL_PER_UNIT;
+    this->size.y = (float)height / PIXEL_PER_UNIT;
+
     //? free image data
     stbi_image_free(data);
 
     //?return texture id
-    return ID;
+    //return ID;
 }
 
-void tex_Bind(GLuint id, GLuint slot) {
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE0, id);
+void Texture2D::Bind(GLuint slot) {
+    glActiveTexture(GL_TEXTURE0 + slot);
+    glBindTexture(GL_TEXTURE_2D, this->ID);
 }
-void tex_Delete(GLuint id) {
-    glDeleteTextures(1, &id);
+void Texture2D::Delete() {
+    glDeleteTextures(1, &this->ID);
 }
