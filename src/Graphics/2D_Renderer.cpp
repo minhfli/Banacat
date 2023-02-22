@@ -15,6 +15,17 @@ static const size_t maxVertexCounts = maxQuadCounts * 4;
 static const size_t maxInDexCounts = maxQuadCounts * 6;
 static const size_t maxTextureCounts = 32; //! This can change on different computer
 
+/*
+    ?Quad vertex order
+    *   2       3
+    *
+    *   0       1
+
+    ?Texture uv oder (xy)
+    *   00      10
+    *
+    *   01      11
+*/
 struct RenderData {
     GLuint vao = 0;
     GLuint vbo = 0;
@@ -106,28 +117,28 @@ void Renderer2D_AddQuad(glm::vec3 pos, glm::vec2 size, glm::vec4 color) {
 
     //* vertex 0 
     rdata.vertices[rdata.vertex_count].pos = glm::vec3(pos.x - hsize.x, pos.y - hsize.y, pos.z);
-    rdata.vertices[rdata.vertex_count].uv = glm::vec2(0, 0);
+    rdata.vertices[rdata.vertex_count].uv = glm::vec2(0, 1);
     rdata.vertices[rdata.vertex_count].color = color;
     rdata.vertices[rdata.vertex_count].texture = rdata.default_tex.ID;
     rdata.vertex_count++;
 
     //* vertex 1
     rdata.vertices[rdata.vertex_count].pos = glm::vec3(pos.x + hsize.x, pos.y - hsize.y, pos.z);
-    rdata.vertices[rdata.vertex_count].uv = glm::vec2(1, 0);
+    rdata.vertices[rdata.vertex_count].uv = glm::vec2(1, 1);
     rdata.vertices[rdata.vertex_count].color = color;
     rdata.vertices[rdata.vertex_count].texture = rdata.default_tex.ID;
     rdata.vertex_count++;
 
     //* vertex 2 
     rdata.vertices[rdata.vertex_count].pos = glm::vec3(pos.x - hsize.x, pos.y + hsize.y, pos.z);
-    rdata.vertices[rdata.vertex_count].uv = glm::vec2(0, 1);
+    rdata.vertices[rdata.vertex_count].uv = glm::vec2(0, 0);
     rdata.vertices[rdata.vertex_count].color = color;
     rdata.vertices[rdata.vertex_count].texture = rdata.default_tex.ID;
     rdata.vertex_count++;
 
     //* vertex 3 
     rdata.vertices[rdata.vertex_count].pos = glm::vec3(pos.x + hsize.x, pos.y + hsize.y, pos.z);
-    rdata.vertices[rdata.vertex_count].uv = glm::vec2(1, 1);
+    rdata.vertices[rdata.vertex_count].uv = glm::vec2(1, 0);
     rdata.vertices[rdata.vertex_count].color = color;
     rdata.vertices[rdata.vertex_count].texture = rdata.default_tex.ID;
     rdata.vertex_count++;

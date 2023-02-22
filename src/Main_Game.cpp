@@ -43,7 +43,7 @@ namespace sk_engine {
         glCullFace(GL_BACK);
 
         //? stbi will now read image from bottom to top
-        stbi_set_flip_vertically_on_load(1);
+        //stbi_set_flip_vertically_on_load(1);
 
         Renderer2D_Init();
 
