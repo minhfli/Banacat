@@ -25,7 +25,8 @@ bin/MyGame.exe: src/Main_Game.cpp src/Main_Game.h \
  vendor/include/SDL2/SDL_timer.h vendor/include/SDL2/SDL_version.h \
  vendor/include/SDL2/SDL_locale.h vendor/include/SDL2/SDL_misc.h \
  vendor/include/glad/glad.h vendor/include/glad/khrplatform.h \
- src/Common/Error.h src/Common/ReadFile.h src/Graphics/VAO.h \
+ src/Common/Error.h src/Common/ReadFile.h \
+ vendor/include/nlohmann/json.hpp src/Graphics/VAO.h \
  vendor/include/GLAD/glad.h src/Graphics/VBO.h src/Graphics/EBO.h \
  src/Graphics/Shader.h vendor/include/GLM/glm.hpp \
  vendor/include/GLM/detail/_fixes.hpp vendor/include/GLM/detail/setup.hpp \
@@ -320,6 +321,8 @@ vendor/include/glad/khrplatform.h:
 src/Common/Error.h:
 
 src/Common/ReadFile.h:
+
+vendor/include/nlohmann/json.hpp:
 
 src/Graphics/VAO.h:
 

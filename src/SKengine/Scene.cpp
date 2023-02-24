@@ -1,13 +1,21 @@
 #include "Scene.h"
 
 
-Scene::Scene() {
+Scene::Scene() {}
+Scene::~Scene() {}
 
+
+
+void LoadLevel(std::string filepath) {
+    return;
+}
+void Scene::OnActive() {
+    LoadLevel("level_0.ldtkl");
 }
 
-Scene::~Scene() {
+void Scene::OnDeactive() {}
 
-}
+
 
 void Scene::Start() {}
 
@@ -17,6 +25,3 @@ void Scene::Draw() {}
 
 void Scene::FixedUpdate() {}
 
-void Scene::OnActive() {}
-
-void Scene::OnDeactive() {}

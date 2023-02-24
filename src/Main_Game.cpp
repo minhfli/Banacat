@@ -64,7 +64,6 @@ namespace sk_engine {
 
         GLuint current_tick = SDL_GetTicks(), delta_tick;
 
-        bool gameIsRunning = true;
         while (!sk_window_should_close()) {
             sk_window_process_event();
 

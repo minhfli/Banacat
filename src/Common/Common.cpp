@@ -13,15 +13,23 @@ void FatalError(std::string string) {
 
 
 #include "ReadFile.h"
-std::string ReadFile(const char* filepath) {
+std::string ReadTextFile(const std::string path) {
     std::string return_string;
-    std::ifstream file(filepath);
+    std::ifstream file(path);
 
     //Source file loaded
     if (file)
         return_string.assign((std::istreambuf_iterator< char >(file)), std::istreambuf_iterator< char >());
-    else FatalError("Cannot open file: " + (std::string)filepath);
+    else FatalError("Cannot open file: " + path);
 
     return return_string;
+}
+
+nlohmann::json ReadJsonFile(const std::string path) {
+    std::ifstream file(path);
+    if (!file) FatalError("Cannot open file: " + path);
+
+    nlohmann::json data = nlohmann::json::parse(file);
+    return data;
 }
 

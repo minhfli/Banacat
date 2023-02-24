@@ -21,7 +21,7 @@ void Shader::Compile(const char* vertFile, const char* fragFile) {
 
     //* Vertex shader
     GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-    std::string vertex_source = ReadFile(vertFile);
+    std::string vertex_source = ReadTextFile(vertFile);
     const char* vertex_src = vertex_source.c_str();
     glShaderSource(vertex_shader, 1, &vertex_src, NULL);
     glCompileShader(vertex_shader);
@@ -31,7 +31,7 @@ void Shader::Compile(const char* vertFile, const char* fragFile) {
 
     //* Fragment shader
     GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-    std::string fragment_source = ReadFile(fragFile);
+    std::string fragment_source = ReadTextFile(fragFile);
     const char* fragment_src = fragment_source.c_str();
     glShaderSource(fragment_shader, 1, &fragment_src, NULL);
     glCompileShader(fragment_shader);

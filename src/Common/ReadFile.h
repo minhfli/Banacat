@@ -1,4 +1,7 @@
 #pragma once
 
 #include <string>
-std::string ReadFile(const char* filepath);
+#include <nlohmann/json.hpp>
+std::string ReadTextFile(const std::string path);
+
+nlohmann::json ReadJsonFile(const std::string path);

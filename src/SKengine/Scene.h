@@ -3,6 +3,7 @@
 #include <string>
 
 #include "Time.h"
+#include "Tilemap.h"
 
 class Scene
 {
@@ -12,7 +13,10 @@ class Scene
     Scene();
     ~Scene();
 
+    //?load all game object here
     void OnActive();
+
+    //?unload all game object here
     void OnDeactive();
 
     void Start();
