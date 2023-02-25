@@ -9,7 +9,10 @@ SRC = $(call rwildcard,src,*.cpp )
 OBJ = $(SRC:.cpp=.o)
 DEP = $(OBJ:.o=.d)
 
-COMPILER_FLAGS = -std=c++14 -Wall  -pedantic -MMD -MP
+COMPILER_FLAGS = -std=c++14 -Wall -pedantic -MMD -MP 
+
+#? addtional flag for release version
+R_COMPILER_FLAGS = $(COMPILER_FLAGS) -mwindows -w
 
 INCLUDE_FLAGS = -Isrc -Ivendor/include
 LIB_FLAGS = 
@@ -35,7 +38,7 @@ all:
 
 .PHONY: release
 release: 
-	g++ $(COMPILER_FLAGS) -O3 $(INCLUDE_FLAGS) $(LIB_FLAGS) $(SRC) -o $(APP).exe $(LINKER_FLAGs)  
+	g++ $(R_COMPILER_FLAGS) -O3 $(INCLUDE_FLAGS) $(LIB_FLAGS) $(SRC) -o $(APP).exe $(LINKER_FLAGs)  
 
 .PHONY: run
 run: 

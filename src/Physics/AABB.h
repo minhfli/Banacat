@@ -8,6 +8,6 @@ namespace sk_physic2d {
     bool point_in_rect(const glm::vec2& p, const rect& r);
     bool rect_in_rect(const rect& r1, const rect& r2);
     bool rect_vs_rect(const rect& r1, const rect& r2);
-    bool ray_vs_rect();
+    bool ray_vs_rect(const ray& _ray, const rect& r);
 
 }

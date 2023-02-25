@@ -2,6 +2,7 @@
 #include <GLM/glm.hpp>
 
 namespace  sk_physic2d {
+
     struct rect {
         bool fixed = 0;                    //* is static ?
         glm::vec2 pos = glm::vec2(0);      //* bottom left point of the rect
@@ -32,5 +33,28 @@ namespace  sk_physic2d {
             return rect(glm::vec2(pos.x - radius, pos.y - radius), glm::vec2(radius * 2), velocity);
         }
     };
+    struct ray {
+        glm::vec2 pos = glm::vec2(0);
+        glm::vec2 dir = glm::vec2(0, 1); // default is up
 
+        ray() {};
+        ray(const glm::vec2 p = glm::vec2(0), const glm::vec2 d = glm::vec2(0, 1)) {
+            pos = p;
+            dir = d;
+        }
+
+        inline rect bounding_box() const {
+            glm::vec2 p = pos;
+            glm::vec2 s = dir;
+            if (s.x < 0) {
+                p.x += s.x;
+                s.x = -s.x;
+            }
+            if (s.y < 0) {
+                p.y += s.y;
+                s.y = -s.y;
+            }
+            return rect(p, s);
+        }
+    };
 }
