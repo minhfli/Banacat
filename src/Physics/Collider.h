@@ -56,5 +56,11 @@ namespace  sk_physic2d {
             }
             return rect(p, s);
         }
+        inline glm::vec2 begin() const { return pos; }
+        inline glm::vec2 end() const { return pos + dir; }
+
+        inline ray reverse() const {
+            return ray(pos + dir, -dir);
+        }
     };
 }

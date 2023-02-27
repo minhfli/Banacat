@@ -27,8 +27,24 @@ namespace sk_physic2d {
             r2.pos.x + r2.size.y >= r1.pos.y
         );
     }
-    bool ray_vs_rect(const ray& _ray, const rect& r) {
+    bool ray_vs_rect(const ray& l, const rect& r) {
+        float xmin = r.pos.x;
+        float ymin = r.pos.y;
+        float xmax = r.pos.x + r.size.x;
+        float ymax = r.pos.y + r.size.y;
 
+
+        bool oky = 0, okx = 0;
+
+        if (l.dir.y == 0) oky = 1;
+        else {
+            float tL = (ymin - l.pos.y) / l.dir.y;
+            if (tL >= 0 && tL <= 1) oky = 1;
+            float tR = (ymax - l.pos.y) / l.dir.y;
+            if (tR >= 0 && tR <= 1) oky = 1;
+        }
+
+        return (oky && okx);
     }
 
 }

@@ -26,3 +26,24 @@ void vbo_Delete(GLuint& id) {
     glDeleteBuffers(1, &id);
 }
 
+
+VertexBuffer::VertexBuffer() {}
+VertexBuffer::~VertexBuffer() {}
+
+void VertexBuffer::Set_Data(const void* vertices, GLuint size, GLenum usage) {
+    glBindBuffer(GL_ARRAY_BUFFER, id);
+    glBufferData(GL_ARRAY_BUFFER, size, vertices, usage);
+}
+
+void VertexBuffer::Upd_Data(const void* vertices, GLuint size) {
+    glBindBuffer(GL_ARRAY_BUFFER, id);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, size, vertices);
+}
+
+void VertexBuffer::Bind() {
+    glBindBuffer(GL_ARRAY_BUFFER, id);
+}
+
+void VertexBuffer::Delete() {
+    glDeleteBuffers(1, &id);
+}
