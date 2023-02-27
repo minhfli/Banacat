@@ -27,9 +27,9 @@ static const size_t maxTextureCounts = 32; //! This can change on different comp
     *   01      11
 */
 struct RenderData {
-    GLuint vao = 0;
-    GLuint vbo = 0;
-    GLuint ebo = 0;
+    VertexArray quad_vao;
+    VertexBuffer quad_vbo;
+    IndexBuffer quad_ebo;
 
     vertex* vertices = nullptr;
 
@@ -50,17 +50,17 @@ GLuint GetShaderID() { return rdata.shader.ID; }
 void Renderer2D_Init() {
     rdata.vertices = new vertex[maxVertexCounts];
 
-    rdata.vao = CreateVAO();    vao_Bind(rdata.vao);
-    rdata.vbo = CreateVBO();    vbo_Bind(rdata.vbo);
-    rdata.ebo = CreateEBO();    ebo_Bind(rdata.ebo);
+    rdata.quad_vao.Gen(); rdata.quad_vao.Bind();
+    rdata.quad_vbo.Gen(); rdata.quad_vbo.Bind();
+    rdata.quad_ebo.Gen(); rdata.quad_ebo.Bind();
 
     //* set up VAO and VBO
-    vbo_Add_Data(rdata.vbo, nullptr, maxVertexCounts * sizeof(vertex), GL_DYNAMIC_DRAW);
+    rdata.quad_vbo.Set_Data(nullptr, maxVertexCounts * sizeof(vertex), GL_DYNAMIC_DRAW);
 
-    vao_link_attrib(rdata.vbo, 0, 3, GL_FLOAT, sizeof(vertex), (void*)offsetof(vertex, pos));
-    vao_link_attrib(rdata.vbo, 1, 4, GL_FLOAT, sizeof(vertex), (void*)offsetof(vertex, color));
-    vao_link_attrib(rdata.vbo, 2, 2, GL_FLOAT, sizeof(vertex), (void*)offsetof(vertex, uv));
-    vao_link_attrib(rdata.vbo, 3, 1, GL_UNSIGNED_INT, sizeof(vertex), (void*)offsetof(vertex, texture));
+    rdata.quad_vao.Attrib(rdata.quad_vbo, 0, 3, GL_FLOAT, sizeof(vertex), (void*)offsetof(vertex, pos));
+    rdata.quad_vao.Attrib(rdata.quad_vbo, 1, 4, GL_FLOAT, sizeof(vertex), (void*)offsetof(vertex, color));
+    rdata.quad_vao.Attrib(rdata.quad_vbo, 2, 2, GL_FLOAT, sizeof(vertex), (void*)offsetof(vertex, uv));
+    rdata.quad_vao.Attrib(rdata.quad_vbo, 3, 1, GL_UNSIGNED_INT, sizeof(vertex), (void*)offsetof(vertex, texture));
 
     //* set up EBO
     GLuint offset = 0;
@@ -74,7 +74,8 @@ void Renderer2D_Init() {
         indices[i + 5] = offset + 3;
         offset += 4;
     }
-    ebo_Add_Data(rdata.ebo, indices, maxInDexCounts * sizeof(GLuint), GL_DYNAMIC_DRAW);
+    //ebo_Add_Data(rdata.ebo, indices, maxInDexCounts * sizeof(GLuint), GL_DYNAMIC_DRAW);
+    rdata.quad_ebo.Set_Data(indices, maxInDexCounts * sizeof(GLuint), GL_DYNAMIC_DRAW);
 
     //* setup Shader
     rdata.shader.Compile("Assets/Shaders/test.vert", "Assets/Shaders/test.frag");
@@ -91,10 +92,9 @@ void Renderer2D_Init() {
 void Renderer2D_ShutDown() {
     delete[] rdata.vertices;
 
-    vao_Delete(rdata.vao);
-    vbo_Delete(rdata.vbo);
-    ebo_Delete(rdata.ebo);
-
+    rdata.quad_vao.Delete();
+    rdata.quad_vbo.Delete();
+    rdata.quad_ebo.Delete();
     rdata.shader.Delete();
 }
 
@@ -150,7 +150,7 @@ void Renderer2D_FlushBatch() {
     //std::cout << rdata.vertex_count << " " << rdata.index_count << '\n';
 
     rdata.shader.Use();
-    vbo_Update_Data(rdata.vbo, rdata.vertices, rdata.vertex_count * sizeof(vertex));
+    rdata.quad_vbo.Upd_Data(rdata.vertices, rdata.vertex_count * sizeof(vertex));
     glDrawElements(GL_TRIANGLES, rdata.index_count, GL_UNSIGNED_INT, 0);
 
     rdata.vertex_count = 0;

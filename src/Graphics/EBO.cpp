@@ -2,22 +2,27 @@
 
 #include <iostream>
 
-GLuint CreateEBO() {
-    GLuint id;
+IndexBuffer::IndexBuffer() {}
+IndexBuffer::~IndexBuffer() {}
+
+void IndexBuffer::Gen() {
     glGenBuffers(1, &id);
-    return id;
 }
-void ebo_Add_Data(GLuint id, GLuint* indices, GLuint size, GLenum usage) {
+
+void IndexBuffer::Set_Data(const void* indices, GLuint size, GLenum usage) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, indices, usage);
 }
-void ebo_Update_Data(GLuint id, GLuint* indices, GLuint size) {
+
+void IndexBuffer::Upd_Data(const void* indices, GLuint size) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
     glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, size, indices);
 }
-void ebo_Bind(GLuint id) {
+
+void IndexBuffer::Bind() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
 }
-void ebo_Delete(GLuint& id) {
+
+void IndexBuffer::Delete() {
     glDeleteBuffers(1, &id);
 }
