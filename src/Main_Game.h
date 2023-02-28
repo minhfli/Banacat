@@ -8,7 +8,7 @@
 #include <Common/Error.h>
 #include <Common/ReadFile.h>
 
-namespace sk_engine {
+namespace sk_main {
     void Init();
 
     void Run();

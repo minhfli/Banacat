@@ -9,8 +9,8 @@ class Tilemap {
     Tilemap();
     ~Tilemap();
 
-    Texture2D tileset;
-    Sprite2D sprites[100][100];
+    sk_graphic::Texture2D tileset;
+    sk_graphic::Sprite2D sprites[100][100];
 
     //? size of the filemap
     uint32_t x, y;

@@ -3,9 +3,9 @@
 
 int main(int argc, char* argv[]) {
 
-    sk_engine::Init();
-    sk_engine::Run();
-    sk_engine::Quit();
+    sk_main::Init();
+    sk_main::Run();
+    sk_main::Quit();
 
     return 0;
 }

@@ -14,7 +14,7 @@
 
 #include <GLM/glm.hpp>
 
-namespace sk_engine {
+namespace sk_main {
     int window_w = 800, window_h = 600;
 
     /*
@@ -29,23 +29,14 @@ namespace sk_engine {
     Uint8 SK_keystate[100];
 
     Camera cam;
-    Shader shader;
 
     void Init() {
         sk_window_init("SDL window", window_w, window_h);
 
-        glClearColor(0.1, 0.2, 0.3, 1.0);
-
-        glEnable(GL_DEPTH_TEST);
-
-        //? opengl wont draw back side of trianggle
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_BACK);
-
         //? stbi will now read image from bottom to top
         //stbi_set_flip_vertically_on_load(1);
 
-        Renderer2D_Init();
+        sk_graphic::Renderer2D_Init();
 
         //? get the pointer to keyboard state
         SDL_keystate = SDL_GetKeyboardState(NULL);
@@ -53,14 +44,11 @@ namespace sk_engine {
 
     void Run() {
 
-        shader.ID = GetShaderID();
-
         //cam.ProjectionP(60, window_w, window_h);
         cam.ProjectionO(10, window_w, window_h);
         cam.position = glm::vec3(0.0f, 0.0f, 0.0f);
-        cam.CamMatrix(shader);
 
-        glm::mat4 model = glm::mat4(1);
+        sk_graphic::Renderer2D_GetCam(&cam);
 
         GLuint current_tick = SDL_GetTicks(), delta_tick;
 
@@ -78,9 +66,9 @@ namespace sk_engine {
 
             sk_window_clear();
 
-            Renderer2D_BeginBatch();
+            sk_graphic::Renderer2D_BeginBatch();
             Draw();
-            Renderer2D_EndBatch();
+            sk_graphic::Renderer2D_EndBatch();
 
             sk_window_swapbuffer();
 
@@ -90,7 +78,7 @@ namespace sk_engine {
             if (delta_tick < 10) SDL_Delay(10 - delta_tick);
         }
 
-        Renderer2D_ShutDown();
+        sk_graphic::Renderer2D_ShutDown();
     }
 
     void Awake() {}
@@ -107,17 +95,16 @@ namespace sk_engine {
         if (SDL_keystate[SDL_SCANCODE_D]) cam.position += glm::vec3(1, 0, 0) * delta_time * 5.0f;
         if (SDL_keystate[SDL_SCANCODE_W]) cam.position += glm::vec3(0, 1, 0) * delta_time * 5.0f;
         if (SDL_keystate[SDL_SCANCODE_S]) cam.position += glm::vec3(0, -1, 0) * delta_time * 5.0f;
-
-        cam.CamMatrix(shader);
     }
 
     void Draw() {
         int n = 10;
         for (int i = -n;i <= n; i++)
             for (int j = -n;j <= n; j++)
-                Renderer2D_AddQuad(glm::vec3(i, j, 0), glm::vec2(1));
+                if ((i + j) % 2 == 0)
+                    sk_graphic::Renderer2D_AddQuad(glm::vec3(i, j, 0), glm::vec2(1));
 
-        //Renderer2D_AddQuad(glm::vec3(1), glm::vec2(30));
+            //sk_graphic::Renderer2D_AddQuad(glm::vec3(1), glm::vec2(30));
     }
 
     void Quit() {

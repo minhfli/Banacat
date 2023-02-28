@@ -9,4 +9,3 @@ struct vertex {
     glm::vec2 uv;     //? texture coord
     GLuint texture;   //? texture index
 };
-

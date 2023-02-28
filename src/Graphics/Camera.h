@@ -18,6 +18,9 @@ class Camera {
 
     int width, height;
 
+    /// @brief only for orthographic camera 
+    float size = 1;
+
     glm::mat4 projection;
 
     void ProjectionP(float FOV, int width, int height);
