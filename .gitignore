@@ -3,8 +3,13 @@
 
 /vendor
 
+/debug
 /obj
 *.o
 *.d
+
+/make1
+#? makefile test
+
 
 Assets
