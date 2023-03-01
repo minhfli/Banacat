@@ -3,6 +3,8 @@
 
 /vendor
 
+/obj
 *.o
+*.d
 
 Assets

@@ -134,20 +134,19 @@ namespace sk_graphic {
         rdata.quad.shader.Delete();
     }
 
-    void Renderer2D_BeginBatch() {
-        //std::cout << "start new batch\n";
+    void Renderer2D_Begin() {
+        //std::cout << "start new frame\n";
     }
 
-    void Renderer2D_EndBatch() {
-        if (rdata.quad.index_count) Renderer2D_FlushBatch();
-        //std::cout << "batch ended";
+    void Renderer2D_End() {
+        if (rdata.quad.index_count) Renderer2D_FlushQuads();
+        //std::cout << "frame ended";
 
     }
     void Renderer2D_AddQuad(glm::vec3 pos, glm::vec2 size, glm::vec4 color) {
         //std::cout << "quad added\n";
         if (rdata.quad.vertex_count >= maxQuadVertexCounts) {
-            Renderer2D_FlushBatch();
-            Renderer2D_BeginBatch();
+            Renderer2D_FlushQuads();
         }
         glm::vec2 hsize = size / 2.0f; //? half the size
 
@@ -181,10 +180,9 @@ namespace sk_graphic {
 
         rdata.quad.index_count += 6;
     }
-    void Renderer2D_FlushBatch() {
+    void Renderer2D_FlushQuads() {
         //std::cout << "flush\n";
         //std::cout << rdata.vertex_count << " " << rdata.index_count << '\n';
-
         rdata.cam_object->CamMatrix(rdata.quad.shader);
 
         rdata.quad.shader.Use();
@@ -193,11 +191,5 @@ namespace sk_graphic {
 
         rdata.quad.vertex_count = 0;
         rdata.quad.index_count = 0;
-
-        /*glLineWidth(2);
-        glBegin(GL_LINES);
-        glVertex3f(-1, -1, 0);
-        glVertex3f(1, 1, 0);
-        glEnd();*/
     }
 }

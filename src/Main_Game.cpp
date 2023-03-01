@@ -66,9 +66,8 @@ namespace sk_main {
 
             sk_window_clear();
 
-            sk_graphic::Renderer2D_BeginBatch();
             Draw();
-            sk_graphic::Renderer2D_EndBatch();
+            sk_graphic::Renderer2D_End();
 
             sk_window_swapbuffer();
 
