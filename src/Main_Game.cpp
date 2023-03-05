@@ -25,12 +25,13 @@ namespace sk_main {
     ? -------- 2 key is just pressed
     ? -------- 3 key is just released
     */
-    const Uint8* SDL_keystate; //= SDL_GetKeyboardState(NULL);
+    const Uint8* SDL_keystate; //= SDL_GetKeyboardState(NULL); 
     Uint8 SK_keystate[100];
 
-    Camera cam;
+    Camera cam;//*
 
     void Init() {
+        out();
         sk_window_init("SDL window", window_w, window_h);
 
         //? stbi will now read image from bottom to top
@@ -98,12 +99,18 @@ namespace sk_main {
 
     void Draw() {
         int n = 10;
-        for (int i = -n;i <= n; i++)
-            for (int j = -n;j <= n; j++)
+        /*for (int i = -n;i <= n; i++)
+            for (int j = -n;j <= n; j++) {
                 if ((i + j) % 2 == 0)
                     sk_graphic::Renderer2D_AddQuad(glm::vec3(i, j, 0), glm::vec2(1));
+                sk_graphic::Renderer2D_AddLine(glm::vec3(i, j, 1), glm::vec2(0.5f));
 
-            //sk_graphic::Renderer2D_AddQuad(glm::vec3(1), glm::vec2(30));
+            }*/
+        sk_graphic::Renderer2D_AddDotX(glm::vec3(0));
+        sk_graphic::Renderer2D_AddDotO(glm::vec3(0));
+        //sk_graphic::Renderer2D_AddLine(glm::vec3(0, 0, 1), glm::vec2(10));
+
+        //sk_graphic::Renderer2D_AddQuad(glm::vec3(1), glm::vec2(30));
     }
 
     void Quit() {

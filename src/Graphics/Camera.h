@@ -20,11 +20,12 @@ class Camera {
 
     /// @brief only for orthographic camera 
     float size = 1;
+    float aspect;
 
     glm::mat4 projection;
 
     void ProjectionP(float FOV, int width, int height);
     void ProjectionO(float size, int width, int height);
 
-    void CamMatrix(Shader& shader);
+    void CamMatrix(GLSLprogram& shader);
 };

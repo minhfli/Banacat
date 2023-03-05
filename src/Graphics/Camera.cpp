@@ -6,11 +6,11 @@ void Camera::ProjectionP(float FOV, int width, int height) {
 
 void Camera::ProjectionO(float size, int width, int height) {
     this->size = size;
-    float aspect = (float)width / height;
+    aspect = (float)width / height;
     projection = glm::ortho(-aspect * size, aspect * size, -size, size, -10.0f, 10.0f);
 }
 
-void Camera::CamMatrix(Shader& shader) {
+void Camera::CamMatrix(GLSLprogram& shader) {
     glm::mat4 view;
     if (lock_target)
         view = glm::lookAt(position, *target, up);

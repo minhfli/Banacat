@@ -7,7 +7,7 @@
 
 #include <Common/Error.h>
 #include <Common/ReadFile.h>
-
+//adad
 namespace sk_main {
     void Init();
 
@@ -26,4 +26,6 @@ namespace sk_main {
     //void FixedUpdate();
 
     void Quit();
+
+    inline void out() { std::cout << "b\a\n"; }
 }

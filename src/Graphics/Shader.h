@@ -1,14 +1,21 @@
 #pragma once
 
+#include <string>
 #include <GLAD/glad.h>
 #include <GLM/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-class Shader {
+class GLSLprogram {
     public:
 
-    GLuint ID = 0;
-    Shader() {};
+    GLuint id = 0;
+    GLSLprogram() {};
+
+    void Gen();
+    void Compile(const std::string file, GLenum type);
+    void Link();
+    void Use();
+    void Delete();
 
     /// @brief create and compile
     void Compile(const char* vertFile, const char* fragFile);
@@ -23,9 +30,5 @@ class Shader {
     void    SetVector4f(const char* name, const glm::vec4& value, bool useShader = false);
     void    SetMatrix4(const char* name, const glm::mat4& matrix, bool useShader = false);
 
-    void Use();
-    void Delete();
-};
 
-//GLuint createShader();
-//void CompileShader(GLenum type, std::string path, GLenum id);
+};
