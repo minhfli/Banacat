@@ -9,6 +9,7 @@
 #include "Graphics/2D_Renderer.h"
 
 #include "Window/skWindow.h"
+#include "Physics/Test.h"
 
 #include <STB/stb_image.h>
 
@@ -44,7 +45,6 @@ namespace sk_main {
     }
 
     void Run() {
-
         //cam.ProjectionP(60, window_w, window_h);
         cam.ProjectionO(10, window_w, window_h);
         cam.position = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -53,6 +53,7 @@ namespace sk_main {
 
         GLuint current_tick = SDL_GetTicks(), delta_tick;
 
+        sk_physic2d::Setup();
         while (!sk_window_should_close()) {
             sk_window_process_event();
 
@@ -95,9 +96,12 @@ namespace sk_main {
         if (SDL_keystate[SDL_SCANCODE_D]) cam.position += glm::vec3(1, 0, 0) * delta_time * 5.0f;
         if (SDL_keystate[SDL_SCANCODE_W]) cam.position += glm::vec3(0, 1, 0) * delta_time * 5.0f;
         if (SDL_keystate[SDL_SCANCODE_S]) cam.position += glm::vec3(0, -1, 0) * delta_time * 5.0f;
+
+        sk_physic2d::Update(delta_tick);
     }
 
     void Draw() {
+        sk_physic2d::Draw();
         int n = 10;
         /*for (int i = -n;i <= n; i++)
             for (int j = -n;j <= n; j++) {

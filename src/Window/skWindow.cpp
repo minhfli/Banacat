@@ -31,7 +31,10 @@ void sk_window_init(const std::string name, const int width, const int height) {
         SDL_WINDOWPOS_CENTERED,
         width,
         height,
-        SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
+        SDL_WINDOW_SHOWN |
+        SDL_WINDOW_OPENGL |
+        SDL_WINDOW_MAXIMIZED
+    );
 
     SDL_GL_CreateContext(window);
 

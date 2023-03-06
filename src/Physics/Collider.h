@@ -63,4 +63,17 @@ namespace  sk_physic2d {
             return ray(pos + dir, -dir);
         }
     };
+
+    struct contact {
+        bool hit = false;
+        glm::vec2 pos;      //? contact point
+        glm::vec2 normal;   //? contact normal
+        float t_near = 0;
+        float t_far = 0;
+                            //? hit time (0-1) 
+                                //? only for swept aabb collision 
+                                //? not gametime
+                                //? collider pos: 
+                                    //* pos + vel * game.deltatime * t_hit
+    };
 }

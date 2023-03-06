@@ -245,7 +245,7 @@ namespace sk_graphic {
         rdata.quad.index_count = 0;
     }
 
-    void Renderer2D_AddLine(glm::vec3 pos, glm::vec2 dir, glm::vec4 color) {
+    void Renderer2D_AddLine(glm::vec3 pos, glm::vec2 size, glm::vec4 color) {
         if (rdata.line.vertex_count >= maxLineVertexCounts)
             Renderer2D_FlushLines();
 
@@ -253,7 +253,7 @@ namespace sk_graphic {
         rdata.line.vertices[rdata.line.vertex_count].color = color;
         rdata.line.vertex_count++;
 
-        rdata.line.vertices[rdata.line.vertex_count].pos = pos + glm::vec3(dir, 0);
+        rdata.line.vertices[rdata.line.vertex_count].pos = pos + glm::vec3(size, 0);
         rdata.line.vertices[rdata.line.vertex_count].color = color;
         rdata.line.vertex_count++;
     }
@@ -273,6 +273,12 @@ namespace sk_graphic {
         rdata.line.vertex_count = 0;
     }
 
+    void Renderer2D_AddLBox(glm::vec3 pos, glm::vec2 size, glm::vec4 color) {
+        Renderer2D_AddLine(pos, glm::vec2(size.x, 0), color);           //* bottom
+        Renderer2D_AddLine(pos, glm::vec2(0, size.y), color);           //* left
+        Renderer2D_AddLine(pos + glm::vec3(size, 0), glm::vec2(-size.x, 0), color);   //* top
+        Renderer2D_AddLine(pos + glm::vec3(size, 0), glm::vec2(0, -size.y), color);   //* top
+    }
     void Renderer2D_AddDotX(glm::vec3 pos, glm::vec4 color) {
         Renderer2D_AddLine(pos + glm::vec3(-0.2f, -0.2f, 1.0f), glm::vec2(0.4f), color);
         Renderer2D_AddLine(pos + glm::vec3(-0.2f, 0.2f, 1.0f), glm::vec2(0.4f, -0.4f), color);
