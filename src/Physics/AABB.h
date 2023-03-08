@@ -11,10 +11,14 @@ namespace sk_physic2d {
     bool point_in_rect(const glm::vec2& p, const rect& r);
     bool point_in_rect_bound(const glm::vec2& p, const rect& r);
     bool point_in_rect_bound(const glm::vec2& p, const rect& r, glm::vec2& normal);
+
     bool rect_in_rect(const rect& r1, const rect& r2);
     bool rect_vs_rect(const rect& r1, const rect& r2);
-    bool ray_vs_rect(const ray& l, const rect& r, contact* contact_data = nullptr);
-    bool ray_vs_ray(const ray& l1, const ray& l2, contact* contact_data = nullptr);
+
+    bool ray_vs_rect(const ray& l, const rect& r, contact* contact_data);
+    bool ray_vs_ray(const ray& l1, const ray& l2, contact* contact_data);
+
+    bool swept_rect_vs_rect(const rect& r1, const rect& r2, contact* contact_data, const float& delta_time);
 
     //* collision resolve
     /// @brief resolve 2 rect that collided
@@ -24,5 +28,5 @@ namespace sk_physic2d {
     /// @brief resolve 2 rect that may collide
     /// @param r1 
     /// @param r2 must be static
-    void resolve_swept_rect(const rect& r1, const rect& r2);
+    void resolve_swept_rect(const rect& r1, const contact& contact_data, const float& delta_time);
 }

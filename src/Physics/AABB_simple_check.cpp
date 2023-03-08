@@ -71,7 +71,6 @@ namespace sk_physic2d {
 
         //* time for ray to go pass x/y bound of the rectangle
         //* if  near xy < far xy  -> ray hit
-        std::cout << "check start";
         glm::vec2 t_near = (r.pos - l.pos) / l.dir;
         glm::vec2 t_far = (r.pos + r.size - l.pos) / l.dir;
 
@@ -83,7 +82,6 @@ namespace sk_physic2d {
         // sort distance
         if (t_near.x > t_far.x) std::swap(t_near.x, t_far.x);
         if (t_near.y > t_far.y) std::swap(t_near.y, t_far.y);
-
         // check
         if (t_near.x > t_far.y || t_near.y > t_far.x) return false;
 
@@ -91,30 +89,53 @@ namespace sk_physic2d {
         float t_hit_far = std::min(t_far.x, t_far.y);
 
         //* contact at oposite direction
-        if (t_hit_far <= 0) return false;
+        if (t_hit_near < 0) return false;
 
         //* contact at point farther than ray length
         if (t_hit_near > 1) return false;
+
+        //* if ray go throuh conner ( tnear.x = tnear.y ), normal = 0, collision wont resolve;
+        if (t_hit_near == t_hit_far) return false;
 
         contact_data->hit = true;
         contact_data->t_near = t_hit_near;
         contact_data->t_far = t_hit_far;
         contact_data->pos = l.pos + t_hit_near * l.dir;
-        if (t_near.x > t_near.y)
+        if (t_near.x > t_near.y) {
             if (l.dir.x < 0)
                 contact_data->normal = { 1, 0 };
             else
                 contact_data->normal = { -1, 0 };
+        }
         else if (t_near.x < t_near.y) {
             if (l.dir.y < 0)
                 contact_data->normal = { 0, 1 };
             else
                 contact_data->normal = { 0, -1 };
         }
-
-        //  if contact happen at conner ( tnear.x = tnear.y ), normal = 0, collision wont resolve;
-        //  if t_near = t_far, contact happen at conner
+        else {
+            //contact happen at conner
+            if (l.dir.y < 0)
+                contact_data->normal = { 0, 1 };
+            else
+                contact_data->normal = { 0, -1 };
+        }
         return true;
     }
+    /// @brief 
+    /// @param r1 rect1
+    /// @param r2 rect2, must be static
+    /// @param contact_data contact point,time,normal,... 
+    /// @return true when ray hit, not when 'touch'  rect
+    bool swept_rect_vs_rect(const rect& r1, const rect& r2, contact* contact_data, const float& delta_time) {
+        //* default, hit=false
+        *contact_data = { false,r1.center() + r1.velocity * delta_time,glm::vec2(0),1 };
 
+        if (r1.velocity == glm::vec2(0)) return false;
+
+        ray r1_srink(r1.center(), r1.velocity * delta_time);
+        rect r2_expand(r2.pos - r1.size / 2.0f, r2.size + r1.size);
+
+        return ray_vs_rect(r1_srink, r2_expand, contact_data);
+    }
 }

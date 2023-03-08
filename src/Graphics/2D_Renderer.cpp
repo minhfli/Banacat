@@ -10,71 +10,72 @@
 #include "Shader.h"
 
 namespace sk_graphic {
-    static const size_t maxQuadCounts = 10000;
-    static const size_t maxQuadVertexCounts = maxQuadCounts * 4;
-    static const size_t maxQuadInDexCounts = maxQuadCounts * 6;
+    namespace { //private section
+        static const size_t maxQuadCounts = 10000;
+        static const size_t maxQuadVertexCounts = maxQuadCounts * 4;
+        static const size_t maxQuadInDexCounts = maxQuadCounts * 6;
 
-    static const size_t maxLineCounts = 30000;
-    static const size_t maxLineVertexCounts = maxLineCounts * 2; //* lines dont need index and texture
-    static float line_width = 0.1f; //* line width is in normalized screeen coordinate not world corrdinate
+        static const size_t maxLineCounts = 30000;
+        static const size_t maxLineVertexCounts = maxLineCounts * 2; //* lines dont need index and texture
+        static const float line_width = 0.1f; //* line width is in normalized screeen coordinate not world corrdinate
 
-    static const size_t maxTextureCounts = 32; //! This can change on different computer
+        static const size_t maxTextureCounts = 32; //! This can change on different computer
 
-    /*
-        ?Quad vertex order
-        *   2       3
-        *
-        *   0       1
+        /*
+            ?Quad vertex order
+            *   2       3
+            *
+            *   0       1
 
-        ?Texture uv oder (xy)
-        *   00      10
-        *
-        *   01      11
-    */
-    struct RenderData {
-        int screen_w, screen_h;
+            ?Texture uv oder (xy)
+            *   00      10
+            *
+            *   01      11
+        */
+        struct RenderData {
+            int screen_w, screen_h;
 
-        Camera* cam_object;
+            Camera* cam_object;
 
-        GLuint Texture_slot[maxTextureCounts];
-        Texture2D default_tex;
+            GLuint Texture_slot[maxTextureCounts];
+            Texture2D default_tex;
 
-        struct quad_data {
-            VertexArray vao;
-            VertexBuffer vbo;
-            IndexBuffer ebo;
-            struct vertex {
-                glm::vec3 pos;
-                glm::vec4 color = glm::vec4(1);
-                glm::vec2 uv;     //? texture coord
-                GLuint texture;   //? texture index
-            };
-            vertex* vertices = nullptr;
-            GLSLprogram shader;
-            GLuint vertex_count = 0;
-            GLuint index_count = 0;
-        }quad;
+            struct quad_data {
+                VertexArray vao;
+                VertexBuffer vbo;
+                IndexBuffer ebo;
+                struct vertex {
+                    glm::vec3 pos;
+                    glm::vec4 color = glm::vec4(1);
+                    glm::vec2 uv;     //? texture coord
+                    GLuint texture;   //? texture index
+                };
+                vertex* vertices = nullptr;
+                GLSLprogram shader;
+                GLuint vertex_count = 0;
+                GLuint index_count = 0;
+            }quad;
 
-        struct line_data {
-            VertexArray vao;
-            VertexBuffer vbo;
-            struct vertex {
-                glm::vec3 pos;
-                glm::vec4 color = glm::vec4(1);
-            };
-            vertex* vertices = nullptr;
-            GLSLprogram shader;
-            GLuint vertex_count = 0;
-        }line;
+            struct line_data {
+                VertexArray vao;
+                VertexBuffer vbo;
+                struct vertex {
+                    glm::vec3 pos;
+                    glm::vec4 color = glm::vec4(1);
+                };
+                vertex* vertices = nullptr;
+                GLSLprogram shader;
+                GLuint vertex_count = 0;
+            }line;
 
 
-    };
-    static RenderData rdata;
+        };
+        static RenderData rdata;
 
-    typedef RenderData::quad_data::vertex quad_vertex;
-    typedef RenderData::line_data::vertex line_vertex;
-
-    //! Temporary
+        typedef RenderData::quad_data::vertex quad_vertex;
+        typedef RenderData::line_data::vertex line_vertex;
+    }
+        //! Temporary
     void Renderer2D_GetCam(Camera* cam) {
         rdata.cam_object = cam;
     }

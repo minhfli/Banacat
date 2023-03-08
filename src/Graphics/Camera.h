@@ -28,4 +28,10 @@ class Camera {
     void ProjectionO(float size, int width, int height);
 
     void CamMatrix(GLSLprogram& shader);
+
+    //? NDC: normalize device coordinate
+    //? SRC: screen           coordinate
+    //? WC : world            coordinate
+    glm::vec3 Screen_To_World(const glm::vec2& pos, const glm::vec2& src_size) const;
+    //glm::vec3 WorldToScreen(glm::vec3 pos);
 };

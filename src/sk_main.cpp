@@ -1,4 +1,5 @@
-#include "Main_Game.h"
+#include "sk_main.h"
+#include <sk_game.h>
 
 #include "Graphics/VAO.h"
 #include "Graphics/VBO.h"
@@ -9,6 +10,8 @@
 #include "Graphics/2D_Renderer.h"
 
 #include "Window/skWindow.h"
+#include "Window/Input.h"
+
 #include "Physics/Test.h"
 
 #include <STB/stb_image.h>
@@ -18,30 +21,19 @@
 namespace sk_main {
     int window_w = 800, window_h = 600;
 
-    /*
-    ? SDL_keystate only contain 0 and 1
-    ? SK _keystate have 4 state
-    ? -------- 0 key is not pressed
-    ? -------- 1 key is pressed
-    ? -------- 2 key is just pressed
-    ? -------- 3 key is just released
-    */
-    const Uint8* SDL_keystate; //= SDL_GetKeyboardState(NULL); 
-    Uint8 SK_keystate[100];
-
     Camera cam;//*
 
     void Init() {
-        out();
-        sk_window_init("SDL window", window_w, window_h);
+        sk_window::Init("SDL window", window_w, window_h);
 
         //? stbi will now read image from bottom to top
         //stbi_set_flip_vertically_on_load(1);
 
         sk_graphic::Renderer2D_Init();
 
-        //? get the pointer to keyboard state
-        SDL_keystate = SDL_GetKeyboardState(NULL);
+        sk_input::Init();
+
+        sk_game::Init();
     }
 
     void Run() {
@@ -54,32 +46,24 @@ namespace sk_main {
         GLuint current_tick = SDL_GetTicks(), delta_tick;
 
         sk_physic2d::Setup();
-        while (!sk_window_should_close()) {
-            sk_window_process_event();
+        while (!sk_window::Should_close()) {
+            sk_window::Process_event();
 
             delta_tick = SDL_GetTicks() - current_tick;
             float fps = (float)1000 / delta_tick;
             current_tick += delta_tick;
 
-            //glm::mat4 model2 = glm::rotate(model, glm::radians((float)current_tick / 10), glm::vec3());
-            //shader.SetMatrix4("transform", model2, 1);
-
             Update(delta_tick);
 
-            sk_window_clear();
+            sk_window::Clear();
 
             Draw();
-            sk_graphic::Renderer2D_End();
 
-            sk_window_swapbuffer();
+            sk_window::Swapbuffer();
 
-            //! std::cout reduce fps so this is not the fps
+            //! std::cout reduce fps so this is not the actual fps
             //std::cout << delta_tick << " " << fps << '\n';
-
-            if (delta_tick < 10) SDL_Delay(10 - delta_tick);
         }
-
-        sk_graphic::Renderer2D_ShutDown();
     }
 
     void Awake() {}
@@ -92,32 +76,42 @@ namespace sk_main {
         const float delta_time = (float)delta_tick / 1000;
 
         //std::cout << (int)SDL_keystate[SDL_SCANCODE_A];
-        if (SDL_keystate[SDL_SCANCODE_A]) cam.position += glm::vec3(-1, 0, 0) * delta_time * 5.0f;
-        if (SDL_keystate[SDL_SCANCODE_D]) cam.position += glm::vec3(1, 0, 0) * delta_time * 5.0f;
-        if (SDL_keystate[SDL_SCANCODE_W]) cam.position += glm::vec3(0, 1, 0) * delta_time * 5.0f;
-        if (SDL_keystate[SDL_SCANCODE_S]) cam.position += glm::vec3(0, -1, 0) * delta_time * 5.0f;
+        if (sk_input::Key(sk_key::A)) cam.position += glm::vec3(-1, 0, 0) * delta_time * 5.0f;
+        if (sk_input::Key(sk_key::D)) cam.position += glm::vec3(1, 0, 0) * delta_time * 5.0f;
+        if (sk_input::Key(sk_key::W)) cam.position += glm::vec3(0, 1, 0) * delta_time * 5.0f;
+        if (sk_input::Key(sk_key::S)) cam.position += glm::vec3(0, -1, 0) * delta_time * 5.0f;
 
-        sk_physic2d::Update(delta_tick);
+        sk_physic2d::Update(delta_tick, cam);
     }
 
     void Draw() {
+        sk_graphic::Renderer2D_Begin();
         sk_physic2d::Draw();
-        int n = 10;
-        /*for (int i = -n;i <= n; i++)
+
+        glm::vec3 mouse_world_pos = cam.Screen_To_World(sk_input::MousePos(), glm::vec2(800, 600));
+
+        sk_graphic::Renderer2D_AddDotX(mouse_world_pos);
+
+        /*int n = 10;
+        for (int i = -n;i <= n; i++)
             for (int j = -n;j <= n; j++) {
                 if ((i + j) % 2 == 0)
-                    sk_graphic::Renderer2D_AddQuad(glm::vec3(i, j, 0), glm::vec2(1));
+                    sk_graphic::Renderer2D_AddQuad(glm::vec3(i, j, -1), glm::vec2(1));
                 sk_graphic::Renderer2D_AddLine(glm::vec3(i, j, 1), glm::vec2(0.5f));
 
             }*/
-        sk_graphic::Renderer2D_AddDotX(glm::vec3(0));
-        sk_graphic::Renderer2D_AddDotO(glm::vec3(0));
+        //sk_graphic::Renderer2D_AddDotX(glm::vec3(0));
+        //sk_graphic::Renderer2D_AddDotO(glm::vec3(0));
         //sk_graphic::Renderer2D_AddLine(glm::vec3(0, 0, 1), glm::vec2(10));
 
         //sk_graphic::Renderer2D_AddQuad(glm::vec3(1), glm::vec2(30));
+        sk_graphic::Renderer2D_End();
     }
 
     void Quit() {
+        sk_graphic::Renderer2D_ShutDown();
+        sk_window::ShutDown();
+        sk_input::ShutDown();
         SDL_Delay(500);
         SDL_Quit();
     }

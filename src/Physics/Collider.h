@@ -18,6 +18,9 @@ namespace  sk_physic2d {
         inline glm::vec2 center() const {
             return glm::vec2(pos + size / 2.0f);
         }
+        inline void set_center(const glm::vec2& c) {
+            pos = c - size / 2.0f;
+        }
     };
     struct circle {
         glm::vec2 pos = glm::vec2(0);
@@ -70,10 +73,6 @@ namespace  sk_physic2d {
         glm::vec2 normal;   //? contact normal
         float t_near = 0;
         float t_far = 0;
-                            //? hit time (0-1) 
-                                //? only for swept aabb collision 
-                                //? not gametime
-                                //? collider pos: 
-                                    //* pos + vel * game.deltatime * t_hit
+        //? time till collide (realtime)
     };
 }

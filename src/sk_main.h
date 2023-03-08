@@ -26,6 +26,4 @@ namespace sk_main {
     //void FixedUpdate();
 
     void Quit();
-
-    inline void out() { std::cout << "b\a\n"; }
 }

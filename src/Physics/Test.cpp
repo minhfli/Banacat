@@ -3,20 +3,34 @@
 
 namespace sk_physic2d {
 
-    rect box(glm::vec2(-2), glm::vec2(6, 2));
-    ray  line(glm::vec2(-3, -4), glm::vec2(6, 3));
+    rect sbox(glm::vec2(-1), glm::vec2(6, 2));
+    rect dbox(glm::vec2(-3), glm::vec2(1, 1));
     contact contact_data;
     void Setup() {
-        ray_vs_rect(line, box, &contact_data);
+        swept_rect_vs_rect(dbox, sbox, &contact_data, 1);
 
     }
-    void Update(uint32_t delta_time) {
+    void Update(uint32_t delta_time, Camera& cam) {
+        glm::vec3 mouse_pos = cam.Screen_To_World(sk_input::MousePos(), glm::vec2(800, 600));
+        dbox.velocity.x = mouse_pos.x - dbox.center().x;
+        dbox.velocity.y = mouse_pos.y - dbox.center().y;
+
+        if (sk_input::Key(sk_key::SPACE)) {
+            dbox.set_center(glm::vec2(mouse_pos.x, mouse_pos.y));
+        }
+        swept_rect_vs_rect(dbox, sbox, &contact_data, 1);
     }
     void Draw() {
-        sk_graphic::Renderer2D_AddLine(glm::vec3(line.pos, 1), line.dir, glm::vec4(1, 1, 0, 1));
-        sk_graphic::Renderer2D_AddLBox(glm::vec3(box.pos, 0), box.size, glm::vec4(0, 1, 0, 1));
+        sk_graphic::Renderer2D_AddLine(glm::vec3(dbox.center(), 1), dbox.velocity, glm::vec4(1, 1, 0, 1));
+
+        sk_graphic::Renderer2D_AddLBox(glm::vec3(dbox.pos, 0), dbox.size, glm::vec4(0, 1, 0, 1));
+        sk_graphic::Renderer2D_AddLBox(glm::vec3(sbox.pos, 0), sbox.size, glm::vec4(0, 1, 0, 1));
         if (contact_data.hit) {
             sk_graphic::Renderer2D_AddDotX(glm::vec3(contact_data.pos, 2));
+            sk_graphic::Renderer2D_AddLBox(
+                glm::vec3(contact_data.pos - dbox.size / 2.0f, 0),
+                dbox.size,
+                glm::vec4(0, 1, 0, 1));
             sk_graphic::Renderer2D_AddLine(glm::vec3(contact_data.pos, 1), contact_data.normal);
         }
     }

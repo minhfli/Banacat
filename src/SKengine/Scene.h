@@ -2,26 +2,18 @@
 
 #include <string>
 
-#include "Time.h"
 #include "Tilemap.h"
 
-class Scene
-{
-    private:
-        /* data */
+class Scene {
     public:
-    Scene();
-    ~Scene();
+    virtual void OnCreate() = 0; // Called when scene initially created. Called once per scene.
+    virtual void OnDestroy() = 0; // Called when scene destroyed. Called once per scene.
 
-    //?load all game object here
-    void OnActive();
+    virtual void OnActivate() {}; // Called whenever a scene is activated.
+    virtual void OnDeactivate() {}; // Called whenever a scene is deactivated.
 
-    //?unload all game object here
-    void OnDeactive();
-
-    void Start();
-    void Update();
-    void Draw();
-    void FixedUpdate();
-
+    virtual void Update(const float& delta_time) {};
+    virtual void Update_Late(const float& delta_time) {};
+    virtual void Update_Fixed(const float& delta_time) {};
+    virtual void Draw() {};
 };
