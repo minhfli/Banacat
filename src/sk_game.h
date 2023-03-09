@@ -4,6 +4,7 @@
 
     ONLY ADD OR CHANGE FUNTION IF YOU KNOW WHAT YOU ARE DOING
 */
+
 namespace sk_game {
     const int default_screen_width = 800;
 
@@ -13,9 +14,9 @@ namespace sk_game {
 
     void Start();
 
-    void UpdateN(const int delta_tick, const float delta_time);
-    void UpdateL(const int delta_tick, const float delta_time);
-    void UpdateF(const int delta_tick, const float delta_time);
+    void UpdateN();
+    void UpdateL();
+    void UpdateF();
 
     void Draw();
 }

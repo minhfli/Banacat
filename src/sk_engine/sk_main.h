@@ -15,9 +15,10 @@ namespace sk_main {
 
     void Quit();
 
-    void GameLoop(const int delta_tick, const float delta_time);
+    void GameLoop();
+
     //! Temporary, remove in future
 
     void Draw();
-    void Update(const int& delta_tick);
+    void Update();
 }

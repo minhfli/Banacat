@@ -1,11 +1,8 @@
 #include "sk_main.h"
 #include <sk_game.h>
 
-#include "Graphics/VAO.h"
-#include "Graphics/VBO.h"
-#include "Graphics/EBO.h"
-#include "Graphics/Shader.h"
-#include "Graphics/Texture2D.h"
+#include "Common/sk_time.h"
+
 #include "Graphics/Camera.h"
 #include "Graphics/2D_Renderer.h"
 
@@ -43,8 +40,6 @@ namespace sk_main {
 
         sk_graphic::Renderer2D_GetCam(&cam);
 
-        GLuint current_tick = SDL_GetTicks();
-
         //! skphysic test.cpp
         sk_physic2d::Setup();
 
@@ -56,13 +51,14 @@ namespace sk_main {
             sk_graphic::Renderer2D_Begin();
 
             //calculate deltatick and deltatime
-            int delta_tick = SDL_GetTicks() - current_tick;
-            float delta_time = (float)delta_tick / 1000;
-            current_tick += delta_tick;
+            sk_time::delta_tick = SDL_GetTicks() - sk_time::current_tick;
+            sk_time::delta_time = (float)sk_time::delta_tick / 1000;
+            sk_time::current_tick += sk_time::delta_tick;
+            sk_time::current_time = (float)sk_time::current_tick / 1000;
+            std::cout << sk_time::delta_time << '\n';
+            GameLoop();
 
-            GameLoop(delta_tick, delta_time);
-
-            Update(delta_tick);
+            Update();
             Draw();
 
             sk_graphic::Renderer2D_End();
@@ -77,26 +73,22 @@ namespace sk_main {
         SDL_Quit();
     }
 
-    void GameLoop(const int delta_tick, const float delta_time) {
-        sk_game::UpdateN(delta_tick, delta_time);
+    void GameLoop() {
+        sk_game::UpdateN();
         sk_game::Draw();
-        sk_game::UpdateL(delta_tick, delta_time);
+        sk_game::UpdateL();
     }
 
 
-    void Update(const int& delta_tick) {
-        //? 1 tick = 1/1000 second
-        //? -> deltatime = deltatick/1000;
-        const float delta_time = (float)delta_tick / 1000;
-
+    void Update() {
         //std::cout << (int)SDL_keystate[SDL_SCANCODE_A];
-        if (sk_input::Key(sk_key::A)) cam.position += glm::vec3(-1, 0, 0) * delta_time * 5.0f;
-        if (sk_input::Key(sk_key::D)) cam.position += glm::vec3(1, 0, 0) * delta_time * 5.0f;
-        if (sk_input::Key(sk_key::W)) cam.position += glm::vec3(0, 1, 0) * delta_time * 5.0f;
-        if (sk_input::Key(sk_key::S)) cam.position += glm::vec3(0, -1, 0) * delta_time * 5.0f;
+        if (sk_input::Key(sk_key::A)) cam.position += glm::vec3(-1, 0, 0) * sk_time::delta_time * 5.0f;
+        if (sk_input::Key(sk_key::D)) cam.position += glm::vec3(1, 0, 0) * sk_time::delta_time * 5.0f;
+        if (sk_input::Key(sk_key::W)) cam.position += glm::vec3(0, 1, 0) * sk_time::delta_time * 5.0f;
+        if (sk_input::Key(sk_key::S)) cam.position += glm::vec3(0, -1, 0) * sk_time::delta_time * 5.0f;
 
         //! skphysic test.cpp
-        sk_physic2d::Update(delta_tick, cam);
+        sk_physic2d::Update(sk_time::delta_tick, cam);
     }
 
     void Draw() {

@@ -2,33 +2,43 @@
 #include <Scene/SceneManager.h>
 /*
     WRITE ALL GAME LOGIC HERE
+    all update and draw funtion is called in gameloop function in sk_engine/sk_main.cpp
 
-    Dont think or care about fixed update, just dont
+    update funtion has delta_tick and delta_time(seconds)
+    1000 tick = 1 second
+    use delta_tick when you need true time(animation and stuff)
 */
 namespace sk_game {
-    void Init() {
-        sk_scene_manager::Setup();
+    enum class GameState {
+        NONE,
 
-        //load splash scene when game start
-        //sk_scene_manager::LoadScene(SceneState::SPLASH, 0);
+        SPLASH_SCREEN,
+
+        MENU_MAIN,
+        MENU_OPTION,
+
+        GAME_PLAY
+
+    }game_state = GameState::NONE;
+    void Init() {
     }
 
     void Start() {}
 
     //? normal update, call before draw
-    void UpdateN(const int delta_tick, const float delta_time) {
+    void UpdateN() {
 
     }
     //? late update, call after draw
-    void UpdateL(const int delta_tick, const float delta_time) {
+    void UpdateL() {
 
     }
 
-    void Draw() { sk_scene_manager::Draw(); }
+    void Draw() {}
 
-    //! SCREW THIS
 
-    /// @brief fixed update, called after every fixed amount of time(not implemented)
-    void UpdateF(const int delta_tick, const float delta_time) { sk_scene_manager::UpdateF(delta_tick, delta_time); }
+    //! NOT IMPLEMENTED 
+    //? fixed update, called after every fixed amount of time(not implemented)
+    void UpdateF() { }
 
 }
