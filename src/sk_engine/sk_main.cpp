@@ -43,34 +43,48 @@ namespace sk_main {
 
         sk_graphic::Renderer2D_GetCam(&cam);
 
-        GLuint current_tick = SDL_GetTicks(), delta_tick;
+        GLuint current_tick = SDL_GetTicks();
 
+        //! skphysic test.cpp
         sk_physic2d::Setup();
+
+        sk_game::Start();
         while (!sk_window::Should_close()) {
             sk_window::Process_event();
-
-            delta_tick = SDL_GetTicks() - current_tick;
-            float fps = (float)1000 / delta_tick;
-            current_tick += delta_tick;
-
-            Update(delta_tick);
-
             sk_window::Clear();
 
+            sk_graphic::Renderer2D_Begin();
+
+            //calculate deltatick and deltatime
+            int delta_tick = SDL_GetTicks() - current_tick;
+            float delta_time = (float)delta_tick / 1000;
+            current_tick += delta_tick;
+
+            GameLoop(delta_tick, delta_time);
+
+            Update(delta_tick);
             Draw();
 
+            sk_graphic::Renderer2D_End();
             sk_window::Swapbuffer();
-
-            //! std::cout reduce fps so this is not the actual fps
-            //std::cout << delta_tick << " " << fps << '\n';
         }
     }
+    void Quit() {
+        sk_graphic::Renderer2D_ShutDown();
+        sk_window::ShutDown();
+        sk_input::ShutDown();
+        SDL_Delay(500);
+        SDL_Quit();
+    }
 
-    void Awake() {}
+    void GameLoop(const int delta_tick, const float delta_time) {
+        sk_game::UpdateN(delta_tick, delta_time);
+        sk_game::Draw();
+        sk_game::UpdateL(delta_tick, delta_time);
+    }
 
-    void Start() {}
 
-    void Update(const int delta_tick) {
+    void Update(const int& delta_tick) {
         //? 1 tick = 1/1000 second
         //? -> deltatime = deltatick/1000;
         const float delta_time = (float)delta_tick / 1000;
@@ -81,11 +95,11 @@ namespace sk_main {
         if (sk_input::Key(sk_key::W)) cam.position += glm::vec3(0, 1, 0) * delta_time * 5.0f;
         if (sk_input::Key(sk_key::S)) cam.position += glm::vec3(0, -1, 0) * delta_time * 5.0f;
 
+        //! skphysic test.cpp
         sk_physic2d::Update(delta_tick, cam);
     }
 
     void Draw() {
-        sk_graphic::Renderer2D_Begin();
         sk_physic2d::Draw();
 
         glm::vec3 mouse_world_pos = cam.Screen_To_World(sk_input::MousePos(), glm::vec2(800, 600));
@@ -105,14 +119,6 @@ namespace sk_main {
         //sk_graphic::Renderer2D_AddLine(glm::vec3(0, 0, 1), glm::vec2(10));
 
         //sk_graphic::Renderer2D_AddQuad(glm::vec3(1), glm::vec2(30));
-        sk_graphic::Renderer2D_End();
     }
 
-    void Quit() {
-        sk_graphic::Renderer2D_ShutDown();
-        sk_window::ShutDown();
-        sk_input::ShutDown();
-        SDL_Delay(500);
-        SDL_Quit();
-    }
 }

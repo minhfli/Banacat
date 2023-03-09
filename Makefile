@@ -18,7 +18,7 @@ INCS =
 SRC = $(call rwildcard,src,*.cpp)
 #NODIR_SRC = $(notdir $(SRC))
 OBJS = $(addprefix $(DIR_OBJ)/, $(SRC:cpp=o)) # obj/xxx.o obj/folder/xxx .o
-INC_DIRS = -Isrc -Ivendor/include
+INC_DIRS = -Isrc -Ivendor/include -Isrc/sk_engine
 
 LIBS = 
 LIB_DIRS = 

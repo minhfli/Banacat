@@ -34,7 +34,8 @@ namespace sk_input {
             -------- 3 key is pressed and repeated
         */
         struct mouse_data {
-            int x = 0, y = 0;
+            glm::ivec2  screen_pos;
+            glm::vec3 world_pos;
         }mouse;
     }
     void Init() {
@@ -47,7 +48,8 @@ namespace sk_input {
             SK_keystate[i] |= SDL_keystate[i];  //? += sdl keystate    
             SK_keystate[i] &= 3;                //? %=4
         }
-        SDL_GetMouseState(&mouse.x, &mouse.y);
+        SDL_GetMouseState(&mouse.screen_pos.x, &mouse.screen_pos.y);
+
     }
 
     //* keyboard
@@ -63,7 +65,7 @@ namespace sk_input {
 
     //* mouse
     glm::vec2 MousePos() {
-        return glm::vec2(mouse.x, mouse.y);
+        return mouse.screen_pos;
     }
 }
 #undef bit(i,j)

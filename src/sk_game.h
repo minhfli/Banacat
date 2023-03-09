@@ -7,14 +7,15 @@
 namespace sk_game {
     const int default_screen_width = 800;
 
+    const int fixed_delta_tick = 50;
 
     void Init();
 
     void Start();
 
-    void Update(const float& delta_time);
-    void Update_Late(const float& delta_time);
-    void Update_Fixed(const float& delta_time);
+    void UpdateN(const int delta_tick, const float delta_time);
+    void UpdateL(const int delta_tick, const float delta_time);
+    void UpdateF(const int delta_tick, const float delta_time);
 
     void Draw();
 }

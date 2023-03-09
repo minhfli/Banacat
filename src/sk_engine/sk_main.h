@@ -13,17 +13,11 @@ namespace sk_main {
 
     void Run();
 
-    void Awake();
+    void Quit();
 
-    void Start();
-
-    void Update(const int delta_tick);
+    void GameLoop(const int delta_tick, const float delta_time);
+    //! Temporary, remove in future
 
     void Draw();
-
-    //void LateUpdate();
-
-    //void FixedUpdate();
-
-    void Quit();
+    void Update(const int& delta_tick);
 }
