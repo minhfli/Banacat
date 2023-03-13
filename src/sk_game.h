@@ -19,4 +19,6 @@ namespace sk_game {
     void UpdateF();
 
     void Draw();
+
+    void Stop();
 }

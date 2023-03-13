@@ -24,5 +24,5 @@ namespace sk_graphic {
     void Renderer2D_FlushLines();
 
     //! Temporary
-    void Renderer2D_GetCam(Camera* cam);
+    Camera* Renderer2D_GetCam();
 }

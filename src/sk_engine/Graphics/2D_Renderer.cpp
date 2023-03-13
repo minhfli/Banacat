@@ -35,7 +35,7 @@ namespace sk_graphic {
         struct RenderData {
             int screen_w, screen_h;
 
-            Camera* cam_object;
+            Camera cam;
 
             GLuint Texture_slot[maxTextureCounts];
             Texture2D default_tex;
@@ -76,8 +76,8 @@ namespace sk_graphic {
         typedef RenderData::line_data::vertex line_vertex;
     }
         //! Temporary
-    void Renderer2D_GetCam(Camera* cam) {
-        rdata.cam_object = cam;
+    Camera* Renderer2D_GetCam() {
+        return &rdata.cam;
     }
 
     void Setup_quad_batch() {
@@ -233,7 +233,7 @@ namespace sk_graphic {
         //std::cout << "flush\n";
         //std::cout << rdata.vertex_count << " " << rdata.index_count << '\n';
 
-        rdata.cam_object->CamMatrix(rdata.quad.shader);
+        rdata.cam.CamMatrix(rdata.quad.shader);
         rdata.quad.shader.Use();
         rdata.quad.vao.Bind();
         rdata.quad.vbo.Bind();
@@ -261,9 +261,9 @@ namespace sk_graphic {
     void Renderer2D_FlushLines() {
         //std::cout << rdata.line.vertex_count << '\n';
 
-        rdata.cam_object->CamMatrix(rdata.line.shader);
+        rdata.cam.CamMatrix(rdata.line.shader);
         rdata.line.shader.Use();
-        rdata.line.shader.SetFloat("u_screen_aspect", rdata.cam_object->aspect);
+        rdata.line.shader.SetFloat("u_screen_aspect", rdata.cam.aspect);
 
         rdata.line.vao.Bind();
         rdata.line.vbo.Bind();

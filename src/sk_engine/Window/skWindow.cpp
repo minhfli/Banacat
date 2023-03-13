@@ -53,6 +53,11 @@ namespace sk_window {
                 case SDL_QUIT:
                     window_should_close = true;
                     break;
+                case SDL_KEYDOWN:
+                    if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
+                        window_should_close = true;
+                    break;
+
                 default:
                     break;
             }
