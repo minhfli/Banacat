@@ -16,7 +16,7 @@ namespace sk_graphic {
 
         Texture2D();
 
-        void load(const std::string path);
+        void Load(const std::string path);
         void Bind(GLuint slot);
         //void UnBind(GLuint slot);
         void Delete();

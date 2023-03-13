@@ -51,9 +51,7 @@ namespace sk_game {
         sk_physic2d::Update(sk_time::delta_tick, *cam);
     }
     //? late update, call after draw
-    void UpdateL() {
-
-    }
+    void UpdateL() {}
 
     void Draw() {
         sk_physic2d::Draw();
@@ -61,16 +59,6 @@ namespace sk_game {
         glm::vec3 mouse_world_pos = cam->Screen_To_World(sk_input::MousePos(), glm::vec2(800, 600));
 
         sk_graphic::Renderer2D_AddDotX(mouse_world_pos);
-
-        // game run at about 270 fps when draw about 10000 quads 
-        // n = 200, fps around 60
-        /*
-        int n = 200;
-        for (int i = -n;i <= n; i++)
-            for (int j = -n;j <= n; j++) {
-                sk_graphic::Renderer2D_AddQuad(glm::vec3(i, j, -1), glm::vec2(1));
-            }
-        */
     }
 
 

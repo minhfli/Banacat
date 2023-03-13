@@ -2,12 +2,21 @@
 
 #include <STB/stb_image.h>
 #include <iostream>
-#include <Common/Error.h>
+#include <Common/Common.h>
 
 namespace sk_graphic {
     Texture2D::Texture2D() {}
 
-    void Texture2D::load(const std::string path) {
+    void Texture2D::Load(const std::string path) {
+
+        // check if file name path is loaded ?
+        // if yes copy texture data to this 
+        // if no  create new texture data
+        Texture2D* new_texture;
+        if (File_Manager::find_string_p(path, (void**)&new_texture)) {
+            *this = *new_texture;
+            return;
+        }
 
         //?load image data
         int width, height, Channels;
@@ -40,6 +49,9 @@ namespace sk_graphic {
 
         //? free image data
         stbi_image_free(data);
+
+        new_texture = new Texture2D(*this);
+        File_Manager::add_string_p(path, (void**)&new_texture);
 
         //?return texture id
         //return ID;

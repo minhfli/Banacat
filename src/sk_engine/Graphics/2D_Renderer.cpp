@@ -163,7 +163,7 @@ namespace sk_graphic {
         Setup_line_batch();
 
         //* setup textures
-        rdata.default_tex.load("Assets/error.png");
+        rdata.default_tex.Load("Assets/error.png");
         memset(rdata.Texture_slot, rdata.default_tex.ID, sizeof(rdata.Texture_slot));
 
         rdata.default_tex.Bind(0);

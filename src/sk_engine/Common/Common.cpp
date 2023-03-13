@@ -1,18 +1,21 @@
 #include <iostream>
 #include <fstream>
-#include <SDL2/SDL.h>
 
-#include "Error.h"
+#include "Common.h"
 
+//-----------------------------------------------------------------------------------
 void FatalError(std::string string) {
     std::cout << string << '\n';
-    SDL_Quit();
     system("PAUSE");
-    exit(0);
+    exit(1);
+}
+
+void Error(std::string string) {
+    std::cout << string << '\n';
 }
 
 
-#include "ReadFile.h"
+//-----------------------------------------------------------------------------------
 std::string ReadTextFile(const std::string path) {
     std::string return_string;
     std::ifstream file(path);
