@@ -14,7 +14,4 @@ namespace sk_graphic {
 
     //void draw_sprite(const Sprite2D& sprite, const glm::vec3& pos = glm::vec3(0)) {}
 
-    inline void Sprite2D::Draw(const glm::vec3& pos, const glm::vec4& color) {
-        Renderer2D_AddQuad(pos, this->size, color);
-    }
 }

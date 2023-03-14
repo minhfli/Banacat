@@ -16,12 +16,19 @@ namespace sk_graphic {
     void Renderer2D_End();
 
     //* main function to add shapes to batch
-    void Renderer2D_AddQuad(int center_type, const glm::vec3& pos, const glm::vec2& size, const int texture_id, const glm::vec4& tex_coord, const glm::vec4& color = glm::vec4(1));
-    void Renderer2D_AddQuad(int center_type, const glm::vec3& pos, const glm::vec2& size, const glm::vec4& color = glm::vec4(1));
+
+    /// @brief Add quad with texture
+    /// @param pos 
+    /// @param size 
+    /// @param id texture id
+    /// @param uv texture coordinate
+    /// @param color 
+    void Renderer2D_AddQuad(const glm::vec3& pos, const glm::vec2& size, const int id, const glm::vec4& uv, const glm::vec4& color = glm::vec4(1));
+    void Renderer2D_AddQuad(const glm::vec3& pos, const glm::vec2& size, const glm::vec4& color = glm::vec4(1));
     void Renderer2D_AddLine(const glm::vec3& pos, const glm::vec2& size, const glm::vec4& color = glm::vec4(1));
 
     //* some other helpful function
-    void Renderer2D_AddLBox(int center_type, const glm::vec3& pos, const glm::vec2& size, const glm::vec4& color = glm::vec4(1));
+    void Renderer2D_AddLBox(const glm::vec3& pos, const glm::vec2& size, const glm::vec4& color = glm::vec4(1));
     void Renderer2D_AddDotX(const glm::vec3& pos, const glm::vec4& color = glm::vec4(1.0f));
     void Renderer2D_AddDotO(const glm::vec3& pos, const glm::vec4& color = glm::vec4(1.0f));
 

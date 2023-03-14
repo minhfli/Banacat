@@ -66,7 +66,7 @@ namespace sk_game {
 
         for (int i = -10; i <= 10; i++)
             for (int j = -10; j <= 10; j++)
-                sk_graphic::Renderer2D_AddQuad(0, glm::vec3(i, j, -1), glm::vec2(1, 1));
+                sk_graphic::Renderer2D_AddQuad(glm::vec3(i, j, -1), glm::vec2(1, 1));
     }
 
 
