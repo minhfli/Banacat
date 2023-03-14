@@ -44,8 +44,8 @@ namespace sk_graphic {
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
 
-        this->size.x = (float)width / PIXEL_PER_UNIT;
-        this->size.y = (float)height / PIXEL_PER_UNIT;
+        this->size.x = (float)width;
+        this->size.y = (float)height;
 
         //? free image data
         stbi_image_free(data);

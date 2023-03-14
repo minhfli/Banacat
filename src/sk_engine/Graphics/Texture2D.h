@@ -12,6 +12,7 @@ namespace sk_graphic {
         GLuint ID = 0;
 
         //?size of the texture
+        /// @brief actual image size
         glm::vec2 size = glm::vec2(0);
 
         Texture2D();

@@ -191,8 +191,20 @@ namespace sk_graphic {
         if (rdata.line.vertex_count) Renderer2D_FlushLines();
         //std::cout << "frame ended";
     }
+    void Renderer2D_AddQuad(
+        int center_type,
+        const glm::vec3& pos,
+        const glm::vec2& size,
+        const int texture_id,
+        const glm::vec4& tex_coord,
+        const glm::vec4& color) {
+        if (rdata.quad.vertex_count >= maxQuadVertexCounts) {
+            Renderer2D_FlushQuads();
+        }
+        return;
+    }
 
-    void Renderer2D_AddQuad(glm::vec3 pos, glm::vec2 size, glm::vec4 color) {
+    void Renderer2D_AddQuad(int center_type, const glm::vec3& pos, const glm::vec2& size, const glm::vec4& color) {
         //std::cout << "quad added\n";
         if (rdata.quad.vertex_count >= maxQuadVertexCounts) {
             Renderer2D_FlushQuads();
@@ -232,6 +244,7 @@ namespace sk_graphic {
     void Renderer2D_FlushQuads() {
         //std::cout << "flush\n";
         //std::cout << rdata.vertex_count << " " << rdata.index_count << '\n';
+        //rdata.default_tex.Bind(0);
 
         rdata.cam.CamMatrix(rdata.quad.shader);
         rdata.quad.shader.Use();
@@ -246,7 +259,7 @@ namespace sk_graphic {
         rdata.quad.index_count = 0;
     }
 
-    void Renderer2D_AddLine(glm::vec3 pos, glm::vec2 size, glm::vec4 color) {
+    void Renderer2D_AddLine(const glm::vec3& pos, const glm::vec2& size, const glm::vec4& color) {
         if (rdata.line.vertex_count >= maxLineVertexCounts)
             Renderer2D_FlushLines();
 
@@ -274,17 +287,17 @@ namespace sk_graphic {
         rdata.line.vertex_count = 0;
     }
 
-    void Renderer2D_AddLBox(glm::vec3 pos, glm::vec2 size, glm::vec4 color) {
+    void Renderer2D_AddLBox(int center_type, const glm::vec3& pos, const glm::vec2& size, const glm::vec4& color) {
         Renderer2D_AddLine(pos, glm::vec2(size.x, 0), color);           //* bottom
         Renderer2D_AddLine(pos, glm::vec2(0, size.y), color);           //* left
         Renderer2D_AddLine(pos + glm::vec3(size, 0), glm::vec2(-size.x, 0), color);   //* top
         Renderer2D_AddLine(pos + glm::vec3(size, 0), glm::vec2(0, -size.y), color);   //* top
     }
-    void Renderer2D_AddDotX(glm::vec3 pos, glm::vec4 color) {
+    void Renderer2D_AddDotX(const glm::vec3& pos, const glm::vec4& color) {
         Renderer2D_AddLine(pos + glm::vec3(-0.2f, -0.2f, 1.0f), glm::vec2(0.4f), color);
         Renderer2D_AddLine(pos + glm::vec3(-0.2f, 0.2f, 1.0f), glm::vec2(0.4f, -0.4f), color);
     }
-    void Renderer2D_AddDotO(glm::vec3 pos, glm::vec4 color) {
-        Renderer2D_AddQuad(pos, glm::vec2(0.4), color);
+    void Renderer2D_AddDotO(const glm::vec3& pos, const glm::vec4& color) {
+        Renderer2D_AddQuad(0, pos, glm::vec2(0.4), color);
     }
 }

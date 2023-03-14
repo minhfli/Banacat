@@ -2,6 +2,8 @@
 #include <sk_engine/Graphics/2D_Renderer.h>
 #include <sk_engine/Physics/Test.h>
 #include <sk_engine/Common/sk_time.h>
+
+#include <game/TestLevel.h>
 /*
     WRITE ALL GAME LOGIC HERE
     all update and draw funtion is called in gameloop function in sk_engine/sk_main.cpp
@@ -37,6 +39,7 @@ namespace sk_game {
 
     void Start() {
         sk_physic2d::Setup();
+        test_level::LoadLevel();
     }
 
     //? normal update, call before draw
@@ -57,8 +60,13 @@ namespace sk_game {
         sk_physic2d::Draw();
 
         glm::vec3 mouse_world_pos = cam->Screen_To_World(sk_input::MousePos(), glm::vec2(800, 600));
-
         sk_graphic::Renderer2D_AddDotX(mouse_world_pos);
+
+        test_level::Draw();
+
+        for (int i = -10; i <= 10; i++)
+            for (int j = -10; j <= 10; j++)
+                sk_graphic::Renderer2D_AddQuad(0, glm::vec3(i, j, -1), glm::vec2(1, 1));
     }
 
 
