@@ -64,6 +64,48 @@ namespace sk_game {
     //? late update, call after draw
     void UpdateL() {}
 
+    void TestAdd1(int n) {
+        for (int i = -n; i <= n; i++)
+            for (int j = -n; j <= n; j++)
+                if ((i + j) % 2 == 0)
+                    sk_graphic::Renderer2D_AddQuad(
+                        glm::vec3(i, j, -1),
+                        glm::vec2(1, 1),
+                        glm::vec4(0, 0, 16, 16),
+                        glm::vec4(1),
+                        &player
+                    );
+                else
+                    sk_graphic::Renderer2D_AddQuad(
+                        glm::vec3(i, j, -1),
+                        glm::vec2(1, 1),
+                        glm::vec4(0, 0, 16, 16),
+                        glm::vec4(1),
+                        &m_sprite
+                    );
+    }
+    void TestAdd2(int n) {
+        for (int i = -n; i <= n; i++)
+            for (int j = -n; j <= n; j++)
+                if ((i + j) % 2 == 0)
+                    sk_graphic::Renderer2D_AddQuad(
+                        glm::vec3(i, j, -1),
+                        glm::vec2(1, 1),
+                        glm::vec4(0, 0, 16, 16),
+                        glm::vec4(1),
+                        &player
+                    );
+        for (int i = -n; i <= n; i++)
+            for (int j = -n; j <= n; j++)
+                if ((i + j) % 2 != 0)
+                    sk_graphic::Renderer2D_AddQuad(
+                        glm::vec3(i, j, -1),
+                        glm::vec2(1, 1),
+                        glm::vec4(0, 0, 16, 16),
+                        glm::vec4(1),
+                        &m_sprite
+                    );
+    }
     void Draw() {
         sk_physic2d::Draw();
 
@@ -72,17 +114,13 @@ namespace sk_game {
 
         test_level::Draw();
 
-        for (int i = -10; i <= 10; i++)
-            for (int j = -10; j <= 10; j++)
-                if ((i + j) % 2 == 0)
-                    sk_graphic::Renderer2D_AddQuad(glm::vec3(2 * i, 2 * j, -1), glm::vec2(1, 1), player.ID, glm::vec4(0, 0, 1, 1));
-                else
-                    sk_graphic::Renderer2D_AddQuad(glm::vec3(2 * i, 2 * j, -1), glm::vec2(1, 1), m_sprite.ID, glm::vec4(0, 0, 1, 1));
+        TestAdd1(32);
+        //TestAdd2();
     }
 
 
-    //! NOT IMPLEMENTED 
-    //? fixed update, called after every fixed amount of time(not implemented)
+//! NOT IMPLEMENTED 
+//? fixed update, called after every fixed amount of time(not implemented)
     void UpdateF() { }
 
     //? call when game stop, use to free data, save, ....

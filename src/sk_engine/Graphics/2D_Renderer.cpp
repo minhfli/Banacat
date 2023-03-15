@@ -25,9 +25,6 @@ namespace sk_graphic {
             int screen_w, screen_h;
 
             Camera cam;
-
-            int texture_count = 1;
-            GLuint Texture_slot[maxTextureCounts];
             Texture2D default_tex;
 
             struct quad_data {
@@ -37,13 +34,14 @@ namespace sk_graphic {
                 struct vertex {
                     glm::vec3 pos;
                     glm::vec4 color = glm::vec4(1);
-                    glm::vec3 uvi;     //? texture coord and id
-                    float tex_id;   //? texture index in the rdata's texture array, not the id of the texture
+                    glm::vec2 uv;     //? texture coord
                 };
                 vertex* vertices = nullptr;
                 GLSLprogram shader;
+                GLuint count = 0;
                 GLuint vertex_count = 0;
                 GLuint index_count = 0;
+                Texture2D* cur_texture = nullptr;
             }quad;
 
             struct line_data {
@@ -55,6 +53,7 @@ namespace sk_graphic {
                 };
                 vertex* vertices = nullptr;
                 GLSLprogram shader;
+                GLuint count = 0;
                 GLuint vertex_count = 0;
             }line;
 
@@ -87,8 +86,7 @@ namespace sk_graphic {
 
         vao.Attrib(vbo, 0, 3, GL_FLOAT, vertex_size, (void*)offsetof(quad_vertex, pos));
         vao.Attrib(vbo, 1, 4, GL_FLOAT, vertex_size, (void*)offsetof(quad_vertex, color));
-        vao.Attrib(vbo, 2, 3, GL_FLOAT, vertex_size, (void*)offsetof(quad_vertex, uvi));
-        vao.Attrib(vbo, 3, 1, GL_FLOAT, vertex_size, (void*)offsetof(quad_vertex, tex_id));
+        vao.Attrib(vbo, 2, 2, GL_FLOAT, vertex_size, (void*)offsetof(quad_vertex, uv));
 
         //* set up EBO
         GLuint offset = 0;
@@ -112,15 +110,6 @@ namespace sk_graphic {
         shader.Compile("Assets/Shaders/test.frag", GL_FRAGMENT_SHADER);
         shader.Link();
         shader.Use();
-
-        //sampler2D (see in "Assets/Shaders/test.frag" file) is just an index of opengl texture unit
-        //setup sampler2d
-        int samplers[maxTextureCounts];
-        for (int i = 0;i <= maxTextureCounts - 1; i++)
-            samplers[i] = i;
-
-        int sloc = glGetUniformLocation(shader.id, "u_texture");
-        glUniform1iv(sloc, maxTextureCounts, samplers);
     }
     void Setup_line_batch() {
         VertexArray& vao = rdata.line.vao;
@@ -161,9 +150,6 @@ namespace sk_graphic {
 
         //* setup textures
         rdata.default_tex.Load("Assets/error.png");
-        rdata.Texture_slot[0] = rdata.default_tex.ID;
-        for (int i = 0; i <= maxTextureCounts - 1; i++)
-            rdata.default_tex.Bind(i);
     }
 
     void Renderer2D_ShutDown() {
@@ -211,83 +197,74 @@ namespace sk_graphic {
         0---x---x
     */
 
-    void Renderer2D_AddQuad(const glm::vec3& pos, const glm::vec2& size, const int id, const glm::vec4& uv, const glm::vec4& color) {
-        if (rdata.quad.vertex_count >= maxQuadVertexCounts)
-            Renderer2D_FlushQuads();
+    void Renderer2D_AddQuad(
+        const glm::vec3& pos,
+        const glm::vec2& size,
+        const glm::vec4& uv,
+        const glm::vec4& color,
+        Texture2D* texture
+    ) {
+        if (texture == nullptr) texture = &rdata.default_tex;
 
-        int texture_slot_id = 0;
-        if (id != rdata.default_tex.ID) { //if not default "error" texture
-            for (int i = 1; i <= rdata.texture_count - 1;i++)
-                if (rdata.Texture_slot[i] == id) {
-                    texture_slot_id = i;
-                    break;
-                }
-            if (texture_slot_id == 0) { // if texture  is not found
-                if (rdata.texture_count >= maxTextureCounts) Renderer2D_FlushQuads();
-                rdata.Texture_slot[rdata.texture_count] = id;
-                texture_slot_id = rdata.texture_count;
-                rdata.texture_count++;
-            }
+        if (rdata.quad.vertex_count >= maxQuadVertexCounts || rdata.quad.cur_texture != texture) {
+            Renderer2D_FlushQuads();
+            rdata.quad.cur_texture = texture;
         }
 
         glm::vec2 hsize = size / 2.0f; //? half the size
 
+        rdata.quad.count++;
+        rdata.quad.index_count += 6;
 
         //* vertex 0
         rdata.quad.vertices[rdata.quad.vertex_count].pos = glm::vec3(pos.x - hsize.x, pos.y - hsize.y, pos.z);
-        rdata.quad.vertices[rdata.quad.vertex_count].uvi = glm::vec3(uv.x, uv.w, texture_slot_id);
+        rdata.quad.vertices[rdata.quad.vertex_count].uv = uv.xw();
         rdata.quad.vertices[rdata.quad.vertex_count].color = color;
-        rdata.quad.vertices[rdata.quad.vertex_count].tex_id = texture_slot_id;
         rdata.quad.vertex_count++;
 
         //* vertex 1
         rdata.quad.vertices[rdata.quad.vertex_count].pos = glm::vec3(pos.x + hsize.x, pos.y - hsize.y, pos.z);
-        rdata.quad.vertices[rdata.quad.vertex_count].uvi = glm::vec3(uv.z, uv.w, texture_slot_id);
+        rdata.quad.vertices[rdata.quad.vertex_count].uv = uv.zw();
         rdata.quad.vertices[rdata.quad.vertex_count].color = color;
-        rdata.quad.vertices[rdata.quad.vertex_count].tex_id = texture_slot_id;
         rdata.quad.vertex_count++;
 
         //* vertex 2
         rdata.quad.vertices[rdata.quad.vertex_count].pos = glm::vec3(pos.x - hsize.x, pos.y + hsize.y, pos.z);
-        rdata.quad.vertices[rdata.quad.vertex_count].uvi = glm::vec3(uv.x, uv.y, texture_slot_id);
+        rdata.quad.vertices[rdata.quad.vertex_count].uv = uv.xy();
         rdata.quad.vertices[rdata.quad.vertex_count].color = color;
-        rdata.quad.vertices[rdata.quad.vertex_count].tex_id = texture_slot_id;
         rdata.quad.vertex_count++;
 
         //* vertex 3
         rdata.quad.vertices[rdata.quad.vertex_count].pos = glm::vec3(pos.x + hsize.x, pos.y + hsize.y, pos.z);
-        rdata.quad.vertices[rdata.quad.vertex_count].uvi = glm::vec3(uv.z, uv.y, texture_slot_id);
+        rdata.quad.vertices[rdata.quad.vertex_count].uv = uv.zy();
         rdata.quad.vertices[rdata.quad.vertex_count].color = color;
-        rdata.quad.vertices[rdata.quad.vertex_count].tex_id = texture_slot_id;
         rdata.quad.vertex_count++;
-
-        rdata.quad.index_count += 6;
-
     }
 
     void Renderer2D_FlushQuads() {
+        if (rdata.quad.count == 0 || rdata.quad.cur_texture == nullptr)
+            return;
+
+        //update projection view matrix
         rdata.cam.CamMatrix(rdata.quad.shader);
+        //bind shader
         rdata.quad.shader.Use();
-
-        //std::cout << "flush\n";
-        //std::cout << rdata.vertex_count << " " << rdata.index_count << '\n';
-        for (int i = 0; i <= rdata.texture_count - 1; i++) {
-            glBindTextureUnit(i, rdata.Texture_slot[i]);
-            std::cout << rdata.Texture_slot[i] << " ";
-        }
-        std::cout << '\n';
-        // reset texture slot
-        rdata.texture_count = 1;
-
+        //bind texture
+        rdata.quad.cur_texture->Bind(0);
+        //bind stuffs
         rdata.quad.vao.Bind();
         rdata.quad.vbo.Bind();
         rdata.quad.ebo.Bind();
         rdata.quad.vbo.Upd_Data(rdata.quad.vertices, rdata.quad.vertex_count * sizeof(quad_vertex));
 
+        //draw call
         glDrawElements(GL_TRIANGLES, rdata.quad.index_count, GL_UNSIGNED_INT, 0);
 
+        rdata.quad.count = 0;
         rdata.quad.vertex_count = 0;
         rdata.quad.index_count = 0;
+
+        rdata.quad.cur_texture = nullptr;
     }
 
     void Renderer2D_AddLine(const glm::vec3& pos, const glm::vec2& size, const glm::vec4& color) {
@@ -329,6 +306,6 @@ namespace sk_graphic {
         Renderer2D_AddLine(pos + glm::vec3(-0.2f, 0.2f, 1.0f), glm::vec2(0.4f, -0.4f), color);
     }
     void Renderer2D_AddDotO(const glm::vec3& pos, const glm::vec4& color) {
-        Renderer2D_AddQuad(pos, glm::vec2(0.4), color);
+        std::cout << "Error:: Renderer2D_AddDotO not implemented";
     }
 }

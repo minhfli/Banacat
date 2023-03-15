@@ -5,15 +5,23 @@
 #include <Common/Error.h>
 
 #include <string>
-
-int  success;
-char infoLog[512];
+namespace {
+    int  success;
+    char infoLog[512];
+}
 
 void checkCompileError(GLuint shader, std::string file) {
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
     if (!success) {
         glGetShaderInfoLog(shader, 512, NULL, infoLog);
         FatalError("ERROR::SHADER::COMPILATION_FAILED\nFile: " + file + '\n' + (std::string)infoLog + '\n');
+    }
+}
+void checkLinkingError(GLuint shader) {
+    glGetProgramiv(shader, GL_LINK_STATUS, &success);
+    if (!success) {
+        glGetShaderInfoLog(shader, 512, NULL, infoLog);
+        FatalError("ERROR::SHADER::LINKING_FAILED\n" + '\n' + (std::string)infoLog + '\n');
     }
 }
 
@@ -37,6 +45,7 @@ void GLSLprogram::Compile(const std::string file, GLenum type) {
 }
 void GLSLprogram::Link() {
     glLinkProgram(id);
+    checkLinkingError(this->id);
 }
 void GLSLprogram::Use() {
     if (id == 0) FatalError("GLSLprogram program not created");
