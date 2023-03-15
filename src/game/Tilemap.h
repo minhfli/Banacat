@@ -21,6 +21,7 @@ struct Tilemap {
     // tile size is 1x1 (maybe different in  the future)
 
     // tile list, this is not a 2D array of all tiles of the tilemap, just a list of non null tiles
+    int tile_count;
     Tile_data* tiles = nullptr;
     sk_graphic::Texture2D tile_set;
 

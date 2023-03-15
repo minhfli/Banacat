@@ -4,6 +4,9 @@
 #include <sk_engine/Common/sk_time.h>
 
 #include <game/TestLevel.h>
+
+// for test mutiple texture
+#include <sk_engine/Graphics/Texture2D.h>
 /*
     WRITE ALL GAME LOGIC HERE
     all update and draw funtion is called in gameloop function in sk_engine/sk_main.cpp
@@ -17,6 +20,9 @@
 namespace sk_game {
     namespace {
         Camera* cam;
+
+        sk_graphic::Texture2D player;
+        sk_graphic::Texture2D m_sprite;
     }
     enum class GameState {
         NONE,
@@ -40,6 +46,8 @@ namespace sk_game {
     void Start() {
         sk_physic2d::Setup();
         test_level::LoadLevel();
+        player.Load("Assets/player.png");
+        m_sprite.Load("Assets/Sprite.png");
     }
 
     //? normal update, call before draw
@@ -66,7 +74,10 @@ namespace sk_game {
 
         for (int i = -10; i <= 10; i++)
             for (int j = -10; j <= 10; j++)
-                sk_graphic::Renderer2D_AddQuad(glm::vec3(i, j, -1), glm::vec2(1, 1));
+                if ((i + j) % 2 == 0)
+                    sk_graphic::Renderer2D_AddQuad(glm::vec3(2 * i, 2 * j, -1), glm::vec2(1, 1), player.ID, glm::vec4(0, 0, 1, 1));
+                else
+                    sk_graphic::Renderer2D_AddQuad(glm::vec3(2 * i, 2 * j, -1), glm::vec2(1, 1), m_sprite.ID, glm::vec4(0, 0, 1, 1));
     }
 
 

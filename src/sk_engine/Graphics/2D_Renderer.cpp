@@ -19,7 +19,7 @@ namespace sk_graphic {
         static const int maxLineVertexCounts = maxLineCounts * 2; //* lines dont need index and texture
         static const float line_width = 0.1f; //* line width is in normalized screeen coordinate not world corrdinate
 
-        static const int maxTextureCounts = 32; //! This can change on different computer
+        static const int maxTextureCounts = 16; //! This can change on different computer
 
         struct RenderData {
             int screen_w, screen_h;
@@ -37,8 +37,8 @@ namespace sk_graphic {
                 struct vertex {
                     glm::vec3 pos;
                     glm::vec4 color = glm::vec4(1);
-                    glm::vec2 uv;     //? texture coord
-                    int texture;   //? texture index in the rdata's texture array, not the id of the texture
+                    glm::vec3 uvi;     //? texture coord and id
+                    float tex_id;   //? texture index in the rdata's texture array, not the id of the texture
                 };
                 vertex* vertices = nullptr;
                 GLSLprogram shader;
@@ -87,8 +87,8 @@ namespace sk_graphic {
 
         vao.Attrib(vbo, 0, 3, GL_FLOAT, vertex_size, (void*)offsetof(quad_vertex, pos));
         vao.Attrib(vbo, 1, 4, GL_FLOAT, vertex_size, (void*)offsetof(quad_vertex, color));
-        vao.Attrib(vbo, 2, 2, GL_FLOAT, vertex_size, (void*)offsetof(quad_vertex, uv));
-        vao.Attrib(vbo, 3, 1, GL_UNSIGNED_INT, vertex_size, (void*)offsetof(quad_vertex, texture));
+        vao.Attrib(vbo, 2, 3, GL_FLOAT, vertex_size, (void*)offsetof(quad_vertex, uvi));
+        vao.Attrib(vbo, 3, 1, GL_FLOAT, vertex_size, (void*)offsetof(quad_vertex, tex_id));
 
         //* set up EBO
         GLuint offset = 0;
@@ -132,10 +132,10 @@ namespace sk_graphic {
         vbo.Gen(); vbo.Bind();
 
         GLuint vertex_size = sizeof(line_vertex);
-        rdata.line.vbo.Set_Data(nullptr, maxLineVertexCounts * vertex_size, GL_DYNAMIC_DRAW);
+        vbo.Set_Data(nullptr, maxLineVertexCounts * vertex_size, GL_DYNAMIC_DRAW);
 
-        rdata.line.vao.Attrib(rdata.line.vbo, 0, 3, GL_FLOAT, vertex_size, (void*)offsetof(line_vertex, pos));
-        rdata.line.vao.Attrib(rdata.line.vbo, 1, 4, GL_FLOAT, vertex_size, (void*)offsetof(line_vertex, color));
+        vao.Attrib(vbo, 0, 3, GL_FLOAT, vertex_size, (void*)offsetof(line_vertex, pos));
+        vao.Attrib(vbo, 1, 4, GL_FLOAT, vertex_size, (void*)offsetof(line_vertex, color));
 
         //* setup Shader
         GLSLprogram& shader = rdata.line.shader;
@@ -162,8 +162,8 @@ namespace sk_graphic {
         //* setup textures
         rdata.default_tex.Load("Assets/error.png");
         rdata.Texture_slot[0] = rdata.default_tex.ID;
-
-        rdata.default_tex.Bind(0);
+        for (int i = 0; i <= maxTextureCounts - 1; i++)
+            rdata.default_tex.Bind(i);
     }
 
     void Renderer2D_ShutDown() {
@@ -235,30 +235,30 @@ namespace sk_graphic {
 
         //* vertex 0
         rdata.quad.vertices[rdata.quad.vertex_count].pos = glm::vec3(pos.x - hsize.x, pos.y - hsize.y, pos.z);
-        rdata.quad.vertices[rdata.quad.vertex_count].uv = glm::vec2(uv.x, uv.w);
+        rdata.quad.vertices[rdata.quad.vertex_count].uvi = glm::vec3(uv.x, uv.w, texture_slot_id);
         rdata.quad.vertices[rdata.quad.vertex_count].color = color;
-        rdata.quad.vertices[rdata.quad.vertex_count].texture = texture_slot_id;
+        rdata.quad.vertices[rdata.quad.vertex_count].tex_id = texture_slot_id;
         rdata.quad.vertex_count++;
 
         //* vertex 1
         rdata.quad.vertices[rdata.quad.vertex_count].pos = glm::vec3(pos.x + hsize.x, pos.y - hsize.y, pos.z);
-        rdata.quad.vertices[rdata.quad.vertex_count].uv = glm::vec2(uv.z, uv.w);
+        rdata.quad.vertices[rdata.quad.vertex_count].uvi = glm::vec3(uv.z, uv.w, texture_slot_id);
         rdata.quad.vertices[rdata.quad.vertex_count].color = color;
-        rdata.quad.vertices[rdata.quad.vertex_count].texture = texture_slot_id;
+        rdata.quad.vertices[rdata.quad.vertex_count].tex_id = texture_slot_id;
         rdata.quad.vertex_count++;
 
         //* vertex 2
         rdata.quad.vertices[rdata.quad.vertex_count].pos = glm::vec3(pos.x - hsize.x, pos.y + hsize.y, pos.z);
-        rdata.quad.vertices[rdata.quad.vertex_count].uv = glm::vec2(uv.x, uv.y);
+        rdata.quad.vertices[rdata.quad.vertex_count].uvi = glm::vec3(uv.x, uv.y, texture_slot_id);
         rdata.quad.vertices[rdata.quad.vertex_count].color = color;
-        rdata.quad.vertices[rdata.quad.vertex_count].texture = texture_slot_id;
+        rdata.quad.vertices[rdata.quad.vertex_count].tex_id = texture_slot_id;
         rdata.quad.vertex_count++;
 
         //* vertex 3
         rdata.quad.vertices[rdata.quad.vertex_count].pos = glm::vec3(pos.x + hsize.x, pos.y + hsize.y, pos.z);
-        rdata.quad.vertices[rdata.quad.vertex_count].uv = glm::vec2(uv.z, uv.y);
+        rdata.quad.vertices[rdata.quad.vertex_count].uvi = glm::vec3(uv.z, uv.y, texture_slot_id);
         rdata.quad.vertices[rdata.quad.vertex_count].color = color;
-        rdata.quad.vertices[rdata.quad.vertex_count].texture = texture_slot_id;
+        rdata.quad.vertices[rdata.quad.vertex_count].tex_id = texture_slot_id;
         rdata.quad.vertex_count++;
 
         rdata.quad.index_count += 6;
@@ -274,46 +274,48 @@ namespace sk_graphic {
 
         //* vertex 0
         rdata.quad.vertices[rdata.quad.vertex_count].pos = glm::vec3(pos.x - hsize.x, pos.y - hsize.y, pos.z);
-        rdata.quad.vertices[rdata.quad.vertex_count].uv = glm::vec2(0, 1);
+        rdata.quad.vertices[rdata.quad.vertex_count].uvi = glm::vec3(0, 1, 0);
         rdata.quad.vertices[rdata.quad.vertex_count].color = color;
-        rdata.quad.vertices[rdata.quad.vertex_count].texture = 0;
+        rdata.quad.vertices[rdata.quad.vertex_count].tex_id = 0;
         rdata.quad.vertex_count++;
 
         //* vertex 1
         rdata.quad.vertices[rdata.quad.vertex_count].pos = glm::vec3(pos.x + hsize.x, pos.y - hsize.y, pos.z);
-        rdata.quad.vertices[rdata.quad.vertex_count].uv = glm::vec2(1, 1);
+        rdata.quad.vertices[rdata.quad.vertex_count].uvi = glm::vec3(1, 1, 0);
         rdata.quad.vertices[rdata.quad.vertex_count].color = color;
-        rdata.quad.vertices[rdata.quad.vertex_count].texture = 0;
+        rdata.quad.vertices[rdata.quad.vertex_count].tex_id = 0;
         rdata.quad.vertex_count++;
 
         //* vertex 2
         rdata.quad.vertices[rdata.quad.vertex_count].pos = glm::vec3(pos.x - hsize.x, pos.y + hsize.y, pos.z);
-        rdata.quad.vertices[rdata.quad.vertex_count].uv = glm::vec2(0, 0);
+        rdata.quad.vertices[rdata.quad.vertex_count].uvi = glm::vec3(0, 0, 0);
         rdata.quad.vertices[rdata.quad.vertex_count].color = color;
-        rdata.quad.vertices[rdata.quad.vertex_count].texture = 0;
+        rdata.quad.vertices[rdata.quad.vertex_count].tex_id = 0;
         rdata.quad.vertex_count++;
 
         //* vertex 3
         rdata.quad.vertices[rdata.quad.vertex_count].pos = glm::vec3(pos.x + hsize.x, pos.y + hsize.y, pos.z);
-        rdata.quad.vertices[rdata.quad.vertex_count].uv = glm::vec2(1, 0);
+        rdata.quad.vertices[rdata.quad.vertex_count].uvi = glm::vec3(1, 0, 0);
         rdata.quad.vertices[rdata.quad.vertex_count].color = color;
-        rdata.quad.vertices[rdata.quad.vertex_count].texture = 0;
+        rdata.quad.vertices[rdata.quad.vertex_count].tex_id = 0;
         rdata.quad.vertex_count++;
 
         rdata.quad.index_count += 6;
     }
     void Renderer2D_FlushQuads() {
+        rdata.cam.CamMatrix(rdata.quad.shader);
+        rdata.quad.shader.Use();
+
         //std::cout << "flush\n";
         //std::cout << rdata.vertex_count << " " << rdata.index_count << '\n';
         for (int i = 0; i <= rdata.texture_count - 1; i++) {
-            glActiveTexture(GL_TEXTURE0 + i);
-            glBindTexture(GL_TEXTURE_2D, rdata.Texture_slot[i]);
+            glBindTextureUnit(i, rdata.Texture_slot[i]);
+            std::cout << rdata.Texture_slot[i] << " ";
         }
+        std::cout << '\n';
         // reset texture slot
         rdata.texture_count = 1;
 
-        rdata.cam.CamMatrix(rdata.quad.shader);
-        rdata.quad.shader.Use();
         rdata.quad.vao.Bind();
         rdata.quad.vbo.Bind();
         rdata.quad.ebo.Bind();

@@ -2,7 +2,7 @@
 #include "Tilemap.h"
 
 #include <sk_engine/Common/Common.h>
-#include <iostream>
+#include <sk_engine/Graphics/2D_Renderer.h>
 
 namespace sk_game {
     namespace test_level {
@@ -22,11 +22,11 @@ namespace sk_game {
 
             tilemap_.grid_size = data["__gridSize"];
 
-            int tile_count = data["autoLayerTiles"].size();
+            tilemap_.tile_count = data["autoLayerTiles"].size();
 
-            tilemap_.tiles = new Tile_data[tile_count];
+            tilemap_.tiles = new Tile_data[tilemap_.tile_count];
 
-            for (int i = 0;i <= tile_count - 1; i++) {
+            for (int i = 0;i <= tilemap_.tile_count - 1; i++) {
                 Tile_data& cur_tile = tilemap_.tiles[i];
 
                 //* set tile's position
@@ -44,8 +44,17 @@ namespace sk_game {
                 cur_tile.flip = data["autoLayerTiles"][i]["f"];
             }
         }
-        void Draw() {
+        void Draw() {/*
+            for (int i = 0;i <= tilemap_.tile_count - 1; i++) {
+                Tile_data& cur_tile = tilemap_.tiles[i];
 
+                sk_graphic::Renderer2D_AddQuad(
+                    -(tilemap_.pos + glm::vec3(cur_tile.pos, 0)),
+                    glm::vec2(1),
+                    tilemap_.tile_set.ID,
+                    cur_tile.tex
+                );
+            }*/
         }
     }
 }
