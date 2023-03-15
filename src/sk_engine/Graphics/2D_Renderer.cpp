@@ -265,43 +265,6 @@ namespace sk_graphic {
 
     }
 
-    void Renderer2D_AddQuad(const glm::vec3& pos, const glm::vec2& size, const glm::vec4& color) {
-        //std::cout << "quad added\n";
-        if (rdata.quad.vertex_count >= maxQuadVertexCounts) {
-            Renderer2D_FlushQuads();
-        }
-        glm::vec2 hsize = size / 2.0f; //? half the size
-
-        //* vertex 0
-        rdata.quad.vertices[rdata.quad.vertex_count].pos = glm::vec3(pos.x - hsize.x, pos.y - hsize.y, pos.z);
-        rdata.quad.vertices[rdata.quad.vertex_count].uvi = glm::vec3(0, 1, 0);
-        rdata.quad.vertices[rdata.quad.vertex_count].color = color;
-        rdata.quad.vertices[rdata.quad.vertex_count].tex_id = 0;
-        rdata.quad.vertex_count++;
-
-        //* vertex 1
-        rdata.quad.vertices[rdata.quad.vertex_count].pos = glm::vec3(pos.x + hsize.x, pos.y - hsize.y, pos.z);
-        rdata.quad.vertices[rdata.quad.vertex_count].uvi = glm::vec3(1, 1, 0);
-        rdata.quad.vertices[rdata.quad.vertex_count].color = color;
-        rdata.quad.vertices[rdata.quad.vertex_count].tex_id = 0;
-        rdata.quad.vertex_count++;
-
-        //* vertex 2
-        rdata.quad.vertices[rdata.quad.vertex_count].pos = glm::vec3(pos.x - hsize.x, pos.y + hsize.y, pos.z);
-        rdata.quad.vertices[rdata.quad.vertex_count].uvi = glm::vec3(0, 0, 0);
-        rdata.quad.vertices[rdata.quad.vertex_count].color = color;
-        rdata.quad.vertices[rdata.quad.vertex_count].tex_id = 0;
-        rdata.quad.vertex_count++;
-
-        //* vertex 3
-        rdata.quad.vertices[rdata.quad.vertex_count].pos = glm::vec3(pos.x + hsize.x, pos.y + hsize.y, pos.z);
-        rdata.quad.vertices[rdata.quad.vertex_count].uvi = glm::vec3(1, 0, 0);
-        rdata.quad.vertices[rdata.quad.vertex_count].color = color;
-        rdata.quad.vertices[rdata.quad.vertex_count].tex_id = 0;
-        rdata.quad.vertex_count++;
-
-        rdata.quad.index_count += 6;
-    }
     void Renderer2D_FlushQuads() {
         rdata.cam.CamMatrix(rdata.quad.shader);
         rdata.quad.shader.Use();
