@@ -29,7 +29,7 @@ namespace sk_graphic {
     void Renderer2D_AddQuad(
         const glm::vec3& pos,
         const glm::vec2& size,
-        const glm::vec4& uv,
+        const glm::ivec4& uv,
         const glm::vec4& color = glm::vec4(1),
         Texture2D* texture = nullptr
     );

@@ -24,6 +24,9 @@ namespace sk_graphic {
         struct RenderData {
             int screen_w, screen_h;
 
+            // Renderer camera
+            // this is the main camera of the renderer
+            // implement multiple camera in the future
             Camera cam;
             Texture2D default_tex;
 
@@ -140,6 +143,8 @@ namespace sk_graphic {
         glClearColor(0.1, 0.2, 0.3, 1.0);
 
         glEnable(GL_DEPTH_TEST);
+        //glEnable(GL_BLEND);
+        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         //? opengl wont draw back side of trianggle
         glEnable(GL_CULL_FACE);
@@ -200,7 +205,7 @@ namespace sk_graphic {
     void Renderer2D_AddQuad(
         const glm::vec3& pos,
         const glm::vec2& size,
-        const glm::vec4& uv,
+        const glm::ivec4& uv,
         const glm::vec4& color,
         Texture2D* texture
     ) {

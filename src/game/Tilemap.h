@@ -5,17 +5,11 @@
 #include <sk_engine/Graphics/Texture2D.h>
 
 struct Tile_data {
-    /// @brief texture coordinate, not texture
-    glm::vec4 tex;
+    /// @brief texture coordinate, real pixel coordinate
+    glm::ivec4 uv;
     /// @brief tile position is in down right order
     glm::vec2 pos;
 
-    int flip = 0;
-    //  "Flip bits", a 2-bits integer to represent the mirror transformations of the tile.
-    //  only use if rotate = 0
-    //  - Bit 0 = X flip
-    //  - Bit 1 = Y flip
-    //  Examples: f=0 (no flip), f=1 (X flip only), f=2 (Y flip only), f=3 (both flips)
 };
 struct Tilemap {
     // tile size is 1x1 (maybe different in  the future)

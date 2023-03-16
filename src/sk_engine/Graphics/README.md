@@ -19,4 +19,18 @@ this folder contain some opengl classes and a 2d sprite-batch and line renderer
             120fps      1600 quads
             55fps       4225 quads
 
+    the fragment shader use telxelFetch() function, not texture()
+        pros:
+            completely advoid texture bleeding when using sprite-sheet(texture atlas)
+            faster
+        cons:
+            no filtering 
+            no mipmaping
+            >flickering when drawing large texture in small size
+            >no antialiasing (but this is a 2d pixel engine anyway)
+
+    gl depth test is enabled
+    only use texture with pixel alpha alway equal 0 or 1,
+
+
 

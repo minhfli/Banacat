@@ -34,27 +34,35 @@ namespace sk_game {
                 cur_tile.pos.y = (float)data["autoLayerTiles"][i]["px"][1] / tilemap_.grid_size;
 
                 //* set tile's texture coordinate
-                cur_tile.tex.x = (float)data["autoLayerTiles"][i]["src"][0] / tilemap_.tile_set.size.x;
-                cur_tile.tex.y = (float)data["autoLayerTiles"][i]["src"][1] / tilemap_.tile_set.size.y;
+                cur_tile.uv.x = data["autoLayerTiles"][i]["src"][0];
+                cur_tile.uv.y = data["autoLayerTiles"][i]["src"][1];
 
-                cur_tile.tex.z = cur_tile.tex.x + (float)tilemap_.grid_size / tilemap_.tile_set.size.x;
-                cur_tile.tex.w = cur_tile.tex.y + (float)tilemap_.grid_size / tilemap_.tile_set.size.y;
+                cur_tile.uv.z = cur_tile.uv.x + tilemap_.grid_size;
+                cur_tile.uv.w = cur_tile.uv.y + tilemap_.grid_size;
 
-                //* set tile's flip bit
-                cur_tile.flip = data["autoLayerTiles"][i]["f"];
+                //* set tile's flip 
+                int flip = data["autoLayerTiles"][i]["f"];
+                //  "Flip bits", a 2-bits integer to represent the mirror transformations of the tile.
+                //  only use if rotate = 0
+                //  - Bit 0 = X flip
+                //  - Bit 1 = Y flip
+                //  Examples: f=0 (no flip), f=1 (X flip only), f=2 (Y flip only), f=3 (both flips)
+                if ((flip & 1)) std::swap(cur_tile.uv.x, cur_tile.uv.z);
+                if ((flip & 2)) std::swap(cur_tile.uv.y, cur_tile.uv.w);
             }
         }
-        void Draw() {/*
+        void Draw() {
             for (int i = 0;i <= tilemap_.tile_count - 1; i++) {
                 Tile_data& cur_tile = tilemap_.tiles[i];
 
                 sk_graphic::Renderer2D_AddQuad(
-                    -(tilemap_.pos + glm::vec3(cur_tile.pos, 0)),
+                    glm::vec3(cur_tile.pos.x, -cur_tile.pos.y, 0),
                     glm::vec2(1),
-                    tilemap_.tile_set.ID,
-                    cur_tile.tex
+                    cur_tile.uv,
+                    glm::vec4(1),
+                    &tilemap_.tile_set
                 );
-            }*/
+            }
         }
     }
 }
