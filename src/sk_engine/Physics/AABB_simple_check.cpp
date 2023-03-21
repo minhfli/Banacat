@@ -1,13 +1,51 @@
-#include "AABB.h"
+#include "AABB_collision_functions.h"
 
 namespace sk_physic2d {
-    bool point_in_rect(const glm::vec2& p, const rect& r) {
-        return (
+    bool point_in_rect(const glm::vec2& p, const rect& r, contact* contact_data) {
+        if (contact_data == nullptr)
+            return (
+                p.x >= r.pos.x &&
+                p.y >= r.pos.y &&
+                p.x <= r.pos.x + r.size.x &&
+                p.y <= r.pos.y + r.size.y
+            );
+
+        contact_data->hit = 0;
+
+        if (!( //if not hit
             p.x >= r.pos.x &&
             p.y >= r.pos.y &&
             p.x <= r.pos.x + r.size.x &&
             p.y <= r.pos.y + r.size.y
-        );
+            )) return false;
+        contact_data->hit = 1;
+
+        // contact_data.t_near is now used to calcutate the nearest wya to resolve colltion
+        float x_near = p.x - r.pos.x;
+        float y_near = p.y - r.pos.y;
+        float x_far = r.pos.x + r.size.x - p.x;
+        float y_far = r.pos.y + r.size.y - p.y;
+
+        if (x_near < x_far) {
+            contact_data->normal = glm::vec2(-1, 0);
+            contact_data->pos = glm::vec2(p.x - x_near, p.y);
+        }
+        else {
+            contact_data->normal = glm::vec2(1, 0);
+            contact_data->pos = glm::vec2(p.x + x_far, p.y);
+        }
+
+        if (std::min(y_near, y_far) > std::min(x_near, x_far)) return true;
+
+        if (y_near < y_far) {
+            contact_data->normal = glm::vec2(0, -1);
+            contact_data->pos = glm::vec2(p.x, p.y - y_near);
+        }
+        else {
+            contact_data->normal = glm::vec2(0, 1);
+            contact_data->pos = glm::vec2(p.x, p.y + y_far);
+        }
+        return true;
     }
     bool point_in_rect_bound(const glm::vec2& p, const rect& r) {
         if (p.x == r.pos.x || p.x == r.pos.x + r.size.x) return (p.y >= r.pos.y && p.y <= r.pos.y + r.size.y);
@@ -127,9 +165,16 @@ namespace sk_physic2d {
     /// @param r2 rect2, must be static
     /// @param contact_data contact point,time,normal,... 
     /// @return true when ray hit, not when 'touch'  rect
-    bool swept_rect_vs_rect(const rect& r1, const rect& r2, contact* contact_data, const float& delta_time) {
+    bool swept_rect_vs_rect(const rect& r1, const rect& r2, contact* contact_data, const float delta_time) {
         //* default, hit=false
-        *contact_data = { false,r1.center() + r1.velocity * delta_time,glm::vec2(0),1 };
+        *contact_data = {
+            false,
+            r1.center() + r1.velocity * delta_time,
+            glm::vec2(0),
+            1,
+            1
+        };
+
 
         if (r1.velocity == glm::vec2(0)) return false;
 
@@ -138,4 +183,21 @@ namespace sk_physic2d {
 
         return ray_vs_rect(r1_srink, r2_expand, contact_data);
     }
+        /// @brief 
+        /// @param r1 
+        /// @param r2 
+        /// @param contact_data 
+        /// @return 
+    bool colli_rect_vs_rect(const rect& r1, const rect& r2, contact* contact_data) {
+        *contact_data = {
+            false,
+            r1.center(),
+            glm::vec2(0),
+            0,
+            0
+        };
+        rect r2_expand(r2.pos - r1.size / 2.0f, r2.size + r1.size);
+        return point_in_rect(r1.center(), r2_expand, contact_data);
+    }
+
 }
