@@ -1,6 +1,5 @@
 #pragma once
 #include "AABB_collision_functions.h"
 
-namespace sk_physic2d {
-
-}
+#include "AABB_World.h"
+#include "AABB_QuadTree.h"

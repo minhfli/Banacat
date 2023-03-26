@@ -18,6 +18,8 @@
 namespace sk_game {
     namespace {
         Camera* cam;
+
+        float camsize = 10;
     }
     enum class GameState {
         NONE,
@@ -33,7 +35,7 @@ namespace sk_game {
 
     void Init() {
         cam = sk_graphic::Renderer2D_GetCam();
-        cam->ProjectionO(10, 800, 600);
+        cam->ProjectionO(camsize, 800, 600);
         cam->position = glm::vec3(0.0f, 0.0f, 0.0f);
 
     }
@@ -43,13 +45,25 @@ namespace sk_game {
         test_level::LoadLevel();
     }
 
-    //? normal update, call before draw
-    void UpdateN() {
-        //std::cout << (int)SDL_keystate[SDL_SCANCODE_A];
+    //! update cam size and positon, temporary
+    void UpdateCam() {
         if (sk_input::Key(sk_key::A)) cam->position += glm::vec3(-1, 0, 0) * sk_time::delta_time * 5.0f;
         if (sk_input::Key(sk_key::D)) cam->position += glm::vec3(1, 0, 0) * sk_time::delta_time * 5.0f;
         if (sk_input::Key(sk_key::W)) cam->position += glm::vec3(0, 1, 0) * sk_time::delta_time * 5.0f;
         if (sk_input::Key(sk_key::S)) cam->position += glm::vec3(0, -1, 0) * sk_time::delta_time * 5.0f;
+        if (sk_input::Key(sk_key::UP)) {
+            camsize -= 10 * sk_time::delta_time;
+            cam->ProjectionO(camsize, 800, 600);
+        }
+        if (sk_input::Key(sk_key::DOWN)) {
+            camsize += 10 * sk_time::delta_time;
+            cam->ProjectionO(camsize, 800, 600);
+        }
+    }
+    //? normal update, call before draw
+    void UpdateN() {
+        //! update cam size and positon, temporary
+        UpdateCam();
 
         //! skphysic test.cpp
         sk_physic2d::Update(sk_time::delta_tick, *cam);
@@ -64,15 +78,6 @@ namespace sk_game {
         sk_graphic::Renderer2D_AddDotX(mouse_world_pos);
 
         test_level::Draw();
-
-        for (int i = -10; i <= 10; i++)
-            for (int j = -10; j <= 10; j++)
-                if ((i + j) % 2 == 0)
-                    sk_graphic::Renderer2D_AddQuad(
-                        glm::vec3(i, j, -1),
-                        glm::vec2(1),
-                        glm::ivec4(0, 0, 16, 16));
-
     }
 
 

@@ -1,30 +1,30 @@
 #include "AABB_collision_functions.h"
 
 namespace sk_physic2d {
-    bool point_in_rect(const glm::vec2& p, const rect& r, contact* contact_data) {
+    bool point_in_rect(const glm::vec2& p, const glm::vec4& r, contact* contact_data) {
         if (contact_data == nullptr)
             return (
-                p.x >= r.pos.x &&
-                p.y >= r.pos.y &&
-                p.x <= r.pos.x + r.size.x &&
-                p.y <= r.pos.y + r.size.y
+                p.x >= r.x &&
+                p.y >= r.y &&
+                p.x <= r.z &&
+                p.y <= r.w
             );
 
         contact_data->hit = 0;
 
         if (!( //if not hit
-            p.x >= r.pos.x &&
-            p.y >= r.pos.y &&
-            p.x <= r.pos.x + r.size.x &&
-            p.y <= r.pos.y + r.size.y
+            p.x >= r.x &&
+            p.y >= r.y &&
+            p.x <= r.z &&
+            p.y <= r.w
             )) return false;
         contact_data->hit = 1;
 
         // contact_data.t_near is now used to calcutate the nearest wya to resolve colltion
-        float x_near = p.x - r.pos.x;
-        float y_near = p.y - r.pos.y;
-        float x_far = r.pos.x + r.size.x - p.x;
-        float y_far = r.pos.y + r.size.y - p.y;
+        float x_near = p.x - r.x;
+        float y_near = p.y - r.y;
+        float x_far = r.z - p.x;
+        float y_far = r.w - p.y;
 
         if (x_near < x_far) {
             contact_data->normal = glm::vec2(-1, 0);
@@ -47,51 +47,22 @@ namespace sk_physic2d {
         }
         return true;
     }
-    bool point_in_rect_bound(const glm::vec2& p, const rect& r) {
-        if (p.x == r.pos.x || p.x == r.pos.x + r.size.x) return (p.y >= r.pos.y && p.y <= r.pos.y + r.size.y);
-        if (p.y == r.pos.y || p.y == r.pos.y + r.size.y) return (p.x >= r.pos.x && p.x <= r.pos.x + r.size.x);
-        return 0;
-    }
-    bool point_in_rect_bound(const glm::vec2& p, const rect& r, glm::vec2& normal) {
-        // when point is on rect's conner, return normal = 0
-        if ((p.x == r.pos.x || p.x == r.pos.x + r.size.x) &&
-            (p.y == r.pos.y || p.y == r.pos.y + r.size.y)) {
-            normal = glm::vec2(0);
-            return true;
-        }
-        if (p.y == r.pos.y) {
-            normal = glm::vec2(0, -1);
-            return (p.x >= r.pos.x && p.x <= r.pos.x + r.size.x);
-        }
-        if (p.y == r.pos.y + r.size.y) {
-            normal = glm::vec2(0, 1);
-            return (p.x >= r.pos.x && p.x <= r.pos.x + r.size.x);
-        }
-        if (p.x == r.pos.x) {
-            normal = glm::vec2(-1, 0);
-            return (p.y >= r.pos.y && p.y <= r.pos.y + r.size.y);
-        }
-        if (p.x == r.pos.x + r.size.x) {
-            normal = glm::vec2(1, 0);
-            return (p.y >= r.pos.y && p.y <= r.pos.y + r.size.y);
-        }
-        return 0;
-    }
-    bool rect_in_rect(const rect& r1, const rect& r2) {
+
+    bool rect_contain(const glm::vec4& r1, const glm::vec4& r2) {
         return (
-            r1.pos.x >= r2.pos.x &&
-            r1.pos.y >= r2.pos.y &&
-            r1.pos.x + r1.size.x <= r2.pos.x + r2.size.x &&
-            r1.pos.y + r1.size.y <= r2.pos.y + r2.size.y
+            r1.x >= r2.x &&
+            r1.y >= r2.y &&
+            r1.z <= r2.z &&
+            r1.w <= r2.w
         );
     }
 
-    bool rect_vs_rect(const rect& r1, const rect& r2) {
+    bool rect_overlap(const glm::vec4& r1, const glm::vec4& r2) {
         return (
-            r1.pos.x + r1.size.x >= r2.pos.x &&
-            r2.pos.x + r2.size.x >= r1.pos.x &&
-            r1.pos.x + r1.size.y >= r2.pos.y &&
-            r2.pos.x + r2.size.y >= r1.pos.y
+            r1.z >= r2.x &&
+            r2.z >= r1.x &&
+            r1.w >= r2.y &&
+            r2.w >= r1.y
         );
     }
 
@@ -100,17 +71,17 @@ namespace sk_physic2d {
     /// @param r rect data
     /// @param contact_data contact point,time,normal,... 
     /// @return true when ray hit, not when 'touch'  rect
-    bool ray_vs_rect(const ray& l, const rect& r, contact* contact_data) {
+    bool ray_vs_rect(const ray& l, const glm::vec4& r, contact* contact_data) {
         //* default, hit=false
         *contact_data = { false,l.end(),glm::vec2(0),1 };
 
-        //if (point_in_rect(l.pos, r)) return false;
-        //if (l.dir == glm::vec2(0)) return false;
+        if (point_in_rect(l.pos, r)) return false;
+        if (l.dir == glm::vec2(0)) return false;
 
         //* time for ray to go pass x/y bound of the rectangle
         //* if  near xy < far xy  -> ray hit
-        glm::vec2 t_near = (r.pos - l.pos) / l.dir;
-        glm::vec2 t_far = (r.pos + r.size - l.pos) / l.dir;
+        glm::vec2 t_near = (r.xy() - l.pos) / l.dir;
+        glm::vec2 t_far = (r.zw() - l.pos) / l.dir;
 
         // return false if ray is on the same line as one of rect's edge
         // -> allow sliding
@@ -163,23 +134,24 @@ namespace sk_physic2d {
     /// @brief 
     /// @param r1 rect1
     /// @param r2 rect2, must be static
+    /// @param r1offset offset(swept value) of rect 1
     /// @param contact_data contact point,time,normal,... 
     /// @return true when ray hit, not when 'touch'  rect
-    bool swept_rect_vs_rect(const rect& r1, const rect& r2, contact* contact_data, const float delta_time) {
+    bool swept_rect_vs_rect(const rect& r1, const rect& r2, glm::vec2 r1offset, contact* contact_data) {
         //* default, hit=false
         *contact_data = {
             false,
-            r1.center() + r1.velocity * delta_time,
+            r1.pos + r1offset,
             glm::vec2(0),
             1,
             1
         };
 
 
-        if (r1.velocity == glm::vec2(0)) return false;
+        if (r1offset == glm::vec2(0)) return false;
 
-        ray r1_srink(r1.center(), r1.velocity * delta_time);
-        rect r2_expand(r2.pos - r1.size / 2.0f, r2.size + r1.size);
+        ray r1_srink(r1.pos, r1offset);
+        glm::vec4 r2_expand = r2.bound(r1.hsize);
 
         return ray_vs_rect(r1_srink, r2_expand, contact_data);
     }
@@ -191,13 +163,13 @@ namespace sk_physic2d {
     bool colli_rect_vs_rect(const rect& r1, const rect& r2, contact* contact_data) {
         *contact_data = {
             false,
-            r1.center(),
+            r1.pos,
             glm::vec2(0),
             0,
             0
         };
-        rect r2_expand(r2.pos - r1.size / 2.0f, r2.size + r1.size);
-        return point_in_rect(r1.center(), r2_expand, contact_data);
+        glm::vec4 r2_expand = r2.bound(r1.hsize);
+        return point_in_rect(r1.pos, r2_expand, contact_data);
     }
 
 }

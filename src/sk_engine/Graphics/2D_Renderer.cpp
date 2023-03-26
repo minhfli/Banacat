@@ -300,11 +300,11 @@ namespace sk_graphic {
         rdata.line.vertex_count = 0;
     }
 
-    void Renderer2D_AddLBox(const glm::vec3& pos, const glm::vec2& size, const glm::vec4& color) {
-        Renderer2D_AddLine(pos, glm::vec2(size.x, 0), color);           //* bottom
-        Renderer2D_AddLine(pos, glm::vec2(0, size.y), color);           //* left
-        Renderer2D_AddLine(pos + glm::vec3(size, 0), glm::vec2(-size.x, 0), color);   //* top
-        Renderer2D_AddLine(pos + glm::vec3(size, 0), glm::vec2(0, -size.y), color);   //* top
+    void Renderer2D_AddBBox(const glm::vec4& bound, const float depth, const glm::vec4& color) {
+        Renderer2D_AddLine(glm::vec3(bound.xy(), depth), bound.zy() - bound.xy(), color);           //* bottom
+        Renderer2D_AddLine(glm::vec3(bound.xy(), depth), bound.xw() - bound.xy(), color);           //* left
+        Renderer2D_AddLine(glm::vec3(bound.zw(), depth), bound.xw() - bound.zw(), color);           //* top
+        Renderer2D_AddLine(glm::vec3(bound.zw(), depth), bound.zy() - bound.zw(), color);           //* top
     }
     void Renderer2D_AddDotX(const glm::vec3& pos, const glm::vec4& color) {
         Renderer2D_AddLine(pos + glm::vec3(-0.2f, -0.2f, 1.0f), glm::vec2(0.4f), color);

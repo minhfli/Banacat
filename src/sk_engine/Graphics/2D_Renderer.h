@@ -39,7 +39,7 @@ namespace sk_graphic {
         const glm::vec4& color = glm::vec4(1));
 
     //* some other helpful function
-    void Renderer2D_AddLBox(const glm::vec3& pos, const glm::vec2& size, const glm::vec4& color = glm::vec4(1));
+    void Renderer2D_AddBBox(const glm::vec4& bound, const float depth, const glm::vec4& color = glm::vec4(1));
     void Renderer2D_AddDotX(const glm::vec3& pos, const glm::vec4& color = glm::vec4(1.0f));
     void Renderer2D_AddDotO(const glm::vec3& pos, const glm::vec4& color = glm::vec4(1.0f));
 

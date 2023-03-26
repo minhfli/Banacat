@@ -1,39 +1,35 @@
 #pragma once
+
+#define GLM_FORCE_SWIZZLE
 #include <GLM/glm.hpp>
 
 namespace  sk_physic2d {
 
     struct rect {
-        bool fixed = 0;                    //* is static ?
-        glm::vec2 pos = glm::vec2(0);      //* bottom left point of the rect
-        glm::vec2 size = glm::vec2(1);
-        glm::vec2 velocity = glm::vec2(0);
 
-        rect() {}
-        rect(glm::vec2 p = glm::vec2(0), glm::vec2 s = glm::vec2(1), glm::vec2 v = glm::vec2(0)) {
-            pos = p;
-            size = s;
-            velocity = v;
-        }
-        inline glm::vec2 center() const {
-            return glm::vec2(pos + size / 2.0f);
-        }
-        inline void set_center(const glm::vec2& c) {
-            pos = c - size / 2.0f;
+        /// @brief center pos
+        glm::vec2 pos = glm::vec2(0);
+        /// @brief half size
+        glm::vec2 hsize = glm::vec2(1);
+
+        rect(glm::vec2 p = glm::vec2(0), glm::vec2 s = glm::vec2(1)): pos(p), hsize(s / 2.0f) {}
+        /// @brief lower left and upper right conner position of the rect
+        /// @return 
+        inline glm::vec4 bound(glm::vec2 expand = glm::vec2(0)) const {
+            return glm::vec4(pos - hsize - expand, pos + hsize + expand);
         }
     };
     struct circle {
         glm::vec2 pos = glm::vec2(0);
         float radius = 1.0f;
-        glm::vec2 velocity = glm::vec2(0);
 
         circle() {};
         circle(glm::vec2 p = glm::vec2(0), float r = 0) {
             pos = p;
             radius = r;
         }
-        inline rect bounding_box() const {
-            return rect(glm::vec2(pos.x - radius, pos.y - radius), glm::vec2(radius * 2), velocity);
+        inline rect bound() const {
+            return rect(glm::vec2(pos.x - radius, pos.y - radius), glm::vec2(radius * 2));
         }
     };
     struct ray {
@@ -41,10 +37,7 @@ namespace  sk_physic2d {
         glm::vec2 dir = glm::vec2(0, 1); // default is up
 
         ray() {};
-        ray(const glm::vec2 p = glm::vec2(0), const glm::vec2 d = glm::vec2(0, 1)) {
-            pos = p;
-            dir = d;
-        }
+        ray(const glm::vec2 p = glm::vec2(0), const glm::vec2 d = glm::vec2(0, 1)): pos(p), dir(d) {}
 
         inline rect bounding_box() const {
             glm::vec2 p = pos;
@@ -75,4 +68,29 @@ namespace  sk_physic2d {
         float t_far = 0;
         //? time till collide (realtime)
     };
+
+    //! may change in future implementation 
+    struct Body {
+        friend class AABB_World;
+        private:
+        bool is_active = false;
+
+        bool modified = false;
+
+        rect RECT;
+        glm::vec2 velocity;
+
+        public:
+
+        /// @brief set the position of the body
+        inline void set_pos(const glm::vec2 p) {
+            RECT.pos = p;
+            modified = true;
+        }
+        inline void set_size(const glm::vec2 s) {
+            RECT.hsize = s / 2.0f;
+            modified = true;
+        }
+    };
+
 }
