@@ -214,7 +214,7 @@ namespace sk_physic2d {
             for (int i = 0; i <= 3; i++) DrawNode(node->child[i]);
     }
 
-    void QuadTree::GetInfo() { GetInfo(&root); };
+    void QuadTree::GetInfo() { GetInfo(&root); }
     void QuadTree::GetInfo(Node* node) {
 
         std::cout << "Depth: " << node->depth << "  Value: ";
