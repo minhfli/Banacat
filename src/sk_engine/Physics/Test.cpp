@@ -1,54 +1,43 @@
 #include "Test.h"
+#include "AABB_World.h"
+
 #include <Graphics/2D_Renderer.h>
+
+#include <Common/Common.h>
 
 namespace sk_physic2d {
 
-    rect sbox(glm::vec2(-1), glm::vec2(6, 2));
-    rect dbox(glm::vec2(-3), glm::vec2(1, 1));
-    contact contact_data;
-    contact contact_data_overlap;
     glm::vec3 mouse_pos;
+
+    AABB_World physic_world;
     void Setup() {
+        physic_world.Init();
+
+        for (int i = 1; i <= 1000; i++) {
+            rect R(
+                glm::vec2(RandomFloat(-30, 30), RandomFloat(-30, 30)),
+                glm::vec2(RandomFloat(0.5, 1), RandomFloat(0.5, 1))
+            );
+            Body_Def def(R);
+            physic_world.Create_Body(def);
+        }
     }
     void Update(uint32_t delta_time, Camera& cam) {
         mouse_pos = cam.Screen_To_World(sk_input::MousePos(), glm::vec2(800, 600));
-        glm::vec2 dbox_velocity;
-        dbox_velocity.x = mouse_pos.x - dbox.pos.x;
-        dbox_velocity.y = mouse_pos.y - dbox.pos.y;
+
+        std::vector<int> query = physic_world.Query(rect(mouse_pos, glm::vec2(5)));
 
         if (sk_input::Key(sk_key::SPACE)) {
-            dbox.pos = mouse_pos;
+            for (int i : query) physic_world.Remove_Body(i);
+            //physic_world.GetQuadTreeDebug();
         }
-        swept_rect_vs_rect(dbox, sbox, dbox_velocity, &contact_data);
-        colli_rect_vs_rect(dbox, sbox, &contact_data_overlap);
-
     }
     void Draw() {
-        glm::vec2 dbox_velocity;
+        physic_world.Draw();
 
-        dbox_velocity.x = mouse_pos.x - dbox.pos.x;
-        dbox_velocity.y = mouse_pos.y - dbox.pos.y;
+        //draw query rect
+        rect query_rect = rect(mouse_pos, glm::vec2(5));
+        sk_graphic::Renderer2D_AddBBox(query_rect.bound(), 1, glm::vec4(1, 1, 1, 1));
 
-        sk_graphic::Renderer2D_AddLine(glm::vec3(dbox.pos, 1), dbox_velocity, glm::vec4(1, 1, 0, 1));
-
-        sk_graphic::Renderer2D_AddBBox(dbox.bound(), 0, glm::vec4(0, 1, 0, 1));
-        sk_graphic::Renderer2D_AddBBox(sbox.bound(), 0, glm::vec4(0, 1, 0, 1));
-        if (contact_data.hit) {
-            sk_graphic::Renderer2D_AddDotX(glm::vec3(contact_data.pos, 2));
-            // draw contact rect
-            sk_graphic::Renderer2D_AddBBox(
-                glm::vec4(contact_data.pos - dbox.hsize, contact_data.pos + dbox.hsize),
-                0,
-                glm::vec4(0, 1, 0, 1));
-            // draw normal
-            sk_graphic::Renderer2D_AddLine(glm::vec3(contact_data.pos, 1), contact_data.normal);
-        }
-        if (contact_data_overlap.hit) {
-            sk_graphic::Renderer2D_AddBBox(
-                glm::vec4(contact_data_overlap.pos - dbox.hsize, contact_data_overlap.pos + dbox.hsize),
-                0,
-                glm::vec4(0.1, 1, 0.3, 1));
-            sk_graphic::Renderer2D_AddLine(glm::vec3(contact_data_overlap.pos, 1), contact_data_overlap.normal);
-        }
     }
 }

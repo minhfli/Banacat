@@ -1,11 +1,13 @@
 #include "AABB_World.h"
+#include <Graphics/2D_Renderer.h>
 
 namespace sk_physic2d {
     void AABB_World::Init() {
         m_Body.reserve(50);
+        quad_tree.Init();
     }
 
-    Body* AABB_World::Create_Body(int* index) {
+    Body* AABB_World::Create_Body(const Body_Def& def, int* index) {
         int id;
         if (!this->avaiable_mbody_index.empty()) {
             id = this->avaiable_mbody_index.back();
@@ -18,18 +20,35 @@ namespace sk_physic2d {
         body_counts++;
 
         if (index != nullptr) *index = id;
-        return &m_Body.at(id);
+        m_Body[id] = Body(def);
+
+        quad_tree.AddValue(m_Body[id].RECT, id);
+        return &m_Body[id];
 
     }
-    void AABB_World::Remove_Body(int& index) {
+    Body* AABB_World::Get_Body(const int index) {
+        return &m_Body.at(index);
+    }
+    void AABB_World::Remove_Body(const int index) {
         if (m_Body.size() <= index || index < 0) return;
         if (!m_Body[index].is_active) return;
 
+        body_counts--;
         m_Body[index].is_active = false;
+        quad_tree.RemoveValue(index);
+
         avaiable_mbody_index.push_back(index);
     }
     void AABB_World::Remove_Body(Body* body) {
         int index = body - &m_Body.front();
         Remove_Body(index);
+    }
+
+    void AABB_World::Draw() {
+        for (auto& body : this->m_Body)
+            if (body.is_active) {
+                sk_graphic::Renderer2D_AddBBox(body.RECT.bound(), 1, glm::vec4(0, 1, 0, 1));
+            }
+        quad_tree.Draw();
     }
 }

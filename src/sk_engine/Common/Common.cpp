@@ -36,3 +36,9 @@ nlohmann::json ReadJsonFile(const std::string path) {
     return data;
 }
 
+#include <cstdlib>
+#include <ctime>
+
+float RandomFloat(const float a, const float b) {
+    return a + (b - a) * (float(rand()) / float(RAND_MAX));
+}

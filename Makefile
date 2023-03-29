@@ -3,11 +3,11 @@ SHELL := pwsh.exe
 TARGET = MyGame
 
 CC = g++
-CFLAGS = -std=c++14 -Wall -pedantic -MMD -MP 
+CFLAGS = -std=c++14 -Wall -pedantic -MMD -MP -mwindows
 
 OUTDIR = ./bin
 DATADIR = ./data
-SUBDIR = semihost stream arg_parser
+SUBDIR = 
 DIR_OBJ = ./obj
 DIR_SRC = ./obj
 
