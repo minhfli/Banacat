@@ -26,6 +26,12 @@ namespace sk_physic2d {
 
         bool debug_draw = true;
 
+        rect world_bound = rect(glm::vec2(0), glm::vec2(256));
+
+        //* hint funtions, call before Init to setup physic world 
+        void Hint_WorldBound(glm::vec4 bound);
+        void Hint_WorldBound(glm::vec2 center, float size);
+
         void Init();
 
         /// @brief create new physic body and return its reference and index(optional)

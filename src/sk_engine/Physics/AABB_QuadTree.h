@@ -9,7 +9,7 @@
 #include "Collider.h"
 
 namespace sk_physic2d {
-    const int32_t MAX_TREE_DEPTH = 7;
+    const int32_t MAX_TREE_DEPTH = 10;
     const int32_t NODE_CAPACITY = 10;
 
     const glm::vec2 MIN_NODE_SIZE = glm::vec2(1);
@@ -41,9 +41,6 @@ namespace sk_physic2d {
         //? data -----------------------------------------------------------------------------------
         private:
         std::unordered_map <int, Node*> Item_Node_map;
-        int node_counts = 1;
-
-        glm::vec4 tree_bound = glm::vec4(-64, -64, 64, 64);
         Node root;
 
         //? funtions -------------------------------------------------------------------------------
@@ -58,15 +55,19 @@ namespace sk_physic2d {
         void GetInfo(Node* node);
         void DrawNode(Node* node);
 
+        void ClearNode(Node* node);
+
         public:
         QuadTree() {}
-        void Init();
+        void Init(const rect& tree_RECT);
 
         void AddValue(const rect& rect, const int value);
         void RemoveValue(const int value);
         void UpdateValue(const rect& rect, const int value);
 
         std::vector<int> Query(const rect& rect);
+
+        void Clear();
 
         void GetInfo();
         void Draw();

@@ -10,6 +10,8 @@ namespace sk_game {
         const std::string tileset_path = "Assets/tilemap/Cavernas_by_Adam_Saltsman.png";
         void LoadLevel();
         void UnLoadLevel();
+
         void Draw();
+        void Update();
     }
 }

@@ -2,9 +2,13 @@
 #include <Graphics/2D_Renderer.h>
 
 namespace sk_physic2d {
+
+    void AABB_World::Hint_WorldBound(glm::vec4 bound) { world_bound = rect(bound); }
+    void AABB_World::Hint_WorldBound(glm::vec2 center, float size) { world_bound = rect(center, glm::vec2(size)); }
+
     void AABB_World::Init() {
-        m_Body.reserve(50);
-        quad_tree.Init();
+        m_Body.reserve(100);
+        quad_tree.Init(world_bound);
     }
 
     Body* AABB_World::Create_Body(const Body_Def& def, int* index) {

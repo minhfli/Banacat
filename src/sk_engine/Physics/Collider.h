@@ -13,6 +13,11 @@ namespace  sk_physic2d {
         glm::vec2 hsize = glm::vec2(1);
 
         rect(glm::vec2 p = glm::vec2(0), glm::vec2 s = glm::vec2(1)): pos(p), hsize(s / 2.0f) {}
+        rect(glm::vec4 bound) {
+            pos = (glm::vec2(bound.z, bound.w) + glm::vec2(bound.x, bound.y)) / 2.0f;
+            hsize = (glm::vec2(bound.z, bound.w) - glm::vec2(bound.x, bound.y)) / 2.0f;
+        }
+
         /// @brief lower left and upper right conner position of the rect
         /// @return 
         inline glm::vec4 bound(glm::vec2 expand = glm::vec2(0)) const {

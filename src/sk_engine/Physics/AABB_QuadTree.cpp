@@ -183,10 +183,27 @@ namespace sk_physic2d {
         }
     }
 
-    void QuadTree::Init() {
-        root = Node(nullptr, 0, rect(glm::vec2(0), glm::vec2(64)));
+    void QuadTree::Init(const rect& TREE_RECT) {
+        root = Node(nullptr, 0, TREE_RECT);
     }
 
+    void QuadTree::Clear() {
+        ClearNode(&root);
+        root.m_value.clear();
+    }
+    void QuadTree::ClearNode(Node* node) {
+        if (node == nullptr) return;
+        if (!node->isleaf()) {
+            ClearNode(node->child[0]);
+            ClearNode(node->child[1]);
+            ClearNode(node->child[2]);
+            ClearNode(node->child[3]);
+            delete node->child[0];
+            delete node->child[1];
+            delete node->child[2];
+            delete node->child[3];
+        }
+    }
 
     void QuadTree::Draw() {
         DrawNode(&root);

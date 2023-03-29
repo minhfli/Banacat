@@ -9,8 +9,6 @@
 #include "Window/skWindow.h"
 #include "Window/Input.h"
 
-#include "Physics/Test.h"
-
 #include <STB/stb_image.h>
 
 #include <GLM/glm.hpp>

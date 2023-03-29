@@ -1,6 +1,6 @@
 #include "sk_game.h"
 #include <sk_engine/Graphics/2D_Renderer.h>
-#include <sk_engine/Physics/Test.h>
+#include <sk_engine/Window/Input.h>
 #include <sk_engine/Common/sk_time.h>
 
 #include <game/TestLevel.h>
@@ -37,11 +37,9 @@ namespace sk_game {
         cam = sk_graphic::Renderer2D_GetCam();
         cam->ProjectionO(camsize, 800, 600);
         cam->position = glm::vec3(0.0f, 0.0f, 0.0f);
-
     }
 
     void Start() {
-        sk_physic2d::Setup();
         test_level::LoadLevel();
     }
 
@@ -64,16 +62,11 @@ namespace sk_game {
     void UpdateN() {
         //! update cam size and positon, temporary
         UpdateCam();
-
-        //! skphysic test.cpp
-        sk_physic2d::Update(sk_time::delta_tick, *cam);
     }
     //? late update, call after draw
     void UpdateL() {}
 
     void Draw() {
-        sk_physic2d::Draw();
-
         glm::vec3 mouse_world_pos = cam->Screen_To_World(sk_input::MousePos(), glm::vec2(800, 600));
         sk_graphic::Renderer2D_AddDotX(mouse_world_pos);
 

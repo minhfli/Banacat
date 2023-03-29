@@ -3,13 +3,14 @@
 
 #include <sk_engine/Common/Common.h>
 #include <sk_engine/Graphics/2D_Renderer.h>
+#include <sk_engine/Physics/AABB_World.h>
 
 namespace sk_game {
     namespace test_level {
 
         namespace { //private data
             Tilemap tilemap_;
-
+            sk_physic2d::AABB_World physic_world;
         }
         void LoadLevel() {
             nlohmann::json file = ReadJsonFile(level_path);
@@ -50,8 +51,25 @@ namespace sk_game {
                 if ((flip & 1)) std::swap(cur_tile.uv.x, cur_tile.uv.z);
                 if ((flip & 2)) std::swap(cur_tile.uv.y, cur_tile.uv.w);
             }
+
+            physic_world.Hint_WorldBound(glm::vec2(tilemap_.width / 2, -tilemap_.height / 2) + glm::vec2(0.5f), 48);
+            physic_world.Init();
+            nlohmann::json collider_csv = data["intGridCsv"];
+            for (int i = 0; i <= tilemap_.height - 1; i++) {
+                for (int j = 0; j <= tilemap_.width - 1; j++) {
+                    int csv_index = i * tilemap_.width + j;
+
+                    sk_physic2d::rect R = sk_physic2d::rect(glm::vec2(j, -i), glm::vec2(1));
+                    if (collider_csv[csv_index] == 1)
+                        physic_world.Create_Body(sk_physic2d::Body_Def(R));
+                }
+            }
+        }
+        void Update() {
+
         }
         void Draw() {
+            physic_world.Draw();
             for (int i = 0;i <= tilemap_.tile_count - 1; i++) {
                 Tile_data& cur_tile = tilemap_.tiles[i];
 
@@ -64,5 +82,6 @@ namespace sk_game {
                 );
             }
         }
+
     }
 }
