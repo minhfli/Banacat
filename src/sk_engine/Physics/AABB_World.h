@@ -33,6 +33,7 @@ namespace sk_physic2d {
         void Hint_WorldBound(glm::vec2 center, float size);
 
         void Init();
+        void Clear();
 
         /// @brief create new physic body and return its reference and index(optional)
         Body* Create_Body(const Body_Def& def, int* index = nullptr);
@@ -44,11 +45,18 @@ namespace sk_physic2d {
         void Remove_Body(Body* body);
 
         void GetQuadTreeDebug() { quad_tree.GetInfo(); };
-        std::vector<int> Query(const rect& rect) { return quad_tree.Query(rect); };
-        /// @brief remove all physic body from world
 
         void Update();
         void Draw();
-        void Clear();
+
+        private:
+        std::vector <int> solids, actors;
+        bool body_added_or_removed = false;
+
+        std::vector<int> Query(const rect& rect) { return quad_tree.Query(rect); };
+        void GetSABodyList();
+
+        void ResolveSolid(int id);
+        void ResolveActor(int id);
     };
 }

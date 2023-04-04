@@ -1,8 +1,7 @@
 #pragma once
 
-#include <GLM/glm.hpp>
-
-struct Enity {
-    glm::vec3 pos;
-
+class Entity {
+    public:
+    Entity() {}
+    ~Entity() {}
 };

@@ -45,15 +45,15 @@ namespace sk_game {
 
     //! update cam size and positon, temporary
     void UpdateCam() {
-        if (sk_input::Key(sk_key::A)) cam->position += glm::vec3(-1, 0, 0) * sk_time::delta_time * 5.0f;
-        if (sk_input::Key(sk_key::D)) cam->position += glm::vec3(1, 0, 0) * sk_time::delta_time * 5.0f;
-        if (sk_input::Key(sk_key::W)) cam->position += glm::vec3(0, 1, 0) * sk_time::delta_time * 5.0f;
-        if (sk_input::Key(sk_key::S)) cam->position += glm::vec3(0, -1, 0) * sk_time::delta_time * 5.0f;
-        if (sk_input::Key(sk_key::UP)) {
+        if (sk_input::Key(sk_key::KP_1)) cam->position += glm::vec3(-1, 0, 0) * sk_time::delta_time * 5.0f;
+        if (sk_input::Key(sk_key::KP_3)) cam->position += glm::vec3(1, 0, 0) * sk_time::delta_time * 5.0f;
+        if (sk_input::Key(sk_key::KP_5)) cam->position += glm::vec3(0, 1, 0) * sk_time::delta_time * 5.0f;
+        if (sk_input::Key(sk_key::KP_2)) cam->position += glm::vec3(0, -1, 0) * sk_time::delta_time * 5.0f;
+        if (sk_input::Key(sk_key::KP_4)) {
             camsize -= 10 * sk_time::delta_time;
             cam->ProjectionO(camsize, 800, 600);
         }
-        if (sk_input::Key(sk_key::DOWN)) {
+        if (sk_input::Key(sk_key::KP_6)) {
             camsize += 10 * sk_time::delta_time;
             cam->ProjectionO(camsize, 800, 600);
         }
@@ -62,6 +62,8 @@ namespace sk_game {
     void UpdateN() {
         //! update cam size and positon, temporary
         UpdateCam();
+
+        test_level::Update();
     }
     //? late update, call after draw
     void UpdateL() {}

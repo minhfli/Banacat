@@ -137,7 +137,7 @@ namespace sk_physic2d {
     /// @param r1offset offset(swept value) of rect 1
     /// @param contact_data contact point,time,normal,... 
     /// @return true when ray hit, not when 'touch'  rect
-    bool swept_rect_vs_rect(const rect& r1, const rect& r2, glm::vec2 r1offset, contact* contact_data) {
+    bool sweep_rect_vs_rect(const rect& r1, const rect& r2, glm::vec2 r1offset, contact* contact_data) {
         //* default, hit=false
         *contact_data = {
             false,
