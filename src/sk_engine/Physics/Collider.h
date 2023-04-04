@@ -18,8 +18,9 @@ namespace  sk_physic2d {
             hsize = (glm::vec2(bound.z, bound.w) - glm::vec2(bound.x, bound.y)) / 2.0f;
         }
 
-        /// @brief lower left and upper right conner position of the rect
-        /// @return 
+        inline rect expand(float x, float y) {
+            return rect(pos, hsize + glm::vec2(x, y));
+        }
         inline glm::vec4 bound(glm::vec2 expand = glm::vec2(0)) const {
             return glm::vec4(pos - hsize - expand, pos + hsize + expand);
         }
@@ -33,10 +34,10 @@ namespace  sk_physic2d {
         }
         inline bool overlap(const rect& r2) const {
             return{
-                this->pos.x >= r2.pos.x - r2.hsize.x - this->hsize.x &&
-                this->pos.y >= r2.pos.y - r2.hsize.y - this->hsize.y &&
-                this->pos.x <= r2.pos.x + r2.hsize.x + this->hsize.x &&
-                this->pos.y <= r2.pos.y + r2.hsize.y + this->hsize.y
+                this->pos.x > r2.pos.x - r2.hsize.x - this->hsize.x &&
+                this->pos.y > r2.pos.y - r2.hsize.y - this->hsize.y &&
+                this->pos.x < r2.pos.x + r2.hsize.x + this->hsize.x &&
+                this->pos.y < r2.pos.y + r2.hsize.y + this->hsize.y
             };
         }
     };
@@ -45,10 +46,7 @@ namespace  sk_physic2d {
         float radius = 1.0f;
 
         circle() {};
-        circle(glm::vec2 p = glm::vec2(0), float r = 0) {
-            pos = p;
-            radius = r;
-        }
+        circle(glm::vec2 p = glm::vec2(0), float r = 0): pos(p), radius(r) {}
         inline rect bound() const {
             return rect(glm::vec2(pos.x - radius, pos.y - radius), glm::vec2(radius * 2));
         }
@@ -91,42 +89,41 @@ namespace  sk_physic2d {
     };
 
     //! may change in future implementation 
-    struct Body_Def {
-        bool solid;
-        rect RECT;
-        glm::vec2 start_velocity;
 
-        Body_Def(rect r, bool s = true, glm::vec2 v = glm::vec2(0)):solid(s), RECT(r), start_velocity(v) {}
+    struct Body_Def {
+        int type;
+        rect RECT;
+        uint32_t tag;
+
+        /// @param t collider type, 0:solid, 1:actor, 2:triggerer
+        /// @param tg tag
+        Body_Def(rect r, int t = 0, uint32_t tg = 0):
+            type(t),
+            RECT(r),
+            tag(tg) {}
     };
     struct Body {
-        friend class AABB_World;
-        private:
+        public:
         bool is_active = false;
+        uint8_t type;
+        uint32_t tag;
 
+        /// @brief this should be set to true for the physic world to know and update 
         bool modified = false;
-        bool is_solid = true;
 
         rect RECT;
-        glm::vec2 velocity;
+        glm::vec2 velocity = glm::vec2(0);
 
-        public:
+        bool is_solid() const { return is_active && type == 0; }
+        bool is_actor() const { return is_active && type == 1; }
+
         Body() {}
         Body(Body_Def def):
             is_active(true),
             modified(false),
-            is_solid(def.solid),
+            type(def.type),
             RECT(def.RECT),
-            velocity(def.start_velocity) {}
-
-        /// @brief set the position of the body
-        inline void set_pos(const glm::vec2 p) {
-            RECT.pos = p;
-            modified = true;
-        }
-        inline void set_size(const glm::vec2 s) {
-            RECT.hsize = s / 2.0f;
-            modified = true;
-        }
+            tag(def.tag) {}
     };
 
 }

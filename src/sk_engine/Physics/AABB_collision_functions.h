@@ -18,16 +18,7 @@ namespace sk_physic2d {
 
     bool ray_vs_rect(const ray& l, const glm::vec4& r, contact* contact_data);
 
-    bool swept_rect_vs_rect(const rect& r1, const rect& r2, glm::vec2 r1offset, contact* contact_data);
+    bool sweep_rect_vs_rect(const rect& r1, const rect& r2, glm::vec2 r1offset, contact* contact_data);
     bool colli_rect_vs_rect(const rect& r1, const rect& r2, contact* contact_data);
 
-    //* collision resolve
-    /// @brief resolve 2 rect that collided
-    /// @param r1 
-    /// @param r2 
-    void resolve_colli_rect(const rect& r1, const rect& r2);
-    /// @brief resolve 2 rect that may collide
-    /// @param r1 
-    /// @param r2 must be static
-    void resolve_swept_rect(const rect& r1, const contact& contact_data, const float& delta_time);
 }

@@ -5,12 +5,15 @@
 #include <sk_engine/Graphics/2D_Renderer.h>
 #include <sk_engine/Physics/AABB_World.h>
 
+#include "Player.h"
+
 namespace sk_game {
     namespace test_level {
 
         namespace { //private data
             Tilemap tilemap_;
             sk_physic2d::AABB_World physic_world;
+            Player player;
         }
         void LoadLevel() {
             nlohmann::json file = ReadJsonFile(level_path);
@@ -64,11 +67,16 @@ namespace sk_game {
                         physic_world.Create_Body(sk_physic2d::Body_Def(R));
                 }
             }
+
+            sk_physic2d::Body_Def player_bodydef(sk_physic2d::rect(glm::vec4(0, 0, 1, 1)), 1);
+            player.m_body = physic_world.Create_Body(player_bodydef);
         }
         void Update() {
-
+            player.Update();
+            physic_world.Update();
         }
         void Draw() {
+            player.Draw();
             physic_world.Draw();
             for (int i = 0;i <= tilemap_.tile_count - 1; i++) {
                 Tile_data& cur_tile = tilemap_.tiles[i];
