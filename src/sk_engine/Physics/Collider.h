@@ -12,7 +12,7 @@ namespace  sk_physic2d {
         /// @brief half size
         glm::vec2 hsize = glm::vec2(1);
 
-        rect(glm::vec2 p = glm::vec2(0), glm::vec2 s = glm::vec2(1)): pos(p), hsize(s / 2.0f) {}
+        rect(glm::vec2 p = glm::vec2(0), glm::vec2 hs = glm::vec2(1)): pos(p), hsize(hs) {}
         rect(glm::vec4 bound) {
             pos = (glm::vec2(bound.z, bound.w) + glm::vec2(bound.x, bound.y)) / 2.0f;
             hsize = (glm::vec2(bound.z, bound.w) - glm::vec2(bound.x, bound.y)) / 2.0f;
@@ -41,14 +41,36 @@ namespace  sk_physic2d {
             };
         }
     };
-    struct circle {
-        glm::vec2 pos = glm::vec2(0);
-        float radius = 1.0f;
 
-        circle() {};
-        circle(glm::vec2 p = glm::vec2(0), float r = 0): pos(p), radius(r) {}
-        inline rect bound() const {
-            return rect(glm::vec2(pos.x - radius, pos.y - radius), glm::vec2(radius * 2));
+    struct irect {
+        const int precision = 32;
+        glm::ivec2 pos;
+        glm::ivec2 hsize;
+        glm::vec2 offset = glm::vec2(0);
+        irect(glm::ivec2 p = glm::ivec2(0), glm::ivec2 hs = glm::ivec2(1)): pos(p), hsize(hs) {}
+
+        inline irect expand(int x, int y) {
+            hsize.x += x;
+            hsize.y += y;
+        }
+        inline glm::ivec4 bound(glm::ivec2 expand = glm::ivec2(0)) const {
+            return glm::ivec4(pos - hsize - expand, pos + hsize + expand);
+        }
+        inline bool contain(const irect& r2) const {
+            return {
+                r2.pos.x - r2.hsize.x >= this->pos.x - this->hsize.x &&
+                r2.pos.y - r2.hsize.y >= this->pos.y - this->hsize.y &&
+                r2.pos.x + r2.hsize.x <= this->pos.x + this->hsize.x &&
+                r2.pos.y + r2.hsize.y <= this->pos.y + this->hsize.y
+            };
+        }
+        inline bool overlap(const irect& r2) const {
+            return{
+                this->pos.x > r2.pos.x - r2.hsize.x - this->hsize.x &&
+                this->pos.y > r2.pos.y - r2.hsize.y - this->hsize.y &&
+                this->pos.x < r2.pos.x + r2.hsize.x + this->hsize.x &&
+                this->pos.y < r2.pos.y + r2.hsize.y + this->hsize.y
+            };
         }
     };
     struct ray {

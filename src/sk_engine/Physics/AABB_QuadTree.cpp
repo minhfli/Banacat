@@ -27,7 +27,7 @@ namespace sk_physic2d {
                 center.y = r.pos.y - hsize.y;
             else center.y = r.pos.y + hsize.y;
 
-            return rect(center, r.hsize);
+            return rect(center, r.hsize / 2.0f);
         }
         /// @brief return quadrant(number) that target rect is in, asume that target rect is in current rect 
         int FindQuadRant(const rect& r, const rect& target) {
@@ -171,7 +171,7 @@ namespace sk_physic2d {
         return values;
     }
     void QuadTree::Query(std::vector<int>& m_vector, Node* node, const rect& rect) {
-        if (!node->node_rect.overlap(rect)) return;
+        if (node != &this->root && !node->node_rect.overlap(rect)) return;
 
         for (auto value : node->m_value) {
             if (rect.overlap(value.second))

@@ -8,11 +8,13 @@
 
 void Player::Update() {
 
+    m_body->velocity.x = 0;
     float speed = 5.0f;
     if (sk_input::Key(sk_key::A)) m_body->velocity.x = -speed;
     if (sk_input::Key(sk_key::D)) m_body->velocity.x = speed;
-    if (sk_input::Key(sk_key::W)) m_body->velocity.y = speed;
-    if (sk_input::Key(sk_key::S)) m_body->velocity.y = -speed;
+    if (sk_input::Key(sk_key::SPACE)) m_body->velocity.y = speed;
+
+    m_body->velocity.y -= 20 * sk_time::delta_time;
     //m_body->RECT.pos = pos;
 }
 void Player::Draw() {

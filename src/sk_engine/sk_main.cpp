@@ -15,6 +15,7 @@
 
 namespace sk_main {
     int window_w = 800, window_h = 600;
+    int last_fixed_update_tick = -100;
 
     void Init() {
         sk_window::Init("SDL window", window_w, window_h);
@@ -45,6 +46,14 @@ namespace sk_main {
             sk_time::delta_time = (float)sk_time::delta_tick / 1000;
             sk_time::current_tick += sk_time::delta_tick;
             sk_time::current_time = (float)sk_time::current_tick / 1000;
+
+            if (sk_time::current_tick - last_fixed_update_tick >= sk_time::fixed_delta_tick) {
+                last_fixed_update_tick += sk_time::fixed_delta_tick;
+                if (sk_time::current_tick - last_fixed_update_tick >= sk_time::fixed_delta_tick)
+                    last_fixed_update_tick = sk_time::current_tick;
+                sk_game::UpdateF();
+                std::cout << "fixed update called\n";
+            }
 
             GameLoop();
 

@@ -9,7 +9,7 @@
 namespace sk_physic2d {
 
     void AABB_World::Hint_WorldBound(glm::vec4 bound) { world_bound = rect(bound); }
-    void AABB_World::Hint_WorldBound(glm::vec2 center, float size) { world_bound = rect(center, glm::vec2(size)); }
+    void AABB_World::Hint_WorldBound(glm::vec2 center, float size) { world_bound = rect(center, glm::vec2(size) / 2.0f); }
 
     void AABB_World::Init() {
         m_Body.reserve(100);
@@ -87,11 +87,12 @@ namespace sk_physic2d {
         );
         std::vector<int> possible_collision = Query(query_rect);
 
-        // apply gravity
-
         glm::vec2 newpos = a_body.RECT.pos + a_body.velocity * sk_time::delta_time;
 
-        if (std::abs(a_body.velocity.x) > 0.01f) {   // solve x
+        for (int index : possible_collision) {
+            sk_graphic::Renderer2D_AddBBox(m_Body[index].RECT.bound(), 2);
+        }
+        if (std::abs(a_body.velocity.x) > 0) {   // solve x
             float tx = sk_time::delta_time;
             for (int index : possible_collision) if (m_Body[index].is_solid()) {
                 Body& s_body = m_Body[index];
@@ -101,7 +102,7 @@ namespace sk_physic2d {
                     float tfar = (s_bound.z - a_body.RECT.pos.x) / a_body.velocity.x;
 
                     float tmin = std::min(tnear, tfar);
-                    if (tmin > -0.01f && tx > tmin) {
+                    if (tx > tmin) {
                         if (tnear < tfar)
                             newpos.x = s_bound.x;
                         else
@@ -112,7 +113,7 @@ namespace sk_physic2d {
             }
             if (tx < sk_time::delta_time) a_body.velocity.x = 0;
         }
-        if (std::abs(a_body.velocity.y) > 0.01f) {   // solve y
+        if (std::abs(a_body.velocity.y) > 0) {   // solve y
             float ty = sk_time::delta_time;
             for (int index : possible_collision) if (m_Body[index].is_solid()) {
                 Body& s_body = m_Body[index];
@@ -122,7 +123,7 @@ namespace sk_physic2d {
                     float tfar = (s_bound.w - a_body.RECT.pos.y) / a_body.velocity.y;
 
                     float tmin = std::min(tnear, tfar);
-                    if (tmin > -0.01f && ty > tmin) {
+                    if (ty > tmin) {
                         if (tnear < tfar)
                             newpos.y = s_bound.y;
                         else
@@ -134,11 +135,10 @@ namespace sk_physic2d {
             if (ty < sk_time::delta_time) a_body.velocity.y = 0;
         }
         a_body.RECT.pos = newpos;
-        a_body.velocity.y -= 10 * sk_time::delta_time;
 
-        std::cout << "actor:    " << id << '\n';
-        std::cout << "velocity: " << a_body.velocity.x << " " << a_body.velocity.y << '\n';
-        std::cout << "position: " << a_body.RECT.pos.x << " " << a_body.RECT.pos.y << '\n';
+        //std::cout << "actor:    " << id << '\n';
+        //std::cout << "velocity: " << a_body.velocity.x << " " << a_body.velocity.y << '\n';
+        //std::cout << "position: " << a_body.RECT.pos.x << " " << a_body.RECT.pos.y << '\n';
     }
     void AABB_World::ResolveSolid(int id) {
     }
@@ -157,7 +157,6 @@ namespace sk_physic2d {
             std::cout << "Error: Big delta time \n";
             return;
         }
-        std::cout << (int)(-1) / 2;
         GetSABodyList();
         for (int index : actors) ResolveActor(index);
         for (int index : solids) ResolveSolid(index);

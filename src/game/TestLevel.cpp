@@ -62,7 +62,7 @@ namespace sk_game {
                 for (int j = 0; j <= tilemap_.width - 1; j++) {
                     int csv_index = i * tilemap_.width + j;
 
-                    sk_physic2d::rect R = sk_physic2d::rect(glm::vec2(j, -i), glm::vec2(1));
+                    sk_physic2d::rect R = sk_physic2d::rect(glm::vec2(j, -i), glm::vec2(0.5f));
                     if (collider_csv[csv_index] == 1)
                         physic_world.Create_Body(sk_physic2d::Body_Def(R));
                 }

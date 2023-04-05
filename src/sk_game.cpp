@@ -75,9 +75,7 @@ namespace sk_game {
         test_level::Draw();
     }
 
-
-//! NOT IMPLEMENTED 
-//? fixed update, called after every fixed amount of time(not implemented)
+    //? fixed update, called after every fixed amount of time
     void UpdateF() { }
 
     //? call when game stop, use to free data, save, ....
