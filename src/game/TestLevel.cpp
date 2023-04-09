@@ -2,6 +2,7 @@
 #include "Tilemap.h"
 
 #include <sk_engine/Common/Common.h>
+#include <sk_engine/Common/sk_time.h>
 #include <sk_engine/Graphics/2D_Renderer.h>
 #include <sk_engine/Physics/AABB_World.h>
 #include <sk_engine/Window/Input.h>
@@ -49,25 +50,20 @@ namespace sk_game {
 
                 //* set tile's flip 
                 int flip = data["autoLayerTiles"][i]["f"];
-                //  "Flip bits", a 2-bits integer to represent the mirror transformations of the tile.
-                //  only use if rotate = 0
-                //  - Bit 0 = X flip
-                //  - Bit 1 = Y flip
-                //  Examples: f=0 (no flip), f=1 (X flip only), f=2 (Y flip only), f=3 (both flips)
-                if ((flip & 1)) std::swap(cur_tile.uv.x, cur_tile.uv.z);
-                if ((flip & 2)) std::swap(cur_tile.uv.y, cur_tile.uv.w);
+                if ((flip & 1)) std::swap(cur_tile.uv.x, cur_tile.uv.z);    // flip x
+                if ((flip & 2)) std::swap(cur_tile.uv.y, cur_tile.uv.w);    // flip y
             }
 
             physic_world.Hint_WorldBound(glm::vec2(tilemap_.width / 2, -tilemap_.height / 2) + glm::vec2(0.5f), 48);
             physic_world.Init();
+            physic_world.enable_debug_draw = false;
+
             nlohmann::json collider_csv = data["intGridCsv"];
 
             int added_collider = 0;
             for (int i = 0; i <= tilemap_.height - 1; i++) {
                 for (int j = 0; j <= tilemap_.width - 1; j++) {
                     int csv_index = i * tilemap_.width + j;
-
-                    //sk_physic2d::rect R = sk_physic2d::rect(glm::vec2(j, -i), glm::vec2(0.5f));
 
                     if (collider_csv[csv_index] == 1) {
                         physic_world.Create_Body(sk_physic2d::Body_Def(
@@ -80,11 +76,16 @@ namespace sk_game {
 
             sk_physic2d::Body_Def player_bodydef(sk_physic2d::irect::irect_fbound({ 0, 0, 1, 1 }), 1);
             player.m_body = physic_world.Create_Body(player_bodydef);
+            player.physic_world = &physic_world;
+        }
+        void Start() {
+            LoadLevel();
         }
         void Update() {
+            if (sk_time::delta_time > 0.1f) // <10 fps
+                Error("Error: Update skipped: Big delta time");
             player.Update();
             physic_world.Update();
-            if (sk_input::KeyDown(sk_key::SPACE)) physic_world.GetQuadTreeDebug();
         }
         void Draw() {
             player.Draw();
@@ -102,5 +103,6 @@ namespace sk_game {
             }
         }
 
+        void Stop() {}
     }
 }

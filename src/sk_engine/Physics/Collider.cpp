@@ -41,7 +41,7 @@ namespace  sk_physic2d {
         bound.w += _y;
     }
     void irect::set_center(float x, float y) {
-        x *= 32; y *= 32;
+        x *= INTCOORD_PRECISION; y *= INTCOORD_PRECISION;
         glm::vec2 center = glm::vec2(bound.x + bound.z, bound.y + bound.w) * 0.5f + offset;
         move(x - center.x, y = center.y);
     }

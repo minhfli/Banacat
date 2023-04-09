@@ -11,7 +11,9 @@ namespace sk_game {
         void LoadLevel();
         void UnLoadLevel();
 
+        void Start();
         void Draw();
         void Update();
+        void Stop();
     }
 }

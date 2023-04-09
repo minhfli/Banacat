@@ -40,7 +40,7 @@ namespace sk_game {
     }
 
     void Start() {
-        test_level::LoadLevel();
+        test_level::Start();
     }
 
     //! update cam size and positon, temporary
@@ -79,5 +79,7 @@ namespace sk_game {
     void UpdateF() { }
 
     //? call when game stop, use to free data, save, ....
-    void Stop() { }
+    void Stop() {
+        test_level::Stop();
+    }
 }

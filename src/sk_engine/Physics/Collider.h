@@ -41,7 +41,7 @@ namespace  sk_physic2d {
         }
     };
 
-    const int INTCOORD_PRECISION = 32;
+    const int INTCOORD_PRECISION = 16;
     const float INTCOORD_ONE_OVER_PRECISION = 1.0f / INTCOORD_PRECISION;
     /// @brief physic rectangle collider in integer coodinate
     struct irect {

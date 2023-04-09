@@ -24,7 +24,7 @@ namespace sk_physic2d {
         public:
         inline int BodyCount()const { return body_counts; }
 
-        bool debug_draw = true;
+        bool enable_debug_draw = true;
 
         glm::vec4 world_bound = glm::vec4(-128, -128, 128, 128);
 
@@ -49,6 +49,7 @@ namespace sk_physic2d {
         void Update();
         void Draw();
 
+        bool TouchSolid_ibound(glm::ivec4 ibound);
 
         private:
         std::vector <int> solids, actors;

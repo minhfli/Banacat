@@ -110,9 +110,10 @@ namespace sk_physic2d {
 
         std::vector<int> possible_collision = Query(query_rect);
 
-        for (int index : possible_collision) {
-            sk_graphic::Renderer2D_AddBBox(m_Body[index].RECT.true_bound(), 2, { 1,1,1,1 });
-        }
+        // draw query rects
+        if (enable_debug_draw)
+            for (int index : possible_collision)
+                sk_graphic::Renderer2D_AddBBox(m_Body[index].RECT.true_bound(), 2, { 1,1,1,1 });
 
         if (x_query != 0) { // solve x
             //get direction
@@ -172,8 +173,19 @@ namespace sk_physic2d {
     void AABB_World::ResolveSolid(int id) {
     }
 
+    //* check touching and raycasting --------------------------------------------------------------------------------------
+
+    /// @brief check touching solid, using integer based bounding box 
+    bool AABB_World::TouchSolid_ibound(glm::ivec4 ibound) {
+        auto possible_collision = Query(irect(ibound));
+        for (int body_id : possible_collision) if (m_Body[body_id].is_solid()) return true;
+        return 0;
+    }
+
+    //* Debug draw and Update ----------------------------------------------------------------------------------------------
 
     void AABB_World::Draw() {
+        if (!enable_debug_draw) return;
         for (auto& body : this->m_Body)
             if (body.is_active) {
                 sk_graphic::Renderer2D_AddBBox(body.RECT.true_bound(0), 1, glm::vec4(0, 1, 0, 1));
