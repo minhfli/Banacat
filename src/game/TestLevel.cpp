@@ -4,8 +4,11 @@
 #include <sk_engine/Common/Common.h>
 #include <sk_engine/Graphics/2D_Renderer.h>
 #include <sk_engine/Physics/AABB_World.h>
+#include <sk_engine/Window/Input.h>
 
 #include "Player.h"
+
+#include <iostream>
 
 namespace sk_game {
     namespace test_level {
@@ -58,22 +61,30 @@ namespace sk_game {
             physic_world.Hint_WorldBound(glm::vec2(tilemap_.width / 2, -tilemap_.height / 2) + glm::vec2(0.5f), 48);
             physic_world.Init();
             nlohmann::json collider_csv = data["intGridCsv"];
+
+            int added_collider = 0;
             for (int i = 0; i <= tilemap_.height - 1; i++) {
                 for (int j = 0; j <= tilemap_.width - 1; j++) {
                     int csv_index = i * tilemap_.width + j;
 
-                    sk_physic2d::rect R = sk_physic2d::rect(glm::vec2(j, -i), glm::vec2(0.5f));
-                    if (collider_csv[csv_index] == 1)
-                        physic_world.Create_Body(sk_physic2d::Body_Def(R));
+                    //sk_physic2d::rect R = sk_physic2d::rect(glm::vec2(j, -i), glm::vec2(0.5f));
+
+                    if (collider_csv[csv_index] == 1) {
+                        physic_world.Create_Body(sk_physic2d::Body_Def(
+                            sk_physic2d::irect::irect_fsize_fpos(glm::vec2(0.5f), glm::vec2(j, -i)),
+                            0
+                        ));
+                    }
                 }
             }
 
-            sk_physic2d::Body_Def player_bodydef(sk_physic2d::rect(glm::vec4(0, 0, 1, 1)), 1);
+            sk_physic2d::Body_Def player_bodydef(sk_physic2d::irect::irect_fbound({ 0, 0, 1, 1 }), 1);
             player.m_body = physic_world.Create_Body(player_bodydef);
         }
         void Update() {
             player.Update();
             physic_world.Update();
+            if (sk_input::KeyDown(sk_key::SPACE)) physic_world.GetQuadTreeDebug();
         }
         void Draw() {
             player.Draw();

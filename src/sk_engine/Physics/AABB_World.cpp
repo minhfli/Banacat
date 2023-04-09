@@ -1,6 +1,9 @@
 #include "AABB_World.h"
 
 #include <iostream>
+#include <cmath>
+#include <algorithm>
+
 
 #include <Graphics/2D_Renderer.h>
 
@@ -8,14 +11,25 @@
 
 namespace sk_physic2d {
 
-    void AABB_World::Hint_WorldBound(glm::vec4 bound) { world_bound = rect(bound); }
-    void AABB_World::Hint_WorldBound(glm::vec2 center, float size) { world_bound = rect(center, glm::vec2(size) / 2.0f); }
+    void AABB_World::Hint_WorldBound(glm::vec4 bound) { world_bound = bound; }
+    void AABB_World::Hint_WorldBound(glm::vec2 center, float size) { world_bound = { center - glm::vec2(size) * 0.5f,center + glm::vec2(size) * 0.5f }; }
 
     void AABB_World::Init() {
         m_Body.reserve(100);
         solids.reserve(100);
         actors.reserve(10);
-        quad_tree.Init(world_bound);
+        quad_tree.Init(irect::irect_fbound(world_bound));
+
+        std::cout << "world_bound: ";
+        std::cout << world_bound.x << " ";
+        std::cout << world_bound.y << " ";
+        std::cout << world_bound.z << " ";
+        std::cout << world_bound.w << "\n";
+        std::cout << quad_tree.root.node_rect.bound.x << " ";
+        std::cout << quad_tree.root.node_rect.bound.y << " ";
+        std::cout << quad_tree.root.node_rect.bound.z << " ";
+        std::cout << quad_tree.root.node_rect.bound.w << "\n";
+
     }
     void AABB_World::Clear() {
         m_Body.clear();
@@ -81,64 +95,79 @@ namespace sk_physic2d {
     void AABB_World::ResolveActor(int id) {
         Body& a_body = m_Body[id];
 
-        rect query_rect(
-            a_body.RECT.pos + a_body.velocity * 0.5f * sk_time::delta_time,
-            a_body.RECT.hsize * 2.0f + a_body.velocity * sk_time::delta_time
-        );
+        glm::vec2 move_amount = a_body.RECT.offset + a_body.velocity * sk_time::delta_time * (float)INTCOORD_PRECISION;
+
+        // round away from 0, use to query
+        int x_query = (move_amount.x < 0) ? floor(move_amount.x) : ceil(move_amount.x);
+        int y_query = (move_amount.y < 0) ? floor(move_amount.y) : ceil(move_amount.y);
+        // round toward, use to move body
+        int x_move = trunc(move_amount.x);
+        int y_move = trunc(move_amount.y);
+
+        a_body.RECT.offset = move_amount - glm::vec2(x_move, y_move);
+
+        irect query_rect = a_body.RECT.extend_(x_query, y_query);
+
         std::vector<int> possible_collision = Query(query_rect);
 
-        glm::vec2 newpos = a_body.RECT.pos + a_body.velocity * sk_time::delta_time;
-
         for (int index : possible_collision) {
-            sk_graphic::Renderer2D_AddBBox(m_Body[index].RECT.bound(), 2);
+            sk_graphic::Renderer2D_AddBBox(m_Body[index].RECT.true_bound(), 2, { 1,1,1,1 });
         }
-        if (std::abs(a_body.velocity.x) > 0) {   // solve x
-            float tx = sk_time::delta_time;
-            for (int index : possible_collision) if (m_Body[index].is_solid()) {
-                Body& s_body = m_Body[index];
-                glm::vec4 s_bound = s_body.RECT.bound(a_body.RECT.hsize);
-                if (a_body.RECT.pos.y > s_bound.y && a_body.RECT.pos.y < s_bound.w) {   // y overlap
-                    float tnear = (s_bound.x - a_body.RECT.pos.x) / a_body.velocity.x;
-                    float tfar = (s_bound.z - a_body.RECT.pos.x) / a_body.velocity.x;
 
-                    float tmin = std::min(tnear, tfar);
-                    if (tx > tmin) {
-                        if (tnear < tfar)
-                            newpos.x = s_bound.x;
-                        else
-                            newpos.x = s_bound.z;
-                        tx = tmin;
+        if (x_query != 0) { // solve x
+            //get direction
+            int xdir = 1;
+            if (x_move < 0) {
+                xdir = -1;
+                x_move = -x_move;
+            }
+            // solve for each static body
+            for (int s_index : possible_collision) if (m_Body[s_index].is_solid()) {
+                Body& s_body = m_Body[s_index];
+
+                if (s_body.RECT.bound.w > a_body.RECT.bound.y && a_body.RECT.bound.w > s_body.RECT.bound.y) { // y overlap
+                    int distant = std::max(
+                        a_body.RECT.bound.x - s_body.RECT.bound.z,
+                        s_body.RECT.bound.x - a_body.RECT.bound.z
+                    );
+                    if (x_move >= distant) {
+                        x_move = distant;
+                        a_body.RECT.offset.x = 0;
+                        a_body.velocity.x = 0;
                     }
                 }
             }
-            if (tx < sk_time::delta_time) a_body.velocity.x = 0;
+            // after solve, apply movement
+            a_body.RECT.bound.x += x_move * xdir;
+            a_body.RECT.bound.z += x_move * xdir;
         }
-        if (std::abs(a_body.velocity.y) > 0) {   // solve y
-            float ty = sk_time::delta_time;
-            for (int index : possible_collision) if (m_Body[index].is_solid()) {
-                Body& s_body = m_Body[index];
-                glm::vec4 s_bound = s_body.RECT.bound(a_body.RECT.hsize);
-                if (a_body.RECT.pos.x > s_bound.x && a_body.RECT.pos.x < s_bound.z) {   // x overlap
-                    float tnear = (s_bound.y - a_body.RECT.pos.y) / a_body.velocity.y;
-                    float tfar = (s_bound.w - a_body.RECT.pos.y) / a_body.velocity.y;
+        if (y_query != 0) { // solve y
+            //get direction
+            int ydir = 1;
+            if (y_move < 0) {
+                ydir = -1;
+                y_move = -y_move;
+            }
+            // solve for each static body
+            for (int s_index : possible_collision) if (m_Body[s_index].is_solid()) {
+                Body& s_body = m_Body[s_index];
 
-                    float tmin = std::min(tnear, tfar);
-                    if (ty > tmin) {
-                        if (tnear < tfar)
-                            newpos.y = s_bound.y;
-                        else
-                            newpos.y = s_bound.w;
-                        ty = tmin;
+                if (s_body.RECT.bound.z > a_body.RECT.bound.x && a_body.RECT.bound.z > s_body.RECT.bound.x) { // x overlap
+                    int distant = std::max(
+                        a_body.RECT.bound.y - s_body.RECT.bound.w,
+                        s_body.RECT.bound.y - a_body.RECT.bound.w
+                    );
+                    if (y_move >= distant) {
+                        y_move = distant;
+                        a_body.RECT.offset.y = 0;
+                        a_body.velocity.y = 0;
                     }
                 }
             }
-            if (ty < sk_time::delta_time) a_body.velocity.y = 0;
+            // after solve, apply movement
+            a_body.RECT.bound.y += y_move * ydir;
+            a_body.RECT.bound.w += y_move * ydir;
         }
-        a_body.RECT.pos = newpos;
-
-        //std::cout << "actor:    " << id << '\n';
-        //std::cout << "velocity: " << a_body.velocity.x << " " << a_body.velocity.y << '\n';
-        //std::cout << "position: " << a_body.RECT.pos.x << " " << a_body.RECT.pos.y << '\n';
     }
     void AABB_World::ResolveSolid(int id) {
     }
@@ -147,7 +176,7 @@ namespace sk_physic2d {
     void AABB_World::Draw() {
         for (auto& body : this->m_Body)
             if (body.is_active) {
-                sk_graphic::Renderer2D_AddBBox(body.RECT.bound(), 1, glm::vec4(0, 1, 0, 1));
+                sk_graphic::Renderer2D_AddBBox(body.RECT.true_bound(0), 1, glm::vec4(0, 1, 0, 1));
             }
         quad_tree.Draw();
     }

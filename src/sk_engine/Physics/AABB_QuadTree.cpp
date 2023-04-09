@@ -8,9 +8,8 @@
 
 namespace sk_physic2d {
     namespace { // some special funtion, only for this file
-        rect GetQuadrant(const rect& r, const int quadrant) {
-            glm::vec2 center;
-            glm::vec2 hsize = r.hsize / 2.0f;
+        irect GetQuadrant(const irect& r, const int quadrant) {
+            glm::ivec2 center = r.centeri();
 
             //  +-------+-------+
             //  |   2   |   3   |
@@ -18,27 +17,47 @@ namespace sk_physic2d {
             //  |   0   |   1   |
             //  +-------+-------+
 
-            // quad rant in left or right
-            if ((quadrant & 1) == 0)
-                center.x = r.pos.x - hsize.x;
-            else center.x = r.pos.x + hsize.x;
-            // quad rant is below or up
-            if ((quadrant & 2) == 0)
-                center.y = r.pos.y - hsize.y;
-            else center.y = r.pos.y + hsize.y;
+            int x, y, z, w;
 
-            return rect(center, r.hsize / 2.0f);
+            if ((quadrant & 1) == 0) {
+                x = r.bound.x;
+                z = center.x;
+            }
+            else {
+                x = center.x;
+                z = r.bound.z;
+            }
+            if ((quadrant & 2) == 0) {
+                y = r.bound.y;
+                w = center.y;
+            }
+            else {
+                y = center.y;
+                w = r.bound.w;
+            }
+
+            return irect(x, y, z, w);
         }
         /// @brief return quadrant(number) that target rect is in, asume that target rect is in current rect 
-        int FindQuadRant(const rect& r, const rect& target) {
-            int quadrant = 0;
-            if (target.pos.x > r.pos.x) quadrant |= 1;
-            if (target.pos.y > r.pos.y) quadrant |= 2;
+        int FindQuadRant(const irect& r, const irect& target) {
+            int x = -1;
+            int y = -1;
+            glm::ivec2 center = r.centeri();
 
-            rect quadrant_rect = GetQuadrant(r, quadrant);
+            //  +-------+-------+
+            //  |   2   |   3   |
+            //  +-------+-------+
+            //  |   0   |   1   |
+            //  +-------+-------+
 
-            if (quadrant_rect.contain(target)) return quadrant;
-            return -1;
+            if (target.bound.x >= center.x) x = 1;
+            if (target.bound.z <= center.x) x = 0;
+
+            if (target.bound.y >= center.y) y = 2;
+            if (target.bound.w <= center.y) y = 0;
+
+            if (x == -1 || y == -1) return -1;
+            return x + y;
         }
     }
 
@@ -48,7 +67,7 @@ namespace sk_physic2d {
         for (int i = 0;i <= 3; i++)
             node->child[i] = new Node(node, node->depth + 1, GetQuadrant(node->node_rect, i));
 
-        auto new_value = std::vector<std::pair<int, rect>>();
+        auto new_value = std::vector<std::pair<int, irect>>();
         for (auto value : node->m_value) {
             int i = FindQuadRant(node->node_rect, value.second);
             if (i != -1) {
@@ -91,7 +110,7 @@ namespace sk_physic2d {
             MergeNode(node->parent);
     }
 
-    void QuadTree::AddToNode(Node* node, const rect& rect, const int value) {
+    void QuadTree::AddToNode(Node* node, const irect& rect, const int value) {
 
         //add value to root node even if rect is not inside root node bound
         //if (!node->node_rect.contain(rect)) return;
@@ -115,16 +134,19 @@ namespace sk_physic2d {
             else {
                 node->m_value.push_back({ value,rect });
                 Item_Node_map[value] = node;
+
+                // merge node if node is splited but cannot add pointer to node
+                MergeNode(node);
             }
         }
     }
-    void QuadTree::AddValue(const rect& rect, const int value) {
+    void QuadTree::AddValue(const irect& rect, const int value) {
         return AddToNode(&this->root, rect, value);
     }
 
     void QuadTree::RemoveFromNode(Node* node, const int value) {
         // find value in node
-        auto it = std::find_if(node->m_value.begin(), node->m_value.end(), [&value](const std::pair<int, rect>& _value) {
+        auto it = std::find_if(node->m_value.begin(), node->m_value.end(), [&value](const std::pair<int, irect>& _value) {
             return _value.first == value;
         });
         // if value is not found, return
@@ -152,7 +174,7 @@ namespace sk_physic2d {
         RemoveFromNode(node, value);
     }
 
-    void QuadTree::UpdateValue(const rect& rect, const int value) {
+    void QuadTree::UpdateValue(const irect& rect, const int value) {
         // similar to RemoveValue() but dont delete from item-node map
         auto key_pair = Item_Node_map.find(value);
         if (key_pair == Item_Node_map.end()) {
@@ -165,12 +187,12 @@ namespace sk_physic2d {
         AddValue(rect, value);
     }
 
-    std::vector<int> QuadTree::Query(const rect& rect) {
+    std::vector<int> QuadTree::Query(const irect& rect) {
         auto values = std::vector<int>();
         Query(values, &root, rect);
         return values;
     }
-    void QuadTree::Query(std::vector<int>& m_vector, Node* node, const rect& rect) {
+    void QuadTree::Query(std::vector<int>& m_vector, Node* node, const irect& rect) {
         if (node != &this->root && !node->node_rect.overlap(rect)) return;
 
         for (auto value : node->m_value) {
@@ -183,7 +205,7 @@ namespace sk_physic2d {
         }
     }
 
-    void QuadTree::Init(const rect& TREE_RECT) {
+    void QuadTree::Init(const irect& TREE_RECT) {
         root = Node(nullptr, 0, TREE_RECT);
     }
 
@@ -209,17 +231,28 @@ namespace sk_physic2d {
         DrawNode(&root);
     }
     void QuadTree::DrawNode(Node* node) {
-        sk_graphic::Renderer2D_AddBBox(node->node_rect.bound(), 1, glm::vec4(0, 0, 1, 1));
+        sk_graphic::Renderer2D_AddBBox(node->node_rect.true_bound(), 1, glm::vec4(0, 0, 1, 1));
         if (!node->isleaf())
             for (int i = 0; i <= 3; i++) DrawNode(node->child[i]);
     }
 
-    void QuadTree::GetInfo() { GetInfo(&root); }
+    void QuadTree::GetInfo() {
+        GetInfo(&root);
+    }
     void QuadTree::GetInfo(Node* node) {
 
-        std::cout << "Depth: " << node->depth << "  Value: ";
+        std::cout << "Node rect: "
+            << node->node_rect.bound.x << " "
+            << node->node_rect.bound.y << " "
+            << node->node_rect.bound.z << " "
+            << node->node_rect.bound.w << "\n";
+        std::cout << "Depth: " << node->depth << "  Value: \n";
         for (auto value : node->m_value) {
-            std::cout << value.first << " ";
+            std::cout << value.first << "   ";
+            std::cout << value.second.bound.x << " ";
+            std::cout << value.second.bound.y << " ";
+            std::cout << value.second.bound.z << " ";
+            std::cout << value.second.bound.w << "\n";
         }
         std::cout << '\n';
         if (!node->isleaf())

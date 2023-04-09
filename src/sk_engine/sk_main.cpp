@@ -52,7 +52,6 @@ namespace sk_main {
                 if (sk_time::current_tick - last_fixed_update_tick >= sk_time::fixed_delta_tick)
                     last_fixed_update_tick = sk_time::current_tick;
                 sk_game::UpdateF();
-                std::cout << "fixed update called\n";
             }
 
             GameLoop();

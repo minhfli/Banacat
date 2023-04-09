@@ -17,23 +17,24 @@ namespace sk_physic2d {
     /// @brief quad tree is mainly used for indexing to a container
     class QuadTree {
 
+        friend class AABB_World;
         struct Node {
             // node depth
             int depth = 0;
             // only use to know parent, dont use to change parent's value
             Node* parent = nullptr;
             Node* child[4] = { nullptr,nullptr,nullptr,nullptr };
-            rect node_rect;
+            irect node_rect;
 
             // list of rectangle in the tree 
             // not a array but a pointer to reduce node size 
-            std::vector <std::pair<int, rect>> m_value;
+            std::vector <std::pair<int, irect>> m_value;
 
             inline bool isleaf() const {
                 return child[0] == nullptr;
             }
-            Node() {};
-            Node(Node* p, int d, rect r): parent(p), depth(d), node_rect(r) {
+            Node() {}
+            Node(Node* p, int d, irect r): parent(p), depth(d), node_rect(r) {
                 m_value.reserve(NODE_CAPACITY);
             }
         };
@@ -47,10 +48,10 @@ namespace sk_physic2d {
         private:
         void MergeNode(Node* node);
         void SplitNode(Node* node);
-        void AddToNode(Node* node, const rect& rect, const int value);
+        void AddToNode(Node* node, const irect& rect, const int value);
         void RemoveFromNode(Node* node, const int value);
-        void RemoveFromNode(Node* node, const rect& rect, const int value);
-        void Query(std::vector<int>& values, Node* node, const rect& rect);
+        void RemoveFromNode(Node* node, const irect& rect, const int value);
+        void Query(std::vector<int>& values, Node* node, const irect& rect);
 
         void GetInfo(Node* node);
         void DrawNode(Node* node);
@@ -59,13 +60,13 @@ namespace sk_physic2d {
 
         public:
         QuadTree() {}
-        void Init(const rect& tree_RECT);
+        void Init(const irect& tree_RECT);
 
-        void AddValue(const rect& rect, const int value);
+        void AddValue(const irect& rect, const int value);
         void RemoveValue(const int value);
-        void UpdateValue(const rect& rect, const int value);
+        void UpdateValue(const irect& rect, const int value);
 
-        std::vector<int> Query(const rect& rect);
+        std::vector<int> Query(const irect& rect);
 
         void Clear();
 

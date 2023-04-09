@@ -26,7 +26,7 @@ namespace sk_physic2d {
 
         bool debug_draw = true;
 
-        rect world_bound = rect(glm::vec2(0), glm::vec2(256));
+        glm::vec4 world_bound = glm::vec4(-128, -128, 128, 128);
 
         //* hint funtions, call before Init to setup physic world 
         void Hint_WorldBound(glm::vec4 bound);
@@ -49,14 +49,16 @@ namespace sk_physic2d {
         void Update();
         void Draw();
 
+
         private:
         std::vector <int> solids, actors;
         bool body_added_or_removed = false;
 
-        std::vector<int> Query(const rect& rect) { return quad_tree.Query(rect); };
+        std::vector<int> Query(const irect& rect) { return quad_tree.Query(rect); };
         void GetSABodyList();
 
         void ResolveSolid(int id);
         void ResolveActor(int id);
+
     };
 }

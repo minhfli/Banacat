@@ -1,6 +1,5 @@
 #pragma once
 
-#define GLM_FORCE_SWIZZLE
 #include <GLM/glm.hpp>
 
 namespace  sk_physic2d {
@@ -42,36 +41,48 @@ namespace  sk_physic2d {
         }
     };
 
+    const int INTCOORD_PRECISION = 32;
+    const float INTCOORD_ONE_OVER_PRECISION = 1.0f / INTCOORD_PRECISION;
+    /// @brief physic rectangle collider in integer coodinate
     struct irect {
-        const int precision = 32;
-        glm::ivec2 pos;
-        glm::ivec2 hsize;
+        glm::ivec4 bound;
+        /// @brief offet of the rect to its true positon in integer coodinate, always smaller than 1, should not be set outside class
         glm::vec2 offset = glm::vec2(0);
-        irect(glm::ivec2 p = glm::ivec2(0), glm::ivec2 hs = glm::ivec2(1)): pos(p), hsize(hs) {}
 
-        inline irect expand(int x, int y) {
-            hsize.x += x;
-            hsize.y += y;
-        }
-        inline glm::ivec4 bound(glm::ivec2 expand = glm::ivec2(0)) const {
-            return glm::ivec4(pos - hsize - expand, pos + hsize + expand);
-        }
-        inline bool contain(const irect& r2) const {
-            return {
-                r2.pos.x - r2.hsize.x >= this->pos.x - this->hsize.x &&
-                r2.pos.y - r2.hsize.y >= this->pos.y - this->hsize.y &&
-                r2.pos.x + r2.hsize.x <= this->pos.x + this->hsize.x &&
-                r2.pos.y + r2.hsize.y <= this->pos.y + this->hsize.y
-            };
-        }
-        inline bool overlap(const irect& r2) const {
-            return{
-                this->pos.x > r2.pos.x - r2.hsize.x - this->hsize.x &&
-                this->pos.y > r2.pos.y - r2.hsize.y - this->hsize.y &&
-                this->pos.x < r2.pos.x + r2.hsize.x + this->hsize.x &&
-                this->pos.y < r2.pos.y + r2.hsize.y + this->hsize.y
-            };
-        }
+        // simple constuctors
+        irect():bound(0) {}
+        irect(const int x, const int y, const int z, const int w): bound(x, y, z, w) {}
+        irect(const glm::ivec4 b): bound(b) {}
+
+        /// @brief advanced contructor, world size, world position   
+        static irect irect_fsize_fpos(glm::vec2 hsize, glm::vec2 pos);
+        /// @brief advanced contructor, world bound   
+        static irect irect_fbound(glm::vec4 bound);
+
+        /// @brief center of rect in integer coordinate, can return false result if rect size is not even
+        glm::ivec2 centeri()const;
+        /// @brief true center of rect in world coordinate
+        glm::vec2 true_center()const;
+        /// @brief true bound of rect in world coordinate
+        glm::vec4 true_bound(bool add_offset = 1) const;
+
+        /// @brief move rect in integer coordinate
+        /// @param offset_0 if true, set offset to 0
+        void movei(const int x, const int y, const bool offset_0 = 0);
+        /// @brief move rect in world(float) coordinate
+        void move(const float x, const float y);
+        /// @brief set center of the rect in world coordinate
+        void set_center(float x, float y);
+
+        void expand(int x, int y);
+        void extend(int x, int y);
+        /// @brief return new expanded rect 
+        irect expand_(int x, int y);
+        /// @brief return new extended rect 
+        irect extend_(int x, int y);
+
+        bool contain(const irect& r2) const;
+        bool overlap(const irect& r2) const;
     };
     struct ray {
         glm::vec2 pos = glm::vec2(0);
@@ -114,12 +125,12 @@ namespace  sk_physic2d {
 
     struct Body_Def {
         int type;
-        rect RECT;
+        irect RECT;
         uint32_t tag;
 
         /// @param t collider type, 0:solid, 1:actor, 2:triggerer
         /// @param tg tag
-        Body_Def(rect r, int t = 0, uint32_t tg = 0):
+        Body_Def(irect r, int t = 0, uint32_t tg = 0):
             type(t),
             RECT(r),
             tag(tg) {}
@@ -133,7 +144,7 @@ namespace  sk_physic2d {
         /// @brief this should be set to true for the physic world to know and update 
         bool modified = false;
 
-        rect RECT;
+        irect RECT;
         glm::vec2 velocity = glm::vec2(0);
 
         bool is_solid() const { return is_active && type == 0; }
