@@ -74,12 +74,13 @@ namespace sk_game {
                 }
             }
 
-            sk_physic2d::Body_Def player_bodydef(sk_physic2d::irect::irect_fbound({ 0, 0, 1, 1 }), 1);
+            sk_physic2d::Body_Def player_bodydef(sk_physic2d::irect::irect_fbound({ 0, 0, 1, 1.5 }), 1);
             player.m_body = physic_world.Create_Body(player_bodydef);
             player.physic_world = &physic_world;
         }
         void Start() {
             LoadLevel();
+            player.Start();
         }
         void Update() {
             if (sk_time::delta_time > 0.1f) // <10 fps

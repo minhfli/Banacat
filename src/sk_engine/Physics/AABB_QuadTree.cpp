@@ -183,8 +183,17 @@ namespace sk_physic2d {
         }
         Node* node = key_pair->second;
 
-        RemoveFromNode(node, value);
-        AddValue(rect, value);
+        if (node->node_rect.contain(rect)) { //if node can still store value
+            // find value in node
+            auto it = std::find_if(node->m_value.begin(), node->m_value.end(), [&value](const std::pair<int, irect>& _value) {
+                return _value.first == value;
+            });
+            it->second = rect;
+        }
+        else {
+            RemoveFromNode(node, value);
+            AddValue(rect, value);
+        }
     }
 
     std::vector<int> QuadTree::Query(const irect& rect) {

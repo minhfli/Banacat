@@ -3,12 +3,11 @@
 #define GLM_FORCE_SWIZZLE //enable swizzle for glm
 #include <GLM/glm.hpp>
 
-#include "Vertex2D.h"
-#include "Texture2D.h"
-#include "Camera.h"
-
 //? batch renderer 
 namespace sk_graphic {
+
+    class Texture2D;
+    class Camera;
 
     void Renderer2D_Init();
     void Renderer2D_ShutDown();

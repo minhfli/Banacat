@@ -1,5 +1,5 @@
 #include "sk_game.h"
-#include <sk_engine/Graphics/2D_Renderer.h>
+#include <sk_engine/Graphics/Graphics.h>
 #include <sk_engine/Window/Input.h>
 #include <sk_engine/Common/sk_time.h>
 
@@ -17,7 +17,7 @@
 */
 namespace sk_game {
     namespace {
-        Camera* cam;
+        sk_graphic::Camera* cam;
 
         float camsize = 10;
     }
@@ -62,7 +62,7 @@ namespace sk_game {
     void UpdateN() {
         //! update cam size and positon, temporary
         UpdateCam();
-
+        cam->Update();
         test_level::Update();
     }
     //? late update, call after draw
@@ -72,6 +72,7 @@ namespace sk_game {
         glm::vec3 mouse_world_pos = cam->Screen_To_World(sk_input::MousePos(), glm::vec2(800, 600));
         sk_graphic::Renderer2D_AddDotX(mouse_world_pos);
 
+        cam->Draw();
         test_level::Draw();
     }
 

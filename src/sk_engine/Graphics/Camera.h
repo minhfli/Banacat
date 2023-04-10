@@ -5,33 +5,41 @@
 #include <GLM/glm.hpp>
 
 #include "Shader.h"
+#include "CamFocus.h"
 
-class Camera {
-    public:
+namespace sk_graphic {
+    class Camera {
+        public:
 
-    glm::vec3 position = glm::vec3(0.0f);
-    glm::vec3 direction = glm::vec3(0.0f, 0.0f, -1.0f);
-    bool lock_target = false;
-    glm::vec3* target;
+        CamFocus focus;
 
-    glm::vec3 up = glm::vec3(0.0f, 0.1, 0.0f);
+        glm::vec3 position = glm::vec3(0.0f);
+        glm::vec3 direction = glm::vec3(0.0f, 0.0f, -1.0f);
+        bool lock_target = false;
+        glm::vec3* target;
 
-    int width, height;
+        glm::vec3 up = glm::vec3(0.0f, 0.1, 0.0f);
 
-    /// @brief only for orthographic camera 
-    float size = 1;
-    float aspect;
+        int width, height;
 
-    glm::mat4 projection;
+        /// @brief only for orthographic camera 
+        float size = 1;
+        float aspect;
 
-    void ProjectionP(float FOV, int width, int height);
-    void ProjectionO(float size, int width, int height);
+        glm::mat4 projection;
 
-    void CamMatrix(GLSLprogram& shader);
+        void ProjectionP(float FOV, int width, int height);
+        void ProjectionO(float size, int width, int height);
 
-    //? NDC: normalize device coordinate
-    //? SRC: screen           coordinate
-    //? WC : world            coordinate
-    glm::vec3 Screen_To_World(const glm::vec2& pos, const glm::vec2& src_size) const;
-    //glm::vec3 WorldToScreen(glm::vec3 pos);
-};
+        void CamMatrix(GLSLprogram& shader);
+
+        //? NDC: normalize device coordinate
+        //? SRC: screen           coordinate
+        //? WC : world            coordinate
+        glm::vec3 Screen_To_World(const glm::vec2& pos, const glm::vec2& src_size) const;
+        //glm::vec3 WorldToScreen(glm::vec3 pos);
+
+        void Update();
+        void Draw();
+    };
+}

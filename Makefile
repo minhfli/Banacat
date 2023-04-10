@@ -3,7 +3,7 @@ SHELL := pwsh.exe
 TARGET = MyGame
 
 CC = g++
-CFLAGS = -std=c++14 -Wall -pedantic -MMD -MP -mwindows
+CFLAGS = -std=c++17 -Wall -pedantic -MMD -MP -mwindows
 
 OUTDIR = ./bin
 DATADIR = ./data
