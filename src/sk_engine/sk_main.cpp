@@ -32,32 +32,38 @@ namespace sk_main {
 
     void Run() {
         //cam.ProjectionP(60, window_w, window_h);
-        //! skphysic test.cpp
+
+        sk_time::delta_time = sk_time::fixed_delta_time;
+        sk_time::delta_tick = sk_time::fixed_delta_tick;
 
         sk_game::Start();
         while (!sk_window::Should_close()) {
-            sk_window::Process_event();
-            sk_window::Clear();
-
-            sk_graphic::Renderer2D_Begin();
 
             //calculate deltatick and deltatime
-            sk_time::delta_tick = SDL_GetTicks() - sk_time::current_tick;
-            sk_time::delta_time = (float)sk_time::delta_tick / 1000;
-            sk_time::current_tick += sk_time::delta_tick;
-            sk_time::current_time = (float)sk_time::current_tick / 1000;
+            sk_time::current_real_tick = SDL_GetTicks();
+            sk_time::current_real_time = (float)sk_time::current_real_tick * 0.001;
 
-            if (sk_time::current_tick - last_fixed_update_tick >= sk_time::fixed_delta_tick) {
+            // all game update and draw is in fixed time step
+            if (sk_time::current_real_tick - last_fixed_update_tick >= sk_time::fixed_delta_tick) {
                 last_fixed_update_tick += sk_time::fixed_delta_tick;
-                if (sk_time::current_tick - last_fixed_update_tick >= sk_time::fixed_delta_tick)
-                    last_fixed_update_tick = sk_time::current_tick;
-                sk_game::UpdateF();
+
+                sk_time::current_tick += sk_time::fixed_delta_tick;
+                sk_time::current_time = (float)sk_time::current_tick * 0.001;
+
+                if (sk_time::current_real_tick - last_fixed_update_tick >= sk_time::fixed_delta_tick) {
+                    std::cout << "Error: Skiped " << sk_time::current_real_tick - last_fixed_update_tick << " ticks";
+                    last_fixed_update_tick = sk_time::current_real_tick;
+                }
+
+                sk_window::Process_event();
+                sk_window::Clear();
+
+                sk_graphic::Renderer2D_Begin();
+                GameLoop();
+
+                sk_graphic::Renderer2D_End();
+                sk_window::Swapbuffer();
             }
-
-            GameLoop();
-
-            sk_graphic::Renderer2D_End();
-            sk_window::Swapbuffer();
         }
         sk_game::Stop();
     }

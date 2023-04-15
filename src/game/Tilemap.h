@@ -3,6 +3,7 @@
 #include "GLM/glm.hpp"
 
 #include <sk_engine/Graphics/Texture2D.h>
+#include <vector>
 
 struct Tile_data {
     /// @brief texture coordinate, real pixel coordinate
@@ -16,12 +17,10 @@ struct Tilemap {
 
     // tile list, this is not a 2D array of all tiles of the tilemap, just a list of non null tiles
     int tile_count;
-    Tile_data* tiles = nullptr;
+    std::vector<Tile_data> tiles;
     sk_graphic::Texture2D tile_set;
-
-    glm::vec3 pos = glm::vec3(0);
 
     int width, height;
     /// @brief grid size in pixel
-    int grid_size;
+    int grid_size = 8;
 };

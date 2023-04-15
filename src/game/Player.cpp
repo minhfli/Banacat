@@ -2,6 +2,8 @@
 
 #include <iostream>
 #include <algorithm>
+#include <cmath>
+#include <math.h>
 
 #include <sk_engine/Common/sk_time.h>
 
@@ -25,8 +27,9 @@ struct Player::playerdata { // value only
 
     // for jumping
     float gravity_normal = 50;
-    float gravity_low = 40;
+    float gravity_low = 30;
     float gravity_high = 180;
+    float gravity_peak = 15; // gravity when player is in peak of the jump
 
     float gravity_in_transition;
 
@@ -35,7 +38,7 @@ struct Player::playerdata { // value only
     float jump_maxduration = sqrt(2.0f * jump_maxheight / gravity_low);
 
     float jumpvelocity = sqrt(jump_maxheight * gravity_low * 2);
-    float jumpvelocity_peak = 0.1f; // if y speed is smaller than this, apply normal gravity
+    float jumpvelocity_peak = 0.7f;
     float jump_start_time;
 
     bool in_gravity_transition = false;
@@ -45,7 +48,7 @@ struct Player::playerdata { // value only
     // for dashing
     bool candash = false;
     float dashspeed = 25;
-    float dashtime = 0.17f;
+    float dashtime = 0.2f;
     float last_dash_time = -100;
     bool is_dashing = false;
 };
@@ -75,10 +78,12 @@ namespace { // some helper function
     inline float get_relative_lerp(float a, float a1, float a2, float b1, float b2) {
         return b1 + (a - a1) / (a2 - a1) * (b2 - b1);
     }
+    inline float get_relative_lsin(float a, float a1, float a2, float b1, float b2) {
+        return b1 + sin((a - a1) / (a2 - a1) * M_PI) * (b2 - b1);
+    }
 }
 
 void Player::Start() {
-    std::cout << "Jump velocity: " << pdata->jumpvelocity << '\n';
 }
 void Player::Update() {
 
@@ -114,10 +119,7 @@ void Player::Update() {
 
         //jumping
         if (pdata->is_jumping) {
-            if (
-                m_body->velocity.y < pdata->jumpvelocity_peak ||
-                sk_time::current_time >= pdata->jump_start_time + pdata->jump_maxduration
-                ) {
+            if (m_body->velocity.y <= pdata->jumpvelocity_peak) {
                 pdata->is_jumping = false;
             }
             else if (!sk_input::Key(sk_key::SPACE)) {
@@ -130,14 +132,14 @@ void Player::Update() {
                     pdata->gravity_in_transition = pdata->gravity_low;
                 }
 
-                float target_gravity = get_relative_lerp( // the higher the velocity, the higher the gravity
+                float target_gravity = get_relative_lsin( // the higher the velocity, the higher the gravity
                     m_body->velocity.y,
                     0,
                     pdata->jumpvelocity,
                     pdata->gravity_normal,
                     pdata->gravity_high
                 );
-                pdata->gravity_in_transition = get_relative_lerp(
+                pdata->gravity_in_transition = get_relative_lsin(
                     sk_time::current_time - pdata->gravity_transition_start_time,
                     0,
                     pdata->gravity_transition_time,
@@ -146,17 +148,22 @@ void Player::Update() {
                     target_gravity
                 );
                 m_body->velocity.y -= pdata->gravity_in_transition * sk_time::delta_time;
-                if (m_body->velocity.y < 0) m_body->velocity.y = 0;
-                //std::cout << "in gravity transition\n";
-                //std::cout << "current gravity: " << pdata->gravity_in_transition << '\n';
-                //std::cout << "targert gravity: " << target_gravity << '\n';
+                if (m_body->velocity.y < pdata->jumpvelocity_peak) {
+                    //m_body->velocity.y = 0.1f;
+                    float remain_time = (pdata->jumpvelocity_peak - m_body->velocity.y) / pdata->gravity_in_transition;
+                    m_body->velocity.y = pdata->jumpvelocity_peak - pdata->gravity_peak * remain_time;
+                }
             }
             else
                 m_body->velocity.y -= pdata->gravity_low * sk_time::delta_time;
 
         }
-        if (!pdata->is_jumping)
-            m_body->velocity.y -= pdata->gravity_normal * sk_time::delta_time;
+        if (!pdata->is_jumping) {
+            if (pdata->jumpvelocity_peak >= m_body->velocity.y && m_body->velocity.y >= -0.05f)
+                m_body->velocity.y -= pdata->gravity_peak * sk_time::delta_time;
+            else
+                m_body->velocity.y -= pdata->gravity_normal * sk_time::delta_time;
+        }
         if (sk_input::KeyDown(sk_key::SPACE) && pdata->is_grounded && !pdata->is_jumping) {
             pdata->is_jumping = true;
             pdata->in_gravity_transition = false;

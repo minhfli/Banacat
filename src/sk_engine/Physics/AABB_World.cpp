@@ -95,7 +95,16 @@ namespace sk_physic2d {
     void AABB_World::ResolveActor(int id) {
         Body& a_body = m_Body[id];
 
-        glm::vec2 move_amount = a_body.RECT.offset + a_body.velocity * sk_time::delta_time * (float)INTCOORD_PRECISION;
+        //postion equation: 
+        // s = s + v*t + a*t*t
+        // s: position
+        // v: velocity
+        // a: acceleration 
+        glm::vec2 move_amount =
+            a_body.RECT.offset +
+            a_body.prev_velocity * sk_time::delta_time * (float)INTCOORD_PRECISION +
+            (a_body.velocity - a_body.prev_velocity) * 0.5f * sk_time::delta_time * (float)INTCOORD_PRECISION
+            ;
 
         // round away from 0, use to query
         int x_query = (move_amount.x < 0) ? floor(move_amount.x) : ceil(move_amount.x);
@@ -169,6 +178,7 @@ namespace sk_physic2d {
             a_body.RECT.bound.y += y_move * ydir;
             a_body.RECT.bound.w += y_move * ydir;
         }
+        a_body.prev_velocity = a_body.velocity;
     }
     void AABB_World::ResolveSolid(int id) {
     }

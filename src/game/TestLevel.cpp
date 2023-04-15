@@ -20,6 +20,7 @@ namespace sk_game {
             Player player;
         }
         void LoadLevel() {
+            int startload = SDL_GetTicks();
             nlohmann::json file = ReadJsonFile(level_path);
             nlohmann::json data = file["layerInstances"][1];
 
@@ -32,9 +33,10 @@ namespace sk_game {
 
             tilemap_.tile_count = data["autoLayerTiles"].size();
 
-            tilemap_.tiles = new Tile_data[tilemap_.tile_count];
+            tilemap_.tiles.reserve(tilemap_.tile_count);
 
             for (int i = 0;i <= tilemap_.tile_count - 1; i++) {
+                tilemap_.tiles.emplace_back();
                 Tile_data& cur_tile = tilemap_.tiles[i];
 
                 //* set tile's position
@@ -60,7 +62,6 @@ namespace sk_game {
 
             nlohmann::json collider_csv = data["intGridCsv"];
 
-            int added_collider = 0;
             for (int i = 0; i <= tilemap_.height - 1; i++) {
                 for (int j = 0; j <= tilemap_.width - 1; j++) {
                     int csv_index = i * tilemap_.width + j;
@@ -77,6 +78,9 @@ namespace sk_game {
             sk_physic2d::Body_Def player_bodydef(sk_physic2d::irect::irect_fbound({ 0, 0, 1, 1.5 }), 1);
             player.m_body = physic_world.Create_Body(player_bodydef);
             player.physic_world = &physic_world;
+            int stopload = SDL_GetTicks();
+
+            std::cout << "Loading Time: " << stopload - startload << '\n';
         }
         void Start() {
             LoadLevel();

@@ -146,6 +146,7 @@ namespace  sk_physic2d {
 
         irect RECT;
         glm::vec2 velocity = glm::vec2(0);
+        glm::vec2 prev_velocity = glm::vec2(0); // previous frame velocity
 
         bool is_solid() const { return is_active && type == 0; }
         bool is_actor() const { return is_active && type == 1; }

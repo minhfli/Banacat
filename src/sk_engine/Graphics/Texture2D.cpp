@@ -12,11 +12,8 @@ namespace sk_graphic {
         // check if file name path is loaded ?
         // if yes copy texture data to this 
         // if no  create new texture data
-        Texture2D* new_texture;
-        if (File_Manager::find_string_p(path, (void**)&new_texture)) {
-            *this = *new_texture;
+        if (File_Manager::find_string_i(path, &ID))
             return;
-        }
 
         //?load image data
         int width, height, Channels;
@@ -50,8 +47,7 @@ namespace sk_graphic {
         //? free image data
         stbi_image_free(data);
 
-        new_texture = new Texture2D(*this);
-        File_Manager::add_string_p(path, (void**)&new_texture);
+        File_Manager::add_string_i(path, ID);
 
         //?return texture id
         //return ID;

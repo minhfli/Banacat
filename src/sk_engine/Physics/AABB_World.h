@@ -57,6 +57,7 @@ namespace sk_physic2d {
 
         std::vector<int> Query(const irect& rect) { return quad_tree.Query(rect); };
         void GetSABodyList();
+        void AddToUpdateList(int id);
 
         void ResolveSolid(int id);
         void ResolveActor(int id);
