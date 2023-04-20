@@ -1,5 +1,6 @@
 #include "Camera.h"
 
+#include "2D_Renderer.h"
 #include <Common/sk_time.h>
 #include <iostream>
 #include <algorithm>
@@ -57,8 +58,12 @@ namespace sk_graphic {
             position.x = std::clamp(position.x, target.x - focus.softzone.x, target.x + focus.softzone.x);
             position.y = std::clamp(position.y, target.y - focus.softzone.y, target.y + focus.softzone.y);
         }
-
-
+        position.x = std::min(position.x, focus.cambound.z - focus.cam_hsize.x);
+        position.x = std::max(position.x, focus.cambound.x + focus.cam_hsize.x);
+        position.y = std::min(position.y, focus.cambound.w - focus.cam_hsize.y);
+        position.y = std::max(position.y, focus.cambound.y + focus.cam_hsize.y);
     }
-    void Camera::Draw() {}
+    void Camera::Draw() {
+        Renderer2D_AddBBox(focus.cambound, 2);
+    }
 }

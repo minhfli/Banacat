@@ -24,13 +24,13 @@ namespace sk_graphic {
     /// @param id texture id
     /// @param uv texture coordinate, real pixel texture coordinate
     /// @param color 
-    /// @param texture pointer to texture, if null pointer, set to default error texture
+    /// @param texture 
     void Renderer2D_AddQuad(
         const glm::vec3& pos,
         const glm::vec2& size,
         const glm::ivec4& uv,
-        const glm::vec4& color = glm::vec4(1),
-        Texture2D* texture = nullptr
+        const Texture2D texture,
+        const glm::vec4& color = glm::vec4(1)
     );
     void Renderer2D_AddLine(
         const glm::vec3& pos,

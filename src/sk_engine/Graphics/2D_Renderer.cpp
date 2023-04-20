@@ -44,7 +44,7 @@ namespace sk_graphic {
                 GLuint count = 0;
                 GLuint vertex_count = 0;
                 GLuint index_count = 0;
-                Texture2D* cur_texture = nullptr;
+                Texture2D cur_texture;
             }quad;
 
             struct line_data {
@@ -206,12 +206,10 @@ namespace sk_graphic {
         const glm::vec3& pos,
         const glm::vec2& size,
         const glm::ivec4& uv,
-        const glm::vec4& color,
-        Texture2D* texture
+        const Texture2D texture = rdata.default_tex,
+        const glm::vec4& color
     ) {
-        if (texture == nullptr) texture = &rdata.default_tex;
-
-        if (rdata.quad.vertex_count >= maxQuadVertexCounts || rdata.quad.cur_texture != texture) {
+        if (rdata.quad.vertex_count >= maxQuadVertexCounts || rdata.quad.cur_texture.ID != texture.ID) {
             Renderer2D_FlushQuads();
             rdata.quad.cur_texture = texture;
         }
@@ -247,15 +245,14 @@ namespace sk_graphic {
     }
 
     void Renderer2D_FlushQuads() {
-        if (rdata.quad.count == 0 || rdata.quad.cur_texture == nullptr)
+        if (rdata.quad.count == 0)
             return;
-
         //update projection view matrix
         rdata.cam.CamMatrix(rdata.quad.shader);
         //bind shader
         rdata.quad.shader.Use();
         //bind texture
-        rdata.quad.cur_texture->Bind(0);
+        rdata.quad.cur_texture.Bind(0);
         //bind stuffs
         rdata.quad.vao.Bind();
         rdata.quad.vbo.Bind();
@@ -269,7 +266,7 @@ namespace sk_graphic {
         rdata.quad.vertex_count = 0;
         rdata.quad.index_count = 0;
 
-        rdata.quad.cur_texture = nullptr;
+        rdata.quad.cur_texture = rdata.default_tex;
     }
 
     void Renderer2D_AddLine(const glm::vec3& pos, const glm::vec2& size, const glm::vec4& color) {

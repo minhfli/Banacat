@@ -93,7 +93,7 @@ namespace sk_physic2d {
             node->child[1]->m_value.size() +
             node->child[2]->m_value.size() +
             node->child[3]->m_value.size()
-            <= NODE_CAPACITY
+            <= NODE_MERGE_CAPACITY
         ) {
             for (int i = 0; i <= 3; i++) {
                 for (auto& value : node->child[i]->m_value) {
@@ -229,10 +229,10 @@ namespace sk_physic2d {
             ClearNode(node->child[1]);
             ClearNode(node->child[2]);
             ClearNode(node->child[3]);
-            delete node->child[0];
-            delete node->child[1];
-            delete node->child[2];
-            delete node->child[3];
+            delete node->child[0]; node->child[0] = nullptr;
+            delete node->child[1]; node->child[1] = nullptr;
+            delete node->child[2]; node->child[2] = nullptr;
+            delete node->child[3]; node->child[3] = nullptr;
         }
     }
 

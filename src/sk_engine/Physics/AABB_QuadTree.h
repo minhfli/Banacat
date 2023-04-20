@@ -10,7 +10,8 @@
 
 namespace sk_physic2d {
     const int32_t MAX_TREE_DEPTH = 10;
-    const int32_t NODE_CAPACITY = 10;
+    const int32_t NODE_CAPACITY = 16;
+    const int32_t NODE_MERGE_CAPACITY = 10;
 
     const glm::vec2 MIN_NODE_SIZE = glm::vec2(1);
 

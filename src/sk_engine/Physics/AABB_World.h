@@ -24,7 +24,7 @@ namespace sk_physic2d {
         public:
         inline int BodyCount()const { return body_counts; }
 
-        bool enable_debug_draw = true;
+        bool enable_debug_draw = false;
 
         glm::vec4 world_bound = glm::vec4(-128, -128, 128, 128);
 
@@ -35,14 +35,12 @@ namespace sk_physic2d {
         void Init();
         void Clear();
 
-        /// @brief create new physic body and return its reference and index(optional)
-        Body* Create_Body(const Body_Def& def, int* index = nullptr);
+        /// @brief create new physic body and return its index in world's body container
+        int Create_Body(const Body_Def& def);
         /// @brief get the refference physic body at index  
         Body* Get_Body(const int index);
         /// @brief remove physic body
         void Remove_Body(const int index);
-        /// @brief remove physic body using pointer (you should not use this, it may result in undefined behaviors) 
-        void Remove_Body(Body* body);
 
         void GetQuadTreeDebug() { quad_tree.GetInfo(); };
 
@@ -50,6 +48,8 @@ namespace sk_physic2d {
         void Draw();
 
         bool TouchSolid_ibound(glm::ivec4 ibound);
+        // return true if there is a collider that have all tag in tag, and no tag in null_tag
+        bool BoxCast(glm::ivec4 ibound, uint64_t tag, uint64_t null_tag = 0);
 
         private:
         std::vector <int> solids, actors;

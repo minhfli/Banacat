@@ -14,7 +14,7 @@
 #include <GLM/glm.hpp>
 
 namespace sk_main {
-    int window_w = 800, window_h = 600;
+    int window_w = 1280, window_h = 720;
     int last_fixed_update_tick = -100;
 
     void Init() {
@@ -51,7 +51,7 @@ namespace sk_main {
                 sk_time::current_time = (float)sk_time::current_tick * 0.001;
 
                 if (sk_time::current_real_tick - last_fixed_update_tick >= sk_time::fixed_delta_tick) {
-                    std::cout << "Error: Skiped " << sk_time::current_real_tick - last_fixed_update_tick << " ticks";
+                    std::cout << "Error: Skiped " << sk_time::current_real_tick - last_fixed_update_tick << " ticks" << '\n';
                     last_fixed_update_tick = sk_time::current_real_tick;
                 }
 

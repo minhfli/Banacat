@@ -7,7 +7,7 @@
 #include <thread>
 
 #include <sk_engine/Physics/AABB_World.h>
-#include "Player.h"
+#include "Entities/Player.h"
 
 class Area {
     public:
@@ -33,6 +33,7 @@ class Area {
     Level* Active_level = nullptr;
     std::vector<Level> m_levels;
     std::vector<std::vector<int>> neighborlist; // neighbor list of a level
+    std::vector<glm::ivec4> level_bound_list;
 
     sk_physic2d::AABB_World physic_world;
 
@@ -51,4 +52,7 @@ class Area {
     void Draw();
     void LateUpdate();
     void Stop();
+
+    Player* GetPlayer() { return &m_player; }
+    sk_physic2d::AABB_World* GetPhysicWorld() { return &physic_world; }
 };

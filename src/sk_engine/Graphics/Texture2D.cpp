@@ -35,10 +35,12 @@ namespace sk_graphic {
         //? copy image data to texture
         if (Channels == 4) {
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-            std::cout << "tex loaded\n";
+            std::cout << "tex loaded: " << path << '\n';
         }
-        else
+        else {
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+            std::cout << "tex loaded: " << path << '\n';
+        }
         glGenerateMipmap(GL_TEXTURE_2D);
 
         this->size.x = (float)width;

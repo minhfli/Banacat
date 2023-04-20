@@ -4,6 +4,7 @@
 #include <cmath>
 #include <algorithm>
 
+#include <game/Entity.h>
 
 #include <Graphics/2D_Renderer.h>
 
@@ -38,7 +39,7 @@ namespace sk_physic2d {
 
     //* add and remove bodies ---------------------------------------------------------------------------------
 
-    Body* AABB_World::Create_Body(const Body_Def& def, int* index) {
+    int AABB_World::Create_Body(const Body_Def& def) {
         body_added_or_removed = true;
         int id;
         if (!this->avaiable_mbody_index.empty()) {
@@ -51,17 +52,17 @@ namespace sk_physic2d {
         }
         body_counts++;
 
-        if (index != nullptr) *index = id;
         m_Body[id] = Body(def);
 
         quad_tree.AddValue(m_Body[id].RECT, id);
-        return &m_Body[id];
-
+        return id;
     }
     Body* AABB_World::Get_Body(const int index) {
         return &m_Body.at(index);
     }
     void AABB_World::Remove_Body(const int index) {
+        if (index == 0) std::cout << "Remove body 0" << '\n';
+
         if (m_Body.size() <= index || index < 0) return;
         if (!m_Body[index].is_active) return;
 
@@ -73,10 +74,6 @@ namespace sk_physic2d {
 
         avaiable_mbody_index.push_back(index);
     }
-    void AABB_World::Remove_Body(Body* body) {
-        int index = body - &m_Body.front();
-        Remove_Body(index);
-    }
 
     //* query and reslove --------------------------------------------------------------------------------------------------
 
@@ -85,16 +82,22 @@ namespace sk_physic2d {
         actors.clear();
         if (!m_Body.empty()) {
             for (int i = 0; i <= m_Body.size() - 1;i++) {
-                if (m_Body[i].is_solid() && m_Body[i].velocity != glm::vec2(0))
+                if (m_Body[i].is_active && CheckTag(m_Body[i].tag, PHY_MOVEABLE) && CheckTag(m_Body[i].tag, PHY_SOLID))
                     solids.push_back(i);
-                if (m_Body[i].is_actor())
+                if (m_Body[i].is_active && CheckTag(m_Body[i].tag, PHY_ACTOR))
                     actors.push_back(i);
             }
         }
     }
+    void AddToUpdateList(int id) {
+
+    }
+
     void AABB_World::ResolveActor(int id) {
         Body& a_body = m_Body[id];
 
+        //std::cout << "Resolving Actor, id: " << id << "  " << "ptr: " << &m_Body[id] << '\n';
+        //std::cout << "New velocity: " << a_body.velocity.x << " " << a_body.velocity.y << '\n';
         //postion equation: 
         // s = s + v*t + a*t*t
         // s: position
@@ -123,7 +126,6 @@ namespace sk_physic2d {
         if (enable_debug_draw)
             for (int index : possible_collision)
                 sk_graphic::Renderer2D_AddBBox(m_Body[index].RECT.true_bound(), 2, { 1,1,1,1 });
-
         if (x_query != 0) { // solve x
             //get direction
             int xdir = 1;
@@ -132,7 +134,8 @@ namespace sk_physic2d {
                 x_move = -x_move;
             }
             // solve for each static body
-            for (int s_index : possible_collision) if (m_Body[s_index].is_solid()) {
+            for (int s_index : possible_collision) if (m_Body[s_index].is_active && CheckTag(m_Body[s_index].tag, e_tag::PHY_SOLID)) {
+                if (CheckTag(m_Body[s_index].tag, e_tag::PHY_ONE_WAY)) continue; // skip solve in x if is oneway
                 Body& s_body = m_Body[s_index];
 
                 if (s_body.RECT.bound.w > a_body.RECT.bound.y && a_body.RECT.bound.w > s_body.RECT.bound.y) { // y overlap
@@ -159,10 +162,11 @@ namespace sk_physic2d {
                 y_move = -y_move;
             }
             // solve for each static body
-            for (int s_index : possible_collision) if (m_Body[s_index].is_solid()) {
+            for (int s_index : possible_collision) if (m_Body[s_index].is_active && CheckTag(m_Body[s_index].tag, e_tag::PHY_SOLID)) {
                 Body& s_body = m_Body[s_index];
 
                 if (s_body.RECT.bound.z > a_body.RECT.bound.x && a_body.RECT.bound.z > s_body.RECT.bound.x) { // x overlap
+                    if (CheckTag(m_Body[s_index].tag, e_tag::PHY_ONE_WAY) && a_body.RECT.bound.y < s_body.RECT.bound.w) continue;
                     int distant = std::max(
                         a_body.RECT.bound.y - s_body.RECT.bound.w,
                         s_body.RECT.bound.y - a_body.RECT.bound.w
@@ -178,21 +182,38 @@ namespace sk_physic2d {
             a_body.RECT.bound.y += y_move * ydir;
             a_body.RECT.bound.w += y_move * ydir;
         }
+
+        if (m_Body[id].entity != nullptr)
+            for (int index : possible_collision) {
+                if (CheckTag(m_Body[index].tag, e_tag::PHY_TRIGGER) && id != index && a_body.RECT.overlap(m_Body[index].RECT)) {
+                    m_Body[id].entity->OnTrigger(m_Body[index].tag);
+                    if (m_Body[index].entity)
+                        m_Body[id].entity->OnTrigger(m_Body[index].entity);
+                }
+            }
         a_body.prev_velocity = a_body.velocity;
     }
-    void AABB_World::ResolveSolid(int id) {
-    }
+    void AABB_World::ResolveSolid(int id) {}
 
     //* check touching and raycasting --------------------------------------------------------------------------------------
 
     /// @brief check touching solid, using integer based bounding box 
     bool AABB_World::TouchSolid_ibound(glm::ivec4 ibound) {
         auto possible_collision = Query(irect(ibound));
-        for (int body_id : possible_collision) if (m_Body[body_id].is_solid()) return true;
+        for (int body_id : possible_collision) if (m_Body[body_id].is_active && CheckTag(m_Body[body_id].tag, e_tag::PHY_SOLID))
+            return true;
         return 0;
     }
 
-    //* Debug draw and Update ----------------------------------------------------------------------------------------------
+    bool AABB_World::BoxCast(glm::ivec4 ibound, uint64_t tag, uint64_t null_tag) {
+        auto possible_collision = Query(irect(ibound));
+        for (int body_id : possible_collision)
+            if (m_Body[body_id].is_active && (m_Body[body_id].tag & tag) == tag && (m_Body[body_id].tag & null_tag) == 0)
+                return true;
+        return 0;
+    }
+
+//* Debug draw and Update ----------------------------------------------------------------------------------------------
 
     void AABB_World::Draw() {
         if (!enable_debug_draw) return;

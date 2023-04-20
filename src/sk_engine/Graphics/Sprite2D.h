@@ -6,6 +6,7 @@
 #include "Texture2D.h"
 
 namespace sk_graphic {
+    /// @brief sprite class is not implemented, use texture instead
     class Sprite2D {
         public:
         GLuint texture_id = 0;

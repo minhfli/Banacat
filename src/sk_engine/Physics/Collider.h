@@ -2,7 +2,12 @@
 
 #include <GLM/glm.hpp>
 
+class Entity;
+
 namespace  sk_physic2d {
+    // some function for checking
+    bool overlap(const glm::ivec4 a, const glm::ivec4 b);
+    bool contain(const glm::ivec4 a, const glm::ivec4 b);
 
     struct rect {
 
@@ -58,6 +63,8 @@ namespace  sk_physic2d {
         static irect irect_fsize_fpos(glm::vec2 hsize, glm::vec2 pos);
         /// @brief advanced contructor, world bound   
         static irect irect_fbound(glm::vec4 bound);
+        /// @brief advanced contructor, world bound   
+        static irect irect_fray(glm::vec2 pos, glm::vec2 size);
 
         /// @brief center of rect in integer coordinate, can return false result if rect size is not even
         glm::ivec2 centeri()const;
@@ -124,22 +131,20 @@ namespace  sk_physic2d {
     //! may change in future implementation 
 
     struct Body_Def {
-        int type;
         irect RECT;
         uint32_t tag;
-
+        Entity* entity;
         /// @param t collider type, 0:solid, 1:actor, 2:triggerer
         /// @param tg tag
-        Body_Def(irect r, int t = 0, uint32_t tg = 0):
-            type(t),
+        Body_Def(irect r, uint32_t tg = 0, Entity* e = nullptr):
             RECT(r),
-            tag(tg) {}
+            tag(tg),
+            entity(e) {}
     };
     struct Body {
         public:
         bool is_active = false;
-        uint8_t type;
-        uint32_t tag;
+        uint64_t tag;
 
         /// @brief this should be set to true for the physic world to know and update 
         bool modified = false;
@@ -148,16 +153,19 @@ namespace  sk_physic2d {
         glm::vec2 velocity = glm::vec2(0);
         glm::vec2 prev_velocity = glm::vec2(0); // previous frame velocity
 
-        bool is_solid() const { return is_active && type == 0; }
-        bool is_actor() const { return is_active && type == 1; }
+        Entity* entity;
+
+        //bool is_solid() const { return is_active && type == 0; }
+        //bool is_actor() const { return is_active && type == 1; }
+        //bool is_trigg() const { return is_active && type == 2; }
 
         Body() {}
         Body(Body_Def def):
             is_active(true),
             modified(false),
-            type(def.type),
             RECT(def.RECT),
-            tag(def.tag) {}
+            tag(def.tag),
+            entity(def.entity) {}
     };
 
 }

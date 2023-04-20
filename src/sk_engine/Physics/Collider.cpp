@@ -4,11 +4,29 @@
 
 namespace  sk_physic2d {
 
+    bool overlap(const glm::ivec4 a, const glm::ivec4 b) {
+        return
+            a.z > b.x && b.z > a.x &&
+            a.w > b.y && b.w > a.y;
+    }
+    bool contain(const glm::ivec4 a, const glm::ivec4 b) {
+        return
+            b.x >= a.x &&
+            b.y >= a.y &&
+            b.z <= a.z &&
+            b.w <= a.w;
+    }
+
     irect irect::irect_fsize_fpos(glm::vec2 hsize, glm::vec2 pos) {
         return irect_fbound({ pos - hsize,pos + hsize });
     }
     irect irect::irect_fbound(glm::vec4 bound) {
+        if (bound.x > bound.z) std::swap(bound.x, bound.z);
+        if (bound.y > bound.w) std::swap(bound.y, bound.w);
         return irect(glm::ivec4(bound * (float)INTCOORD_PRECISION));
+    }
+    irect irect::irect_fray(glm::vec2 pos, glm::vec2 size) {
+        return irect_fbound(glm::vec4(pos, pos + size));
     }
 
     glm::ivec2 irect::centeri() const {
@@ -69,7 +87,6 @@ namespace  sk_physic2d {
             std::max(bound.w, bound.w + y)
         );
     }
-
 
     bool irect::contain(const irect& r2) const {
         return {

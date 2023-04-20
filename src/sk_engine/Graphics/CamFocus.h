@@ -22,7 +22,8 @@ namespace sk_graphic {
         glm::vec2 softzone = glm::vec2(4, 3);
 
         bool have_bound = false;
-        glm::vec4 cambound;
+        glm::vec4 cambound = glm::vec4(-1000, -1000, 1000, 1000);
+        glm::vec2 cam_hsize = glm::vec2(20, 11.5f);
 
         CamMode update_mode = CamMode::UPDATE_SMOOTH;
         //CamMode start_mode = CamMode::START_FIXED;

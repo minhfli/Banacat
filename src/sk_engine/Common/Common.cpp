@@ -17,22 +17,19 @@ void Error(std::string string) {
 
 //-----------------------------------------------------------------------------------
 std::string ReadTextFile(const std::string path) {
-    std::string return_string;
     std::ifstream file(path);
 
-    //Source file loaded
-    if (file)
-        return_string.assign((std::istreambuf_iterator< char >(file)), std::istreambuf_iterator< char >());
-    else FatalError("Cannot open file: " + path);
+    if (!file) FatalError("Cannot open file: " + path);
+
+    std::string return_string((std::istreambuf_iterator< char >(file)), std::istreambuf_iterator< char >());
 
     return return_string;
 }
 
 nlohmann::json ReadJsonFile(const std::string path) {
-    std::ifstream file(path);
-    if (!file) FatalError("Cannot open file: " + path);
+    nlohmann::json data = nlohmann::json::parse(ReadTextFile(path));
+    if (data.is_discarded()) std::cout << "json parse error";
 
-    nlohmann::json data = nlohmann::json::parse(file);
     return data;
 }
 
