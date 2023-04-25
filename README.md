@@ -1,10 +1,12 @@
 # test
 how to run: 
+
     open cmd
     create folder name obj
     make 
 
 control:
+
     keypad 7: turn debug(on/off)
     keypad 4,6: camera zoom
 
