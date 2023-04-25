@@ -61,7 +61,6 @@ namespace sk_physic2d {
         return &m_Body.at(index);
     }
     void AABB_World::Remove_Body(const int index) {
-        if (index == 0) std::cout << "Remove body 0" << '\n';
 
         if (m_Body.size() <= index || index < 0) return;
         if (!m_Body[index].is_active) return;
@@ -99,14 +98,18 @@ namespace sk_physic2d {
         //std::cout << "Resolving Actor, id: " << id << "  " << "ptr: " << &m_Body[id] << '\n';
         //std::cout << "New velocity: " << a_body.velocity.x << " " << a_body.velocity.y << '\n';
         //postion equation: 
-        // s = s + v*t + a*t*t
+        // s = s + v*t + 0.5*a*t*t
         // s: position
         // v: velocity
         // a: acceleration 
+        /*glm::vec2 move_amount =
+            a_body.RECT.offset +
+            a_body.velocity * sk_time::delta_time * (float)INTCOORD_PRECISION;*/
+        if (a_body.velocity.y > 100) std::cout << "too fast \n";
         glm::vec2 move_amount =
             a_body.RECT.offset +
             a_body.prev_velocity * sk_time::delta_time * (float)INTCOORD_PRECISION +
-            (a_body.velocity - a_body.prev_velocity) * 0.5f * sk_time::delta_time * (float)INTCOORD_PRECISION
+            (a_body.velocity - a_body.prev_velocity) * 0.5f * sk_time::delta_time * sk_time::delta_time * (float)INTCOORD_PRECISION
             ;
 
         // round away from 0, use to query
@@ -126,6 +129,11 @@ namespace sk_physic2d {
         if (enable_debug_draw)
             for (int index : possible_collision)
                 sk_graphic::Renderer2D_AddBBox(m_Body[index].RECT.true_bound(), 2, { 1,1,1,1 });
+
+        for (int s_index : possible_collision)
+            if (m_Body[s_index].is_active && CheckTag(m_Body[s_index].tag, etag::PHY_SOLID) && !CheckTag(m_Body[s_index].tag, etag::PHY_ONE_WAY)) {
+                if (a_body.RECT.overlap(m_Body[s_index].RECT)) std::cout << "Physic Error: rect overlap\n";
+            }
         if (x_query != 0) { // solve x
             //get direction
             int xdir = 1;
@@ -134,8 +142,8 @@ namespace sk_physic2d {
                 x_move = -x_move;
             }
             // solve for each static body
-            for (int s_index : possible_collision) if (m_Body[s_index].is_active && CheckTag(m_Body[s_index].tag, e_tag::PHY_SOLID)) {
-                if (CheckTag(m_Body[s_index].tag, e_tag::PHY_ONE_WAY)) continue; // skip solve in x if is oneway
+            for (int s_index : possible_collision) if (m_Body[s_index].is_active && CheckTag(m_Body[s_index].tag, etag::PHY_SOLID)) {
+                if (CheckTag(m_Body[s_index].tag, etag::PHY_ONE_WAY)) continue; // skip solve in x if is oneway
                 Body& s_body = m_Body[s_index];
 
                 if (s_body.RECT.bound.w > a_body.RECT.bound.y && a_body.RECT.bound.w > s_body.RECT.bound.y) { // y overlap
@@ -162,11 +170,11 @@ namespace sk_physic2d {
                 y_move = -y_move;
             }
             // solve for each static body
-            for (int s_index : possible_collision) if (m_Body[s_index].is_active && CheckTag(m_Body[s_index].tag, e_tag::PHY_SOLID)) {
+            for (int s_index : possible_collision) if (m_Body[s_index].is_active && CheckTag(m_Body[s_index].tag, etag::PHY_SOLID)) {
                 Body& s_body = m_Body[s_index];
 
                 if (s_body.RECT.bound.z > a_body.RECT.bound.x && a_body.RECT.bound.z > s_body.RECT.bound.x) { // x overlap
-                    if (CheckTag(m_Body[s_index].tag, e_tag::PHY_ONE_WAY) && a_body.RECT.bound.y < s_body.RECT.bound.w) continue;
+                    if (CheckTag(m_Body[s_index].tag, etag::PHY_ONE_WAY) && a_body.RECT.bound.y < s_body.RECT.bound.w) continue;
                     int distant = std::max(
                         a_body.RECT.bound.y - s_body.RECT.bound.w,
                         s_body.RECT.bound.y - a_body.RECT.bound.w
@@ -185,7 +193,7 @@ namespace sk_physic2d {
 
         if (m_Body[id].entity != nullptr)
             for (int index : possible_collision) {
-                if (CheckTag(m_Body[index].tag, e_tag::PHY_TRIGGER) && id != index && a_body.RECT.overlap(m_Body[index].RECT)) {
+                if (CheckTag(m_Body[index].tag, etag::PHY_TRIGGER) && id != index && a_body.RECT.overlap(m_Body[index].RECT)) {
                     m_Body[id].entity->OnTrigger(m_Body[index].tag);
                     if (m_Body[index].entity)
                         m_Body[id].entity->OnTrigger(m_Body[index].entity);
@@ -193,14 +201,16 @@ namespace sk_physic2d {
             }
         a_body.prev_velocity = a_body.velocity;
     }
-    void AABB_World::ResolveSolid(int id) {}
+    void AABB_World::ResolveSolid(int id) {
+
+    }
 
     //* check touching and raycasting --------------------------------------------------------------------------------------
 
     /// @brief check touching solid, using integer based bounding box 
     bool AABB_World::TouchSolid_ibound(glm::ivec4 ibound) {
         auto possible_collision = Query(irect(ibound));
-        for (int body_id : possible_collision) if (m_Body[body_id].is_active && CheckTag(m_Body[body_id].tag, e_tag::PHY_SOLID))
+        for (int body_id : possible_collision) if (m_Body[body_id].is_active && CheckTag(m_Body[body_id].tag, etag::PHY_SOLID))
             return true;
         return 0;
     }
@@ -225,10 +235,6 @@ namespace sk_physic2d {
     }
 
     void AABB_World::Update() {
-        if (sk_time::delta_time > 0.5f) {
-            std::cout << "Error: Big delta time \n";
-            return;
-        }
         GetSABodyList();
         for (int index : actors) ResolveActor(index);
         for (int index : solids) ResolveSolid(index);

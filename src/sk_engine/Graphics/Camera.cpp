@@ -42,26 +42,14 @@ namespace sk_graphic {
     }
 
     void Camera::Update() {
-        // update Focus
-        if (focus.update_mode == CamMode::UPDATE_FIXED)
-            this->position = glm::vec3(focus.pos + focus.offset, 0);
-        if (focus.update_mode == CamMode::UPDATE_SMOOTH) {
-
-            glm::vec2 target = focus.pos + focus.offset;
-
-            float lerp_x = focus.damping.x * sk_time::delta_time;
-            float lerp_y = focus.damping.y * sk_time::delta_time;
-
-            position.x += (target.x - position.x) * lerp_x;
-            position.y += (target.y - position.y) * lerp_y;
-
-            position.x = std::clamp(position.x, target.x - focus.softzone.x, target.x + focus.softzone.x);
-            position.y = std::clamp(position.y, target.y - focus.softzone.y, target.y + focus.softzone.y);
+        if (focus.is_transitioning()) {
+            position = glm::vec3(focus.GetTransition_pos(), 0);
         }
-        position.x = std::min(position.x, focus.cambound.z - focus.cam_hsize.x);
-        position.x = std::max(position.x, focus.cambound.x + focus.cam_hsize.x);
-        position.y = std::min(position.y, focus.cambound.w - focus.cam_hsize.y);
-        position.y = std::max(position.y, focus.cambound.y + focus.cam_hsize.y);
+        else {
+            glm::vec2 new_pos = focus.GetTarget_pos(glm::vec2(position.x, position.y));
+            position.x = new_pos.x;
+            position.y = new_pos.y;
+        }
     }
     void Camera::Draw() {
         Renderer2D_AddBBox(focus.cambound, 2);

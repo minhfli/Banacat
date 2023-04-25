@@ -15,7 +15,8 @@ namespace sk_graphic {
         /// @brief actual image size
         glm::vec2 size = glm::vec2(0);
 
-        Texture2D();
+        Texture2D(){}
+        Texture2D(int id) :ID(id){}
 
         void Load(const std::string path);
         void Bind(GLuint slot);

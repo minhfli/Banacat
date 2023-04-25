@@ -3,17 +3,25 @@
 #include <STB/stb_image.h>
 #include <iostream>
 #include <Common/Common.h>
+#include <unordered_map>
 
+namespace {
+    std::unordered_map<std::string, sk_graphic::Texture2D> path_texture_map;
+}
 namespace sk_graphic {
-    Texture2D::Texture2D() {}
 
     void Texture2D::Load(const std::string path) {
 
         // check if file name path is loaded ?
         // if yes copy texture data to this 
         // if no  create new texture data
-        if (File_Manager::find_string_i(path, &ID))
+
+        auto it = path_texture_map.find(path);
+        if (it != path_texture_map.end()) {
+            this->ID = it->second.ID;
+            this->size = it->second.size;
             return;
+        }
 
         //?load image data
         int width, height, Channels;
@@ -49,8 +57,7 @@ namespace sk_graphic {
         //? free image data
         stbi_image_free(data);
 
-        File_Manager::add_string_i(path, ID);
-
+        path_texture_map.insert({ path,*this });
         //?return texture id
         //return ID;
     }

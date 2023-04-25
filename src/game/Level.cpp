@@ -110,8 +110,8 @@ void Level::LoadStaticBody(int type, glm::vec2 body_topleft_pos) {
     glm::vec2 body_lowleft_pos = body_topleft_pos + glm::vec2(0, -1);
     switch (type) {
         case 1: //? normal tile collider
-            AddTag(tag, e_tag::PHY_SOLID);
-            AddTag(tag, e_tag::GROUND);
+            AddTag(tag, etag::PHY_SOLID);
+            AddTag(tag, etag::GROUND);
             static_collider_list.emplace_back(
             physic_world->Create_Body(sk_physic2d::Body_Def(
                 sk_physic2d::irect::irect_fray(body_topleft_pos, glm::vec2(1, -1)),
@@ -119,8 +119,8 @@ void Level::LoadStaticBody(int type, glm::vec2 body_topleft_pos) {
             )));
             break;
         case 2: //? oneway tile collider
-            AddTag(tag, e_tag::PHY_SOLID);
-            AddTag(tag, e_tag::PHY_ONE_WAY);
+            AddTag(tag, etag::PHY_SOLID);
+            AddTag(tag, etag::PHY_ONE_WAY);
             static_collider_list.emplace_back(
             physic_world->Create_Body(sk_physic2d::Body_Def(
                 sk_physic2d::irect::irect_fray(body_topleft_pos, glm::vec2(1, -1)),
@@ -128,8 +128,8 @@ void Level::LoadStaticBody(int type, glm::vec2 body_topleft_pos) {
             )));
             break;
         case 3: //? spike, point up
-            AddTag(tag, e_tag::PHY_TRIGGER);
-            AddTag(tag, e_tag::DAMAGE);
+            AddTag(tag, etag::PHY_TRIGGER);
+            AddTag(tag, etag::DAMAGE);
             static_collider_list.emplace_back(
             physic_world->Create_Body(sk_physic2d::Body_Def(
                 sk_physic2d::irect::irect_fray(body_lowleft_pos, glm::vec2(1, 0.375f)),
@@ -166,6 +166,12 @@ void Level::LoadEntity(nlohmann::json jentity) {
         e->OnJsonCreate(m_area, this, jentity);
         return;
     }
+    if (jentity["__identifier"] == "spring") {
+        Spring* e = new Spring();
+        m_entity.emplace_back(e);
+        e->OnJsonCreate(m_area, this, jentity);
+        return;
+    }
 }
 void Level::UnLoadEntity() {
     for (Entity* e : m_entity) {
@@ -196,8 +202,9 @@ void Level::Draw() {
         Tile_data& cur_tile = m_tilemap.tiles[i];
 
         sk_graphic::Renderer2D_AddQuad(
-            glm::vec3(cur_tile.pos.x, cur_tile.pos.y, 0),
+            glm::vec2(cur_tile.pos.x, cur_tile.pos.y),
             glm::vec2(1),
+            0,
             cur_tile.uv,
             m_tilemap.tile_set,
             glm::vec4(1)
@@ -206,7 +213,7 @@ void Level::Draw() {
 
     for (Entity* e : m_entity) {
         e->Draw();
-        if (e->CheckTag_(e_tag::SPAWN_POINT))
+        if (e->CheckTag_(etag::SPAWN_POINT))
             sk_graphic::Renderer2D_AddDotX(glm::vec3((((PlayerSpawn*)e)->spawn_point), 1), { 1,1,0,1 });
     }
 }

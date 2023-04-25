@@ -8,8 +8,8 @@ void PlayerSpawn::OnJsonCreate(Area* area, Level* level, nlohmann::json jentity)
     m_level = level;
 
     //physic_world = area->GetPhysicWorld();
-    AddTag_(e_tag::PHY_TRIGGER);
-    AddTag_(e_tag::SPAWN_POINT);
+    AddTag_(etag::PHY_TRIGGER);
+    AddTag_(etag::SPAWN_POINT);
     for (nlohmann::json field : jentity["fieldInstances"]) {
         if (field["__identifier"] == "Point") {
             spawn_point =

@@ -4,22 +4,33 @@
 #include <nlohmann/json.hpp>
 
 // entity tag, entity can have multiple tag
-enum e_tag: uint64_t {
+enum etag: uint64_t {
 
     // for physic
     PHY_SOLID,
     PHY_ACTOR,
     PHY_TRIGGER,
-    PHY_ONE_WAY, //should be solid, only work in upward direction
+    PHY_ONE_WAY, //should be solid, only work in upward direction(for now)
+
+    PHY_DIR_U, // for one way body, this can change how trigger work, dont use for entity 
+    PHY_DIR_D,
+    PHY_DIR_L,
+    PHY_DIR_R,
+
+    DIR_U, // for special entity that need direction tag
+    DIR_D,
+    DIR_L,
+    DIR_R,
 
     PHY_MOVEABLE, // only physic body with this tag will be query and updated, all actor is moveable
 
     GROUND,
 
+    // each entity should not share tag
     SPAWN_POINT,
     PLAYER,
-
     DASH_REFRESH,
+    SPRING,
 
     DAMAGE
 };
@@ -43,12 +54,12 @@ class Entity {
 
     uint64_t tag = 0;
     /// @brief add tag to entity
-    inline void AddTag_(e_tag t) {
+    inline void AddTag_(etag t) {
         if (!CheckTag_(t))
             tag += (1ll << (int)t);
     }
     /// @brief check if entity have tag
-    inline bool CheckTag_(e_tag t) {
+    inline bool CheckTag_(etag t) {
         return ((tag >> t) & 1) != 0;
     }
 

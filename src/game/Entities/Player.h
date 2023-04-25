@@ -2,9 +2,12 @@
 
 #include "../Entity.h"
 
+#include <sk_engine/Graphics/Graphic2D.h>
 #include <sk_engine/Physics/Collider.h>
 #include <sk_engine/Physics/AABB.h>
 #include <GLM/glm.hpp>
+
+#include "Animation.h"
 
 class Player:public Entity {
     public:
@@ -20,6 +23,10 @@ class Player:public Entity {
     public:
     int m_body_index;
     sk_physic2d::AABB_World* physic_world;
+
+    sk_graphic::Sprite2D sprite;
+
+    Animation ani;
 
     // call when create player
 
@@ -39,10 +46,13 @@ class Player:public Entity {
     void OnTrigger(Entity* trigger) override;
     void OnTrigger(uint64_t trigger_tag) override;
 
+    void SetSpawnPoint(glm::vec2 p);
+
+    glm::vec2 GetCameraTarget();
+    private:
     void SolveMovement();
     void SolveAnimation();
     void SolveDeath();
 
-    void SetSpawnPoint(glm::vec2 p);
 };
 

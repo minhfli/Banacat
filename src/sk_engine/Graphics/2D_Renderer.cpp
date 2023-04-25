@@ -203,11 +203,12 @@ namespace sk_graphic {
     */
 
     void Renderer2D_AddQuad(
-        const glm::vec3& pos,
+        const glm::vec2& pos,
         const glm::vec2& size,
+        const float depth,
         const glm::ivec4& uv,
         const Texture2D texture = rdata.default_tex,
-        const glm::vec4& color
+        const glm::vec4& color = glm::vec4(1)
     ) {
         if (rdata.quad.vertex_count >= maxQuadVertexCounts || rdata.quad.cur_texture.ID != texture.ID) {
             Renderer2D_FlushQuads();
@@ -220,25 +221,64 @@ namespace sk_graphic {
         rdata.quad.index_count += 6;
 
         //* vertex 0
-        rdata.quad.vertices[rdata.quad.vertex_count].pos = glm::vec3(pos.x - hsize.x, pos.y - hsize.y, pos.z);
+        rdata.quad.vertices[rdata.quad.vertex_count].pos = glm::vec3(pos.x - hsize.x, pos.y - hsize.y, depth);
         rdata.quad.vertices[rdata.quad.vertex_count].uv = uv.xw();
         rdata.quad.vertices[rdata.quad.vertex_count].color = color;
         rdata.quad.vertex_count++;
 
         //* vertex 1
-        rdata.quad.vertices[rdata.quad.vertex_count].pos = glm::vec3(pos.x + hsize.x, pos.y - hsize.y, pos.z);
+        rdata.quad.vertices[rdata.quad.vertex_count].pos = glm::vec3(pos.x + hsize.x, pos.y - hsize.y, depth);
         rdata.quad.vertices[rdata.quad.vertex_count].uv = uv.zw();
         rdata.quad.vertices[rdata.quad.vertex_count].color = color;
         rdata.quad.vertex_count++;
 
         //* vertex 2
-        rdata.quad.vertices[rdata.quad.vertex_count].pos = glm::vec3(pos.x - hsize.x, pos.y + hsize.y, pos.z);
+        rdata.quad.vertices[rdata.quad.vertex_count].pos = glm::vec3(pos.x - hsize.x, pos.y + hsize.y, depth);
         rdata.quad.vertices[rdata.quad.vertex_count].uv = uv.xy();
         rdata.quad.vertices[rdata.quad.vertex_count].color = color;
         rdata.quad.vertex_count++;
 
         //* vertex 3
-        rdata.quad.vertices[rdata.quad.vertex_count].pos = glm::vec3(pos.x + hsize.x, pos.y + hsize.y, pos.z);
+        rdata.quad.vertices[rdata.quad.vertex_count].pos = glm::vec3(pos.x + hsize.x, pos.y + hsize.y, depth);
+        rdata.quad.vertices[rdata.quad.vertex_count].uv = uv.zy();
+        rdata.quad.vertices[rdata.quad.vertex_count].color = color;
+        rdata.quad.vertex_count++;
+    }
+    void Renderer2D_AddQuad(
+        const glm::vec4& bound,
+        const float depth,
+        const glm::ivec4& uv,
+        const Texture2D texture = rdata.default_tex,
+        const glm::vec4& color = glm::vec4(1)
+    ) {
+        if (rdata.quad.vertex_count >= maxQuadVertexCounts || rdata.quad.cur_texture.ID != texture.ID) {
+            Renderer2D_FlushQuads();
+            rdata.quad.cur_texture = texture;
+        }
+
+        rdata.quad.count++;
+        rdata.quad.index_count += 6;
+
+        //* vertex 0
+        rdata.quad.vertices[rdata.quad.vertex_count].pos = glm::vec3(bound.x, bound.y, depth);
+        rdata.quad.vertices[rdata.quad.vertex_count].uv = uv.xw();
+        rdata.quad.vertices[rdata.quad.vertex_count].color = color;
+        rdata.quad.vertex_count++;
+
+        //* vertex 1
+        rdata.quad.vertices[rdata.quad.vertex_count].pos = glm::vec3(bound.z, bound.y, depth);
+        rdata.quad.vertices[rdata.quad.vertex_count].uv = uv.zw();
+        rdata.quad.vertices[rdata.quad.vertex_count].color = color;
+        rdata.quad.vertex_count++;
+
+        //* vertex 2
+        rdata.quad.vertices[rdata.quad.vertex_count].pos = glm::vec3(bound.x, bound.w, depth);
+        rdata.quad.vertices[rdata.quad.vertex_count].uv = uv.xy();
+        rdata.quad.vertices[rdata.quad.vertex_count].color = color;
+        rdata.quad.vertex_count++;
+
+        //* vertex 3
+        rdata.quad.vertices[rdata.quad.vertex_count].pos = glm::vec3(bound.z, bound.w, depth);
         rdata.quad.vertices[rdata.quad.vertex_count].uv = uv.zy();
         rdata.quad.vertices[rdata.quad.vertex_count].color = color;
         rdata.quad.vertex_count++;

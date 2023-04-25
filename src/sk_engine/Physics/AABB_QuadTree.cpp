@@ -104,7 +104,7 @@ namespace sk_physic2d {
                 delete node->child[i];
                 node->child[i] = nullptr;
             }
-            std::cout << "Node Merged\n";
+           // std::cout << "Node Merged\n";
         }
         if (node->isleaf())
             MergeNode(node->parent);

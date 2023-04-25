@@ -10,13 +10,17 @@ namespace sk_graphic {
     class Sprite2D {
         public:
         GLuint texture_id = 0;
-        glm::vec4 tex_uv = glm::vec4(0);
+        glm::ivec4 tex_uv = glm::ivec4(0);
         glm::vec2 size = glm::vec2(0);
 
         Sprite2D();
 
-        void load_texture(const Texture2D& texture, const glm::vec4& uv);
-        inline void Draw(const glm::vec3& pos, const glm::vec4& color = glm::vec4(1));
+        void LoadTexture(Texture2D texture, glm::vec2 s_size, glm::ivec4 uv);
+
+        /// @brief 
+        /// @param pivot {0,0} lower left, {1,1} upper right
+        void Draw(glm::vec2 pos, float depth, glm::vec2 pivot = glm::vec2(0), glm::vec4 color = glm::vec4(1));
+
     };
 
     //void draw_sprite(const Sprite2D& sprite, const glm::vec3& pos = glm::vec3(0));

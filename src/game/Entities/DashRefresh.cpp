@@ -14,8 +14,8 @@ void DashRefresh::OnJsonCreate(Area* area, Level* level, nlohmann::json jentity)
         glm::vec2((float)jentity["__grid"][0], -(float)jentity["__grid"][1]) +
         glm::vec2((float)jentity["__pivot"][0], -(float)jentity["__pivot"][1]);
 
-    AddTag_(e_tag::PHY_TRIGGER);
-    AddTag_(e_tag::DASH_REFRESH);
+    AddTag_(etag::PHY_TRIGGER);
+    AddTag_(etag::DASH_REFRESH);
     trigger_body = m_area->GetPhysicWorld()->Create_Body(sk_physic2d::Body_Def(
         sk_physic2d::irect::irect_fsize_fpos(glm::vec2(0.5f), pos),
         tag,
@@ -36,8 +36,9 @@ void DashRefresh::Draw() {
     //std::cout << "dash refresh draw\n";
     if (is_active)
         sk_graphic::Renderer2D_AddQuad(
-            glm::vec3(pos, 3),
+            pos,
             glm::vec2(1),
+            3,
             glm::vec4(0, 0, 8, 8),
             m_texture,
             glm::vec4(1)

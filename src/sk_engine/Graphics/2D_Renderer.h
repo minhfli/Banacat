@@ -26,11 +26,19 @@ namespace sk_graphic {
     /// @param color 
     /// @param texture 
     void Renderer2D_AddQuad(
-        const glm::vec3& pos,
+        const glm::vec2& pos,
         const glm::vec2& size,
+        const float depth,
         const glm::ivec4& uv,
         const Texture2D texture,
-        const glm::vec4& color = glm::vec4(1)
+        const glm::vec4& color
+    );
+    void Renderer2D_AddQuad(
+        const glm::vec4& bound,
+        const float depth,
+        const glm::ivec4& uv,
+        const Texture2D texture,
+        const glm::vec4& color
     );
     void Renderer2D_AddLine(
         const glm::vec3& pos,

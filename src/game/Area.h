@@ -35,6 +35,12 @@ class Area {
     std::vector<std::vector<int>> neighborlist; // neighbor list of a level
     std::vector<glm::ivec4> level_bound_list;
 
+    float level_transition_time = 0.5f;
+    float level_transition_start_time;
+
+    // list of level that should be drawn when transition beetween old-new level
+    std::vector<int> draw_in_transition;
+
     sk_physic2d::AABB_World physic_world;
 
     Player m_player;

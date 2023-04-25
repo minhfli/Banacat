@@ -1,16 +1,6 @@
 /.vs
 /.vscode
 
-/vendor
-
-/debug
 /obj
 *.o
 *.d
-
-/make1
-#? makefile test
-
-/rdoc_debug
-
-Assets
