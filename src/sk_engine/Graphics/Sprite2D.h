@@ -19,7 +19,7 @@ namespace sk_graphic {
 
         /// @brief 
         /// @param pivot {0,0} lower left, {1,1} upper right
-        void Draw(glm::vec2 pos, float depth, glm::vec2 pivot = glm::vec2(0), glm::vec4 color = glm::vec4(1));
+        void Draw(glm::vec2 pos, float depth, glm::vec2 pivot = glm::vec2(0), bool flipx = false, bool flipy = false, glm::vec4 color = glm::vec4(1));
 
     };
 

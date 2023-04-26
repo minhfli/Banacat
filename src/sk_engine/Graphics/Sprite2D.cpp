@@ -13,11 +13,14 @@ namespace sk_graphic {
         this->texture_id = texture.ID;
         this->size = s_size;
     }
-    void Sprite2D::Draw(glm::vec2 pos, float depth, glm::vec2 pivot, glm::vec4 color) {
+    void Sprite2D::Draw(glm::vec2 pos, float depth, glm::vec2 pivot, bool flipx, bool flipy, glm::vec4 color) {
+        glm::vec4 uv = tex_uv;
+        if (flipx) std::swap(uv.x, uv.z);
+        if (flipy) std::swap(uv.y, uv.w);
         Renderer2D_AddQuad(
             glm::vec4(pos - pivot * size, pos - pivot * size + size),
             depth,
-            tex_uv,
+            uv,
             Texture2D(texture_id),
             color);
     }

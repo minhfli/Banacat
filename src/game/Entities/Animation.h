@@ -9,8 +9,8 @@ class Animation {
     Animation() {}
     ~Animation() {}
 
-    const std::string bananacat_png_path = "Assets/bananacat.png";
-    const std::string bananacat_json_path = "Assets/bananacat.json";
+    std::string png_path = ".png";
+    std::string json_path = ".json";
 
     struct Frame { // all frame should have the same size both in world and texture coordinate
         sk_graphic::Sprite2D sprite;
@@ -23,9 +23,25 @@ class Animation {
         std::string name;
         int start;
         int end;
+        int frame_count() { return end - start + 1; }
+        int duration = 0;
         bool specical = false; // if state use special variable to determine frame or just loop through each frame
+
     };
     std::vector <State> m_state;
-    State current;
-    void Init();
+
+    int current_State = 0;
+    int current_Frame = 0;
+
+    void Init(std::string Asset_path);
+    void SetState(std::string name);
+
+    bool flipx = false, flipy = false;
+    unsigned int state_start_tick; // start tick of current state
+
+    void SetFrame_byDuration(int x);
+    void SetFrame_byCurrentTick();
+    void SetFrame_byIndex(int x, bool loop = false);
+
+    void Draw(glm::vec2 pos, float depth, glm::vec2 pivot);
 };

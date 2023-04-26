@@ -7,7 +7,6 @@
 #include <sk_engine/Physics/AABB.h>
 #include <GLM/glm.hpp>
 
-#include "Animation.h"
 
 class Player:public Entity {
     public:
@@ -24,12 +23,7 @@ class Player:public Entity {
     int m_body_index;
     sk_physic2d::AABB_World* physic_world;
 
-    sk_graphic::Sprite2D sprite;
-
-    Animation ani;
-
     // call when create player
-
     // level is default level, all level should be inititalized before call player
     void OnCreate(Area* area, Level* level) override;
     void OnDestroy() override;
@@ -41,11 +35,13 @@ class Player:public Entity {
 
     void Start() override;
     void Update() override;
+    void LateUpdate() override;
     void Draw() override;
 
     void OnTrigger(Entity* trigger) override;
     void OnTrigger(uint64_t trigger_tag) override;
 
+    void OnNewLevel();
     void SetSpawnPoint(glm::vec2 p);
 
     glm::vec2 GetCameraTarget();

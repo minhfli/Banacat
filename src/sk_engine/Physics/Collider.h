@@ -151,7 +151,7 @@ namespace  sk_physic2d {
 
         irect RECT;
         glm::vec2 velocity = glm::vec2(0);
-        glm::vec2 prev_velocity = glm::vec2(0); // previous frame velocity
+        //glm::vec2 prev_velocity = glm::vec2(0); // previous frame velocity
 
         Entity* entity;
 

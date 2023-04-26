@@ -15,6 +15,8 @@
 #include "../Area.h"
 #include "../Level.h"
 
+#include "Animation.h"
+
 namespace { // some helper function
 
     inline float move_to(const float a, const float b, const float step) {
@@ -78,8 +80,8 @@ struct Player::playerdata { // value only
     // for jumping
     float gravity_normal = 50;
     float gravity_low = 30;
-    float gravity_high = 500;
-    float gravity_peak = 15; // gravity when player is in peak of the jump
+    float gravity_high = 400;
+    float gravity_peak = 20; // gravity when player is in peak of the jump
 
     float gravity_in_transition;
 
@@ -92,7 +94,7 @@ struct Player::playerdata { // value only
     bool is_walljump = false; // jump straight up when grabing wall
     bool is_jumping = false;
     bool is_solving_afterjump = false;
-    float jump_maxheight = 3.5;
+    float jump_maxheight = 3.7;
     float jump_maxduration = sqrt(2.0f * jump_maxheight / gravity_low);
 
     float jumpvelocity = sqrt(jump_maxheight * gravity_low * 2);
@@ -109,16 +111,18 @@ struct Player::playerdata { // value only
 
     bool start_spring_push = false;
     bool is_spring_pushed = false;
-    float spring_push_time = 0.36f;
+    float spring_push_time = 0.4f;
     float spring_push_start_time;
     float spring_push_dir;
-    glm::vec2 spring_push_velocity = { 20,10 };
+    glm::vec2 spring_push_velocity = { 23,10 };
 
     // for dashing
     bool candash = false;
+    glm::vec2 dash_dir;
     float dashspeed = 25;
     float dashtime = 0.2f;
     float last_dash_time = -100;
+    float dash_delay_time = 0.35f;
     bool is_dashing = false;
 
     // for wall interaction
@@ -194,6 +198,14 @@ struct Player::playerdata { // value only
 
     }
 
+    void Movement_ResetDash() {
+        last_dash_time = -100;
+        candash = true;
+    }
+    void Movement_ResetStamina() {
+        wallgrab_current_stamina = wallgrab_max_stamina;
+    }
+
     void Movement_Run() {
         if (is_dashing) return;
         if (is_wall_grabing) return;
@@ -211,9 +223,9 @@ struct Player::playerdata { // value only
         }
         else if (is_spring_pushed) {
             accel_after_springpush = move_to(
-                accel_after_wallkick,
+                accel_after_springpush,
                 accel,
-                50.0f * sk_time::delta_time
+                100.0f * sk_time::delta_time
             );
             m_body->velocity.x = move_to(
                     m_body->velocity.x,
@@ -270,6 +282,7 @@ struct Player::playerdata { // value only
                     is_walljump = false;
                     accel_after_wallkick = 0;
                     m_body->velocity.x = runspeed + 1;
+                    std::cout << "wall kick " << m_body->velocity.x << '\n';
                 }
             }
             else if (is_near_wall_right_3px) {
@@ -290,10 +303,10 @@ struct Player::playerdata { // value only
                     is_walljump = false;
                     accel_after_wallkick = 0;
                     m_body->velocity.x = -runspeed - 1;
+                    std::cout << "wall kick " << m_body->velocity.x << '\n';
                 }
             }
         }
-
         if (is_jumping) {
             if (is_walljump && sk_time::current_time - jump_start_time <= 0.05f) { // player do a walljump but move away from wall
                 if (is_touching_wall_left && wasd_dir.x == 1) {
@@ -362,7 +375,7 @@ struct Player::playerdata { // value only
             }
         }
 
-        if (!is_jumping) is_wallkick = is_walljump = false;
+        if (!is_jumping && !is_solving_afterjump) is_wallkick = is_walljump = false;
 
     }
     void Movement_Dash() {
@@ -374,7 +387,7 @@ struct Player::playerdata { // value only
         }
         if (sk_input::KeyDown(sk_key::K)) DASH_input_time = sk_time::current_time;
         if (!is_dashing) {
-            if (DASH_input_time + input_buffer_time >= sk_time::current_time && candash) {
+            if (DASH_input_time + input_buffer_time >= sk_time::current_time && candash && sk_time::current_time >= last_dash_time + dash_delay_time) {
                 candash = 0;
                 last_dash_time = sk_time::current_time;
                 is_dashing = true;
@@ -382,7 +395,7 @@ struct Player::playerdata { // value only
                 is_solving_afterjump = false;
                 is_spring_pushed = false;
 
-                glm::vec2 dash_dir = wasd_dir;
+                dash_dir = wasd_dir;
                 if (dash_dir == glm::vec2(0)) dash_dir.x = facing;
                 m_body->velocity = glm::normalize(dash_dir) * dashspeed;
             }
@@ -451,6 +464,93 @@ struct Player::playerdata { // value only
         if (is_spring_pushed) if (sk_time::current_time > spring_push_start_time + spring_push_time) is_spring_pushed = false;
     }
 #pragma endregion
+
+#pragma region Animation code
+    // all animation is resolve with tick
+    enum Ani_State {
+        NONE,
+        IDLE,
+        RUN,
+        DASH,
+        JUMP,
+        FALL,
+        WALL_GRAB,
+        WALL_CLIMB,
+        WALL_SLIDE,
+    } current_state = NONE;
+
+    Animation p_ani;
+    void Animation_SM() { // state machine
+        Ani_State newstate = IDLE;
+        if (is_wall_grabing) {
+            newstate = WALL_GRAB;
+            if (m_body->velocity.y > 1)  newstate = WALL_CLIMB;
+            if (m_body->velocity.y < -1) newstate = WALL_SLIDE;
+        }
+        else if (is_dashing) newstate = DASH;
+        else if (!is_grounded) newstate = JUMP;
+        else if (wasd_dir.x != 0) newstate = RUN;
+        else newstate = IDLE;
+
+        p_ani.flipx = (facing == -1);
+
+        if (current_state != newstate) {
+            current_state = newstate;
+
+            switch (current_state) {
+                case IDLE:       p_ani.SetState("idle");         break;
+                case RUN:        p_ani.SetState("run");          break;
+                case JUMP:       p_ani.SetState("jump");         break;
+                case DASH:       p_ani.SetState("dash");         break;
+                case WALL_GRAB:  p_ani.SetState("wall_grab");    break;
+                case WALL_CLIMB: p_ani.SetState("wall_climb");    break;
+                case WALL_SLIDE: p_ani.SetState("wall_slide");    break;
+
+                default: break;
+            }
+
+        }
+        switch (current_state) {
+            case IDLE:          Animation_Idle();       break;
+            case RUN:           Animation_Run();        break;
+            case JUMP:          Animation_Jump();       break;
+            case DASH:          Animation_Dash();       break;
+            case WALL_GRAB:     Animation_WallGrab();   break;
+            case WALL_CLIMB:    Animation_WallGrab();   break;
+            case WALL_SLIDE:    Animation_WallGrab();   break;
+
+            default: break;
+        }
+    }
+    void Animation_Idle() {
+        p_ani.SetFrame_byCurrentTick();
+    }
+    void Animation_Run() {
+        p_ani.SetFrame_byCurrentTick();
+    }
+    void Animation_Jump() {
+        if (m_body->velocity.y >= 15) p_ani.SetFrame_byIndex(0);
+        else if (m_body->velocity.y >= 10) p_ani.SetFrame_byIndex(1);
+        else if (m_body->velocity.y >= 5) p_ani.SetFrame_byIndex(2);
+        else if (m_body->velocity.y >= 0) p_ani.SetFrame_byIndex(3);
+        else if (m_body->velocity.y >= -4) p_ani.SetFrame_byIndex(4);
+        else if (m_body->velocity.y >= -10) p_ani.SetFrame_byIndex(5);
+        else p_ani.SetFrame_byIndex(6);
+    }
+    void Animation_Dash() {
+        if (dash_dir.y == 0) p_ani.SetFrame_byIndex(0);     // full horizontal dash
+        if (dash_dir.y == 1) p_ani.SetFrame_byIndex(1);     // upward dash
+        if (dash_dir.y == -1) p_ani.SetFrame_byIndex(2);    // downward dash
+    }
+    void Animation_WallGrab() {
+        if (current_state == WALL_GRAB)
+            p_ani.SetFrame_byIndex(0);
+        if (current_state == WALL_CLIMB)
+            p_ani.SetFrame_byCurrentTick();
+        if (current_state == WALL_SLIDE)
+            p_ani.SetFrame_byCurrentTick();
+    }
+#pragma endregion
 };
 Player::Player() {
     pdata = new playerdata();
@@ -458,7 +558,12 @@ Player::Player() {
 Player::~Player() {
     delete pdata;
 }
+void Player::OnNewLevel() {
+    pdata->Movement_ResetDash();
+    pdata->Movement_ResetStamina();
 
+    m_level = m_area->Active_level;
+}
 
 void Player::OnCreate(Area* area, Level* level) {
     m_area = area;
@@ -479,11 +584,7 @@ void Player::OnCreate(Area* area, Level* level) {
     );
     m_body_index = physic_world->Create_Body(player_bodydef);
 
-    sk_graphic::Texture2D texture;
-    texture.Load("Assets/catsprite.png");
-    sprite.LoadTexture(texture, { 4,4 }, { 0,0,32,32 });
-
-    ani.Init();
+    pdata->p_ani.Init("Assets/bananacat");
 }
 void Player::OnDestroy() {
     physic_world->Remove_Body(m_body_index);
@@ -505,6 +606,9 @@ void Player::Update() {
 
     sk_graphic::Renderer2D_GetCam()->focus.pos = GetCameraTarget();
 }
+void Player::LateUpdate() {
+
+}
 void Player::SolveMovement() {
     // setup input and collision checking
     pdata->GetMovement_Input();
@@ -517,13 +621,16 @@ void Player::SolveMovement() {
     pdata->Movement_Spring();
     pdata->Movement_Apply_Normal_Gravity();
 
+
 }
 void Player::SolveDeath() {
     pdata->is_dead = false;
     sk_physic2d::Body* m_body = physic_world->Get_Body(m_body_index);
     m_body->RECT = sk_physic2d::irect::irect_fbound(glm::vec4(pdata->spawn_point, pdata->spawn_point + pdata->collider_size));
 }
-void Player::SolveAnimation() {}
+void Player::SolveAnimation() {
+    pdata->Animation_SM();
+}
 
 void Player::OnTrigger(Entity* trigger) {
     if (trigger->CheckTag_(etag::SPAWN_POINT)) {
@@ -532,15 +639,16 @@ void Player::OnTrigger(Entity* trigger) {
     }
     if (trigger->CheckTag_(etag::DASH_REFRESH)) {
         if (!pdata->candash && ((DashRefresh*)trigger)->is_active) {
-            pdata->candash = true;
+            pdata->Movement_ResetDash();
+            pdata->Movement_ResetStamina();
             ((DashRefresh*)trigger)->is_active = false;
             ((DashRefresh*)trigger)->last_triggered_time = sk_time::current_time;
         }
         return;
     }
     if (trigger->CheckTag_(etag::SPRING)) {
-        pdata->candash = true;
-        pdata->wallgrab_current_stamina = pdata->wallgrab_max_stamina;
+        pdata->Movement_ResetDash();
+        pdata->Movement_ResetStamina();
         if (trigger->CheckTag_(etag::DIR_U))
             pdata->start_spring_jump = true;
         if (trigger->CheckTag_(etag::DIR_L)) {
@@ -565,10 +673,15 @@ void Player::Draw() {
     //sk_graphic::Renderer2D_AddBBox(collider_bound, 2, glm::vec4(1));
 
     sk_graphic::Renderer2D_AddDotX(glm::vec3(pdata->spawn_point, 4), { 0,0,1,1 });
-    sk_graphic::Renderer2D_AddDotX(glm::vec3(get_pivot_pos({ 0.5,0 }, collider_bound), 4), { 0,0,1,1 });
-    sprite.Draw(
+    //sk_graphic::Renderer2D_AddDotX(glm::vec3(get_pivot_pos({ 0.5,0 }, collider_bound), 4), { 0,0,1,1 });
+    /*sprite.Draw(
         get_pivot_pos({ 0.5,0 }, collider_bound) - glm::vec2(0, 1.0f / 8.0f), // lower center
         1,
+        { 0.5,0 }
+    );*/
+    pdata->p_ani.Draw(
+        get_pivot_pos({ 0.5,0 }, collider_bound) - glm::vec2(0, 1.0f / 8.0f), // lower center
+        -1,
         { 0.5,0 }
     );
 }

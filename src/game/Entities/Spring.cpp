@@ -16,7 +16,7 @@ void Spring::OnJsonCreate(Area* area, Level* level, nlohmann::json jentity) {
         glm::vec2(0, -1);
 
 
-    float width = 0.3f;
+    float width = 0.5f;
     glm::vec2 ray_o;
     glm::vec2 ray_d;
     for (nlohmann::json field : jentity["fieldInstances"]) {
@@ -24,22 +24,22 @@ void Spring::OnJsonCreate(Area* area, Level* level, nlohmann::json jentity) {
             if (field["__value"] == "up") {
                 AddTag_(etag::DIR_U);
                 ray_o = lowleft;
-                ray_d = { 1,width };
+                ray_d = { 2,width };
             }
             if (field["__value"] == "down") {// down  v
                 AddTag_(etag::DIR_D);
-                ray_o = lowleft + glm::vec2(0, 1);
-                ray_d = { 1,-width };
+                ray_o = lowleft + glm::vec2(0, 2);
+                ray_d = { 2,-width };
             }
             if (field["__value"] == "left") { //left  <
                 AddTag_(etag::DIR_L);
-                ray_o = lowleft + glm::vec2(1, 0);
-                ray_d = { -width,1 };
+                ray_o = lowleft + glm::vec2(2, 0);
+                ray_d = { -width,2 };
             }
             if (field["__value"] == "right") {// right  >
                 AddTag_(etag::DIR_R);
                 ray_o = lowleft;
-                ray_d = { width,1 };
+                ray_d = { width,2 };
             }
         }
     }

@@ -68,7 +68,9 @@ namespace sk_game {
         GameArea.Update();
     }
     //? late update, call after draw
-    void UpdateL() {}
+    void UpdateL() {
+        GameArea.LateUpdate();
+    }
 
     void Draw() {
         glm::vec3 mouse_world_pos = cam->Screen_To_World(sk_input::MousePos(), glm::vec2(1280, 720));

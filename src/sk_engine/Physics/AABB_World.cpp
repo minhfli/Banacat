@@ -105,12 +105,17 @@ namespace sk_physic2d {
         /*glm::vec2 move_amount =
             a_body.RECT.offset +
             a_body.velocity * sk_time::delta_time * (float)INTCOORD_PRECISION;*/
+        bool isplayer = (a_body.velocity.x == 7.5f);
+
         if (a_body.velocity.y > 100) std::cout << "too fast \n";
-        glm::vec2 move_amount =
+        /*glm::vec2 move_amount =
             a_body.RECT.offset +
             a_body.prev_velocity * sk_time::delta_time * (float)INTCOORD_PRECISION +
             (a_body.velocity - a_body.prev_velocity) * 0.5f * sk_time::delta_time * sk_time::delta_time * (float)INTCOORD_PRECISION
-            ;
+            ;*/
+        glm::vec2 move_amount =
+            a_body.RECT.offset +
+            a_body.velocity * sk_time::delta_time * (float)INTCOORD_PRECISION;
 
         // round away from 0, use to query
         int x_query = (move_amount.x < 0) ? floor(move_amount.x) : ceil(move_amount.x);
@@ -122,6 +127,7 @@ namespace sk_physic2d {
         a_body.RECT.offset = move_amount - glm::vec2(x_move, y_move);
 
         irect query_rect = a_body.RECT.extend_(x_query, y_query);
+        if (isplayer) std::cout << x_query << " " << y_query << " \n";
 
         std::vector<int> possible_collision = Query(query_rect);
 
@@ -152,6 +158,7 @@ namespace sk_physic2d {
                         s_body.RECT.bound.x - a_body.RECT.bound.z
                     );
                     if (x_move >= distant) {
+                        if (isplayer) std::cout << "hit \n";
                         x_move = distant;
                         a_body.RECT.offset.x = 0;
                         a_body.velocity.x = 0;
@@ -191,15 +198,18 @@ namespace sk_physic2d {
             a_body.RECT.bound.w += y_move * ydir;
         }
 
-        if (m_Body[id].entity != nullptr)
+        if (a_body.entity != nullptr)
             for (int index : possible_collision) {
-                if (CheckTag(m_Body[index].tag, etag::PHY_TRIGGER) && id != index && a_body.RECT.overlap(m_Body[index].RECT)) {
-                    m_Body[id].entity->OnTrigger(m_Body[index].tag);
-                    if (m_Body[index].entity)
-                        m_Body[id].entity->OnTrigger(m_Body[index].entity);
+                Body& t_body = m_Body[index];
+                if (CheckTag(t_body.tag, etag::PHY_TRIGGER) && id != index && a_body.RECT.overlap(t_body.RECT)) {
+                    a_body.entity->OnTrigger(t_body.tag);
+                    if (t_body.entity) {
+                        a_body.entity->OnTrigger(t_body.entity);
+                        t_body.entity->OnTrigger(a_body.entity);
+                    }
                 }
             }
-        a_body.prev_velocity = a_body.velocity;
+
     }
     void AABB_World::ResolveSolid(int id) {
 

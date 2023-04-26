@@ -33,6 +33,8 @@ namespace sk_main {
     void Run() {
         //cam.ProjectionP(60, window_w, window_h);
 
+        float gamespeed = 1;
+
         sk_time::delta_time = sk_time::fixed_delta_time;
         sk_time::delta_tick = sk_time::fixed_delta_tick;
 
@@ -40,7 +42,9 @@ namespace sk_main {
         while (!sk_window::Should_close()) {
 
             //calculate deltatick and deltatime
-            sk_time::current_real_tick = SDL_GetTicks();
+            if (sk_input::Key(sk_key::L)) gamespeed = 0.5f;
+            else gamespeed = 1;
+            sk_time::current_real_tick = SDL_GetTicks() * gamespeed;
             sk_time::current_real_time = (float)sk_time::current_real_tick * 0.001;
 
             // all game update and draw is in fixed time step

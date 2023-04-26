@@ -14,7 +14,7 @@ void Area::Init() {
     physic_world.Hint_WorldBound(glm::vec2(0), 512);
     physic_world.Init();
 
-    physic_world.enable_debug_draw = true;
+    physic_world.enable_debug_draw = false;
 
     std::string area_ldtk = get_path();
     nlohmann::json area_data = ReadJsonFile(area_ldtk);
@@ -162,7 +162,10 @@ void Area::Update() {
 
     // normal update
     if (in_level_transition)
-        if (sk_time::current_time > level_transition_start_time + level_transition_time) in_level_transition = false;
+        if (sk_time::current_time > level_transition_start_time + level_transition_time) {
+            in_level_transition = false;
+            m_player.OnNewLevel();
+        }
     if (!in_level_transition) {
         m_player.Update();
         Active_level->Update();
