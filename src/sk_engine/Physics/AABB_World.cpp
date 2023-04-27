@@ -201,11 +201,16 @@ namespace sk_physic2d {
         if (a_body.entity != nullptr)
             for (int index : possible_collision) {
                 Body& t_body = m_Body[index];
+                if (CheckTag(t_body.tag, etag::PHY_DIR_U) && a_body.velocity.y > 0) continue;
+                if (CheckTag(t_body.tag, etag::PHY_DIR_D) && a_body.velocity.y < 0) continue;
+                if (CheckTag(t_body.tag, etag::PHY_DIR_L) && a_body.velocity.x < 0) continue;
+                if (CheckTag(t_body.tag, etag::PHY_DIR_R) && a_body.velocity.x > 0) continue;
                 if (CheckTag(t_body.tag, etag::PHY_TRIGGER) && id != index && a_body.RECT.overlap(t_body.RECT)) {
                     a_body.entity->OnTrigger(t_body.tag);
                     if (t_body.entity) {
                         a_body.entity->OnTrigger(t_body.entity);
                         t_body.entity->OnTrigger(a_body.entity);
+                        t_body.entity->OnTrigger(a_body.tag);
                     }
                 }
             }

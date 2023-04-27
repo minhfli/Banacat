@@ -5,14 +5,14 @@
 		"doc": "https://ldtk.io/json",
 		"schema": "https://ldtk.io/files/JSON_SCHEMA.json",
 		"appAuthor": "Sebastien 'deepnight' Benard",
-		"appVersion": "1.2.5",
+		"appVersion": "1.3.0",
 		"url": "https://ldtk.io"
 	},
 	"identifier": "level_3",
 	"iid": "d20070d0-c640-11ed-8932-59df8339f871",
 	"uid": 300,
-	"worldX": 496,
-	"worldY": -64,
+	"worldX": 488,
+	"worldY": -176,
 	"worldDepth": 0,
 	"pxWid": 320,
 	"pxHei": 200,
@@ -79,11 +79,11 @@
 					"defUid": 264,
 					"px": [32,104],
 					"fieldInstances": [
-						{ "__identifier": "Point", "__value": { "cx": 5, "cy": 16 }, "__type": "Point", "__tile": null, "defUid": 293, "realEditorValues": [{
+						{ "__identifier": "Point", "__type": "Point", "__value": { "cx": 5, "cy": 16 }, "__tile": null, "defUid": 293, "realEditorValues": [{
 							"id": "V_String",
 							"params": ["5,16"]
 						}] },
-						{ "__identifier": "Default", "__value": true, "__type": "Bool", "__tile": null, "defUid": 294, "realEditorValues": [{
+						{ "__identifier": "Default", "__type": "Bool", "__value": true, "__tile": null, "defUid": 294, "realEditorValues": [{
 							"id": "V_Bool",
 							"params": [ true ]
 						}] }
@@ -531,8 +531,8 @@
 			"__opacity": 1,
 			"__pxTotalOffsetX": 0,
 			"__pxTotalOffsetY": 0,
-			"__tilesetDefUid": null,
-			"__tilesetRelPath": null,
+			"__tilesetDefUid": 9,
+			"__tilesetRelPath": "../../TileSet.png",
 			"iid": "d20070d3-c640-11ed-8932-eb69f5795481",
 			"levelId": 300,
 			"layerDefUid": 266,
@@ -1580,5 +1580,5 @@
 			]
 		}
 	],
-	"__neighbours": [{ "levelIid": "1aba0b60-c640-11ed-8132-939c6f6f961a", "dir": "w" }]
+	"__neighbours": [ { "levelIid": "1aba0b60-c640-11ed-8132-939c6f6f961a", "dir": "w" }, { "levelIid": "1500fd00-c640-11ed-a8d6-5764c9b94493", "dir": "w" } ]
 }

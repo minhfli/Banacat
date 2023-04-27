@@ -33,11 +33,14 @@ namespace { // some helper function
     }
 
     // a: reference,    b: result
-    inline float get_relative_lerp(float a, float a1, float a2, float b1, float b2) {
+    float get_relative_lerp(float a, float a1, float a2, float b1, float b2) {
         return b1 + (a - a1) / (a2 - a1) * (b2 - b1);
     }
-    inline float get_relative_lsin(float a, float a1, float a2, float b1, float b2) {
+    float get_relative_lsin(float a, float a1, float a2, float b1, float b2) {
         return b1 + sin((a - a1) / (a2 - a1) * M_PI * 0.5f) * (b2 - b1);
+    }
+    glm::vec2 get_relative_lsin(float a, float a1, float a2, glm::vec2 b1, glm::vec2 b2) {
+        return b1 + (float)sin((a - a1) / (a2 - a1) * M_PI * 0.5f) * (b2 - b1);
     }
 
     glm::vec2 get_pivot_pos(glm::vec2 pivot, glm::vec4 bound) {
@@ -50,13 +53,18 @@ struct Player::playerdata { // value only
     playerdata() {}
     ~playerdata() {}
 
-    bool is_dead = false;
-
     sk_physic2d::Body* m_body;
     sk_physic2d::AABB_World* physic_world;
 
     glm::vec2 collider_size = { 1,2 };
     glm::vec2 spawn_point;
+
+    bool is_dead = false;
+    float death_time;
+    glm::vec2 death_pos;
+    glm::vec2 death_target_pos;
+    float death_duration = 1.0f;
+
     // x: ad    y: ws
     glm::vec2 wasd_dir;
     float facing = 1;
@@ -72,12 +80,19 @@ struct Player::playerdata { // value only
     bool is_grounded = false;
     bool is_touching_wall_left = false;     // stand next to a wall
     bool is_touching_wall_right = false;    // stand next to a wall
+    bool is_touching_wall_left_up = false;     // stand next to a wall
+    bool is_touching_wall_right_up = false;    // stand next to a wall
+    bool is_touching_wall_up = false;    // stand next to a wall
+
     bool is_near_wall_left_3px = false;     // stand near a wall 
     bool is_near_wall_right_3px = false;    // stand near a wall
-    bool is_near_spike_left = false;     // stand near a wall 
-    bool is_near_spike_right = false;    // stand near a wall
+    bool is_near_spike_left = false;     // near spike
+    bool is_near_spike_right = false;    // near spike
 
     // for jumping
+    float coyote_time = 0.1f;
+    float last_grounded_time;
+
     float gravity_normal = 50;
     float gravity_low = 30;
     float gravity_high = 400;
@@ -123,10 +138,14 @@ struct Player::playerdata { // value only
     float dashtime = 0.2f;
     float last_dash_time = -100;
     float dash_delay_time = 0.35f;
+    float dash_reset_start_time = -100;
+    float dash_reset_time = 0.1f;
     bool is_dashing = false;
 
     // for wall interaction
     bool is_wall_grabing = false;
+    bool was_wall_grabing = false;
+    float last_wallgrab_time;
     float wallgrab_dir = 0;
     float wall_climb_speed = 5.5;
     float wall_slide_terminal_velocity = -15.0f;
@@ -139,20 +158,82 @@ struct Player::playerdata { // value only
     float wallgrab_climb_staminia = 50;
     float wallgrab_jump_staminia = 25;
 
+    void Update() {
+        if (is_dead) Solve_Death();
+        else Solve_Movement();
+        Animation_SM();
+    }
+    void Draw() {
+        if (is_dead) {
+            death_pos.x = move_to(death_pos.x, death_target_pos.x, sk_time::delta_time * 10);
+            death_pos.y = move_to(death_pos.y, death_target_pos.y, sk_time::delta_time * 10);
+            anim_death.Draw(death_pos, 2, glm::vec2(0.5f, 1.0f / 3));
+        }
+        else anim_main.Draw(
+            get_pivot_pos({ 0.5,0 }, m_body->RECT.true_bound()) - glm::vec2(0, 1.0f / 8.0f), // lower center
+            -1,
+            glm::vec2(0.5f, 0)
+        );
+    }
+    void Solve_Movement() {
+        GetMovement_Input();
+        Movement_PhysicCheck();
+        // solving
+        Movement_Run();
+        Movement_Jump();
+        Movement_Dash();
+        Movement_WallGrab();
+        Movement_Spring();
+        Movement_Apply_Normal_Gravity();
+    }
+    void Solve_Death() {
+        if (sk_time::current_time >= death_time + death_duration) {
+            SetAlive();
+            return;
+        }
+        anim_death.SetFrame_byCurrentTick();
+    }
+#pragma region Player death
+
+    // direction to move player to when it dead
+    void SetDead(glm::vec2 pushback_dir = glm::vec2(0)) {
+        anim_death.SetState("death");
+
+        is_dead = true;
+        death_time = sk_time::current_time;
+        death_pos = get_pivot_pos(glm::vec2(0.5f, 0), m_body->RECT.true_bound());
+        death_target_pos = death_pos + glm::vec2(1, 2) * pushback_dir;
+
+        //disable physic body
+        m_body->is_active = false;
+    }
+    void SetAlive() {
+        m_body->RECT = sk_physic2d::irect::irect_fbound(glm::vec4(spawn_point, spawn_point + collider_size));
+        m_body->velocity = glm::vec2(0);
+        m_body->is_active = true;
+        is_dead = false;
+    }
 #pragma region Movement code
     void GetMovement_Input() {
         if (!sk_input::Key(sk_key::A) && !sk_input::Key(sk_key::D)) wasd_dir.x = 0;
         if (sk_input::Key(sk_key::A) && !sk_input::Key(sk_key::D)) wasd_dir.x = -1;
         if (!sk_input::Key(sk_key::A) && sk_input::Key(sk_key::D)) wasd_dir.x = 1;
-        if (sk_input::Key(sk_key::A) && sk_input::Key(sk_key::D) && wasd_dir.x == 0) wasd_dir.x = 1;
+        if (sk_input::Key(sk_key::A) && sk_input::Key(sk_key::D)) {
+            if (sk_input::KeyDown(sk_key::A)) wasd_dir.x = -1;
+            if (sk_input::KeyDown(sk_key::D)) wasd_dir.x = 1;
+            if (wasd_dir.x == 0) wasd_dir.x = 1;
+        }
 
         if (!sk_input::Key(sk_key::W) && !sk_input::Key(sk_key::S)) wasd_dir.y = 0;
         if (sk_input::Key(sk_key::W) && !sk_input::Key(sk_key::S)) wasd_dir.y = 1;
         if (!sk_input::Key(sk_key::W) && sk_input::Key(sk_key::S)) wasd_dir.y = -1;
-        if (sk_input::Key(sk_key::W) && sk_input::Key(sk_key::S) && wasd_dir.y == 0) wasd_dir.y = 1;
+        if (sk_input::Key(sk_key::W) && sk_input::Key(sk_key::S)) {
+            if (sk_input::KeyDown(sk_key::W)) wasd_dir.y = 1;
+            if (sk_input::KeyDown(sk_key::S)) wasd_dir.y = -1;
+            if (wasd_dir.y == 0) wasd_dir.y = 1;
+        }
 
-        if (!is_wall_grabing)
-            if (wasd_dir.x != 0) facing = wasd_dir.x;
+        if (!is_wall_grabing && wasd_dir.x != 0) facing = wasd_dir.x;
     }
     void Movement_PhysicCheck() {
         is_grounded = physic_world->BoxCast(
@@ -167,13 +248,28 @@ struct Player::playerdata { // value only
                 (1 << etag::PHY_ONE_WAY)
             ) && m_body->velocity.y == 0;
 
+        is_touching_wall_up = physic_world->BoxCast(
+            m_body->RECT.bound + glm::ivec4(0, 1, 0, 1),
+            (1 << etag::PHY_SOLID) +
+            (1 << etag::GROUND)
+        );
         is_touching_wall_left = physic_world->BoxCast(
-            m_body->RECT.bound + glm::ivec4(-1, 0, -1, 0),
+            m_body->RECT.bound + glm::ivec4(-1, 8, -1, -16),
+            (1 << etag::PHY_SOLID) +
+            (1 << etag::GROUND)
+        );
+        is_touching_wall_left_up = physic_world->BoxCast(
+            m_body->RECT.bound + glm::ivec4(-1, 12, -1, -16),
             (1 << etag::PHY_SOLID) +
             (1 << etag::GROUND)
         );
         is_touching_wall_right = physic_world->BoxCast(
-            m_body->RECT.bound + glm::ivec4(1, 0, 1, 0),
+            m_body->RECT.bound + glm::ivec4(1, 8, 1, -16),
+            (1 << etag::PHY_SOLID) +
+            (1 << etag::GROUND)
+        );
+        is_touching_wall_right_up = physic_world->BoxCast(
+            m_body->RECT.bound + glm::ivec4(1, 12, 1, -16),
             (1 << etag::PHY_SOLID) +
             (1 << etag::GROUND)
         );
@@ -188,19 +284,23 @@ struct Player::playerdata { // value only
             (1 << etag::GROUND)
         );
         is_near_spike_left = physic_world->BoxCast(
-            m_body->RECT.bound + glm::ivec4(-3, -8, -3, 8),
+            m_body->RECT.bound + glm::ivec4(-3, 8, -3, 8),
             (1 << etag::DAMAGE)
         );
         is_near_spike_right = physic_world->BoxCast(
-            m_body->RECT.bound + glm::ivec4(3, -8, 3, 8),
+            m_body->RECT.bound + glm::ivec4(3, 8, 3, 8),
             (1 << etag::DAMAGE)
         );
 
     }
 
     void Movement_ResetDash() {
-        last_dash_time = -100;
-        candash = true;
+        //if (!is_dashing)
+            //last_dash_time = -100;
+        if (!candash) {
+            candash = true;
+            dash_reset_start_time = sk_time::current_time;
+        }
     }
     void Movement_ResetStamina() {
         wallgrab_current_stamina = wallgrab_max_stamina;
@@ -220,13 +320,27 @@ struct Player::playerdata { // value only
                     runspeed * wasd_dir.x,
                     accel_after_wallkick * sk_time::delta_time
             );
+            //if (m_body->velocity.x < 0) std::cout << "error\n";
         }
         else if (is_spring_pushed) {
-            accel_after_springpush = move_to(
-                accel_after_springpush,
-                accel,
-                100.0f * sk_time::delta_time
-            );
+            if (wasd_dir.x == -spring_push_dir)
+                accel_after_springpush = move_to(
+                    accel_after_springpush,
+                    accel,
+                    160.0f * sk_time::delta_time
+                );
+            if (wasd_dir.x == spring_push_dir)
+                accel_after_springpush = move_to(
+                    accel_after_springpush,
+                    accel,
+                    30.0f * sk_time::delta_time
+                );
+            if (wasd_dir.x == 0)
+                accel_after_springpush = move_to(
+                    accel_after_springpush,
+                    accel,
+                    80.0f * sk_time::delta_time
+                );
             m_body->velocity.x = move_to(
                     m_body->velocity.x,
                     runspeed * wasd_dir.x,
@@ -242,7 +356,8 @@ struct Player::playerdata { // value only
     void Movement_Jump() {
         if (is_dashing) return;
         if (sk_input::KeyDown(sk_key::SPACE)) JUMP_input_time = sk_time::current_time;
-        if (JUMP_input_time + input_buffer_time >= sk_time::current_time && is_grounded) { // normal jump
+        if (is_grounded && !is_jumping) last_grounded_time = sk_time::current_time;
+        if (JUMP_input_time + input_buffer_time >= sk_time::current_time && last_grounded_time + coyote_time > sk_time::current_time) { // normal jump
             JUMP_input_time = -100;
             is_jumping = true;
             is_wallkick = false;
@@ -252,7 +367,7 @@ struct Player::playerdata { // value only
             jump_start_time = sk_time::current_time;
             m_body->velocity.y = jumpvelocity;
         }
-        if (JUMP_input_time + input_buffer_time >= sk_time::current_time && !is_grounded) { // wall jump/kick
+        if (JUMP_input_time + input_buffer_time >= sk_time::current_time && last_grounded_time + coyote_time <= sk_time::current_time) { // wall jump/kick
             if (is_near_wall_left_3px && is_near_wall_right_3px) { // touch both wall, do a normal jump
                 JUMP_input_time = -100;
                 is_jumping = true;
@@ -282,7 +397,6 @@ struct Player::playerdata { // value only
                     is_walljump = false;
                     accel_after_wallkick = 0;
                     m_body->velocity.x = runspeed + 1;
-                    std::cout << "wall kick " << m_body->velocity.x << '\n';
                 }
             }
             else if (is_near_wall_right_3px) {
@@ -379,26 +493,31 @@ struct Player::playerdata { // value only
 
     }
     void Movement_Dash() {
-        if (is_grounded) candash = 1;
+        if (is_grounded) Movement_ResetDash();
         if (is_dashing && sk_time::current_time > last_dash_time + dashtime) {
             is_dashing = false;
             m_body->velocity.x = std::clamp(m_body->velocity.x, -8.0f, 8.0f);
-            m_body->velocity.y = std::clamp(m_body->velocity.y, -6.0f, 6.0f);
+            m_body->velocity.y = std::clamp(m_body->velocity.y, -15.0f, 4.0f);
         }
         if (sk_input::KeyDown(sk_key::K)) DASH_input_time = sk_time::current_time;
-        if (!is_dashing) {
-            if (DASH_input_time + input_buffer_time >= sk_time::current_time && candash && sk_time::current_time >= last_dash_time + dash_delay_time) {
-                candash = 0;
-                last_dash_time = sk_time::current_time;
-                is_dashing = true;
-                is_jumping = false;
-                is_solving_afterjump = false;
-                is_spring_pushed = false;
+        if (DASH_input_time + input_buffer_time >= sk_time::current_time &&
+            candash &&
+            !is_dashing &&
+            sk_time::current_time >= last_dash_time + dash_delay_time &&
+            !start_spring_jump &&
+            !start_spring_push
+            ) {
+            candash = 0;
+            last_dash_time = sk_time::current_time;
+            DASH_input_time = -100;
+            is_dashing = true;
+            is_jumping = false;
+            is_solving_afterjump = false;
+            is_spring_pushed = false;
 
-                dash_dir = wasd_dir;
-                if (dash_dir == glm::vec2(0)) dash_dir.x = facing;
-                m_body->velocity = glm::normalize(dash_dir) * dashspeed;
-            }
+            dash_dir = wasd_dir;
+            if (dash_dir == glm::vec2(0)) dash_dir.x = facing;
+            m_body->velocity = glm::normalize(dash_dir) * dashspeed;
         }
     }
     void Movement_WallGrab() {
@@ -409,8 +528,9 @@ struct Player::playerdata { // value only
             ((is_touching_wall_left && facing == -1) ||
             (is_touching_wall_right && facing == 1));
 
-        wallgrab_dir = 0;
+        //wallgrab_dir = 0;
         if (is_wall_grabing) {
+            last_wallgrab_time = sk_time::current_time;
             wallgrab_dir = facing;
             if (wasd_dir.y == 0 && wallgrab_current_stamina > 0) { // hold
                 wallgrab_current_stamina -= wallgrab_hold_staminia * sk_time::delta_time;
@@ -418,17 +538,41 @@ struct Player::playerdata { // value only
                 m_body->velocity.y = std::max(m_body->velocity.y, 0.0f);
             }
             if (wasd_dir.y == 1 && wallgrab_current_stamina > 0) { // climb
-                wallgrab_current_stamina -= wallgrab_climb_staminia * sk_time::delta_time;
-                m_body->velocity.y = wall_climb_speed;
+                if (is_touching_wall_up) {
+                    wallgrab_current_stamina -= wallgrab_hold_staminia * sk_time::delta_time;
+                    m_body->velocity.y = 0.5f;
+                }
+                else if ((wallgrab_dir == 1 && is_touching_wall_right_up) || (wallgrab_dir == -1 && is_touching_wall_left_up)) {
+                    wallgrab_current_stamina -= wallgrab_climb_staminia * sk_time::delta_time;
+                    m_body->velocity.y = wall_climb_speed;
+                }
+                else if ((wallgrab_dir == 1 && !is_near_spike_right) || (wallgrab_dir == -1 && !is_near_spike_left)) {
+                    wallgrab_current_stamina -= wallgrab_climb_staminia * sk_time::delta_time;
+                    m_body->velocity.y = wall_climb_speed;
+                }
+                else {
+                    wallgrab_current_stamina -= wallgrab_hold_staminia * sk_time::delta_time;
+                    m_body->velocity.y = 0;
+                }
             }
             if (wasd_dir.y == -1 || wallgrab_current_stamina <= 0) { // slide
                 m_body->velocity.y -= wall_slide_gravity * sk_time::delta_time;
                 m_body->velocity.y = std::max(m_body->velocity.y, wall_slide_terminal_velocity);
             }
-            // push player against the wall
-            if (wallgrab_dir == -1 && !is_near_spike_left) m_body->velocity.x = wallgrab_dir * 0.5f;
-            if (wallgrab_dir == 1 && !is_near_spike_right) m_body->velocity.x = wallgrab_dir * 0.5f;
         }
+        was_wall_grabing = (!is_wall_grabing && last_wallgrab_time + 0.15f > sk_time::current_time && sk_input::Key(sk_key::J) &&
+            !is_dashing && !is_jumping && !is_solving_afterjump && !is_grounded &&
+            !is_spring_pushed &&
+            m_body->velocity.y < 6.0f && m_body->velocity.y >= 0 &&
+            wasd_dir.y >= 0 &&
+            (wasd_dir.x == wallgrab_dir || wasd_dir.x == 0)
+        );
+        if (was_wall_grabing) {
+            // push player up the edge
+            if (wallgrab_dir == -1 && !is_near_spike_left) m_body->velocity = { wallgrab_dir * 8.0f,6 };
+            if (wallgrab_dir == 1 && !is_near_spike_right) m_body->velocity = { wallgrab_dir * 8.0f,6 };
+        }
+
     }
     void Movement_Apply_Normal_Gravity() {
         if (!is_jumping && !is_dashing && !is_wall_grabing && !is_solving_afterjump)
@@ -464,7 +608,6 @@ struct Player::playerdata { // value only
         if (is_spring_pushed) if (sk_time::current_time > spring_push_start_time + spring_push_time) is_spring_pushed = false;
     }
 #pragma endregion
-
 #pragma region Animation code
     // all animation is resolve with tick
     enum Ani_State {
@@ -479,7 +622,12 @@ struct Player::playerdata { // value only
         WALL_SLIDE,
     } current_state = NONE;
 
-    Animation p_ani;
+    Animation anim_main;
+    Animation anim_death;
+    void SetupAnimation() {
+        anim_main.Init("Assets/bananacat", true);
+        anim_death.Init("Assets/Entity/Player/death");
+    }
     void Animation_SM() { // state machine
         Ani_State newstate = IDLE;
         if (is_wall_grabing) {
@@ -492,19 +640,27 @@ struct Player::playerdata { // value only
         else if (wasd_dir.x != 0) newstate = RUN;
         else newstate = IDLE;
 
-        p_ani.flipx = (facing == -1);
+        anim_main.flipx = (facing == -1);
+
+        if (candash)
+            if (dash_reset_start_time + dash_reset_time >= sk_time::current_time)
+                anim_main.SetLayer("white");
+            else
+                anim_main.SetLayer("yellow");
+        else
+            anim_main.SetLayer("green");
 
         if (current_state != newstate) {
             current_state = newstate;
 
             switch (current_state) {
-                case IDLE:       p_ani.SetState("idle");         break;
-                case RUN:        p_ani.SetState("run");          break;
-                case JUMP:       p_ani.SetState("jump");         break;
-                case DASH:       p_ani.SetState("dash");         break;
-                case WALL_GRAB:  p_ani.SetState("wall_grab");    break;
-                case WALL_CLIMB: p_ani.SetState("wall_climb");    break;
-                case WALL_SLIDE: p_ani.SetState("wall_slide");    break;
+                case IDLE:       anim_main.SetState("idle");         break;
+                case RUN:        anim_main.SetState("run");          break;
+                case JUMP:       anim_main.SetState("jump");         break;
+                case DASH:       anim_main.SetState("dash");         break;
+                case WALL_GRAB:  anim_main.SetState("wall_grab");    break;
+                case WALL_CLIMB: anim_main.SetState("wall_climb");    break;
+                case WALL_SLIDE: anim_main.SetState("wall_slide");    break;
 
                 default: break;
             }
@@ -523,32 +679,32 @@ struct Player::playerdata { // value only
         }
     }
     void Animation_Idle() {
-        p_ani.SetFrame_byCurrentTick();
+        anim_main.SetFrame_byCurrentTick();
     }
     void Animation_Run() {
-        p_ani.SetFrame_byCurrentTick();
+        anim_main.SetFrame_byCurrentTick();
     }
     void Animation_Jump() {
-        if (m_body->velocity.y >= 15) p_ani.SetFrame_byIndex(0);
-        else if (m_body->velocity.y >= 10) p_ani.SetFrame_byIndex(1);
-        else if (m_body->velocity.y >= 5) p_ani.SetFrame_byIndex(2);
-        else if (m_body->velocity.y >= 0) p_ani.SetFrame_byIndex(3);
-        else if (m_body->velocity.y >= -4) p_ani.SetFrame_byIndex(4);
-        else if (m_body->velocity.y >= -10) p_ani.SetFrame_byIndex(5);
-        else p_ani.SetFrame_byIndex(6);
+        if (m_body->velocity.y >= 15) anim_main.SetFrame_byIndex(0);
+        else if (m_body->velocity.y >= 10) anim_main.SetFrame_byIndex(1);
+        else if (m_body->velocity.y >= 5) anim_main.SetFrame_byIndex(2);
+        else if (m_body->velocity.y >= 0) anim_main.SetFrame_byIndex(3);
+        else if (m_body->velocity.y >= -4) anim_main.SetFrame_byIndex(4);
+        else if (m_body->velocity.y >= -10) anim_main.SetFrame_byIndex(5);
+        else anim_main.SetFrame_byIndex(6);
     }
     void Animation_Dash() {
-        if (dash_dir.y == 0) p_ani.SetFrame_byIndex(0);     // full horizontal dash
-        if (dash_dir.y == 1) p_ani.SetFrame_byIndex(1);     // upward dash
-        if (dash_dir.y == -1) p_ani.SetFrame_byIndex(2);    // downward dash
+        if (dash_dir.y == 0) anim_main.SetFrame_byIndex(0);     // full horizontal dash
+        if (dash_dir.y == 1) anim_main.SetFrame_byIndex(1);     // upward dash
+        if (dash_dir.y == -1) anim_main.SetFrame_byIndex(2);    // downward dash
     }
     void Animation_WallGrab() {
         if (current_state == WALL_GRAB)
-            p_ani.SetFrame_byIndex(0);
+            anim_main.SetFrame_byIndex(0);
         if (current_state == WALL_CLIMB)
-            p_ani.SetFrame_byCurrentTick();
+            anim_main.SetFrame_byCurrentTick();
         if (current_state == WALL_SLIDE)
-            p_ani.SetFrame_byCurrentTick();
+            anim_main.SetFrame_byCurrentTick();
     }
 #pragma endregion
 };
@@ -583,8 +739,7 @@ void Player::OnCreate(Area* area, Level* level) {
         this
     );
     m_body_index = physic_world->Create_Body(player_bodydef);
-
-    pdata->p_ani.Init("Assets/bananacat");
+    pdata->SetupAnimation();
 }
 void Player::OnDestroy() {
     physic_world->Remove_Body(m_body_index);
@@ -598,51 +753,24 @@ void Player::Update() {
 
     pdata->m_body = physic_world->Get_Body(m_body_index);
 
-    if (sk_input::KeyDown(sk_key::R)) pdata->is_dead = true;
-    if (!pdata->is_dead)
-        SolveMovement();
-    else SolveDeath();
-    SolveAnimation();
+    if (sk_input::KeyDown(sk_key::R)) pdata->SetDead();
+    pdata->Update();
 
     sk_graphic::Renderer2D_GetCam()->focus.pos = GetCameraTarget();
 }
 void Player::LateUpdate() {
 
 }
-void Player::SolveMovement() {
-    // setup input and collision checking
-    pdata->GetMovement_Input();
-    pdata->Movement_PhysicCheck();
-    // solving
-    pdata->Movement_Run();
-    pdata->Movement_Jump();
-    pdata->Movement_Dash();
-    pdata->Movement_WallGrab();
-    pdata->Movement_Spring();
-    pdata->Movement_Apply_Normal_Gravity();
-
-
-}
-void Player::SolveDeath() {
-    pdata->is_dead = false;
-    sk_physic2d::Body* m_body = physic_world->Get_Body(m_body_index);
-    m_body->RECT = sk_physic2d::irect::irect_fbound(glm::vec4(pdata->spawn_point, pdata->spawn_point + pdata->collider_size));
-}
-void Player::SolveAnimation() {
-    pdata->Animation_SM();
-}
-
 void Player::OnTrigger(Entity* trigger) {
     if (trigger->CheckTag_(etag::SPAWN_POINT)) {
         pdata->spawn_point = ((PlayerSpawn*)trigger)->spawn_point;
         return;
     }
-    if (trigger->CheckTag_(etag::DASH_REFRESH)) {
-        if (!pdata->candash && ((DashRefresh*)trigger)->is_active) {
+    if (trigger->CheckTag_(etag::DASH_CRYSTAL)) {
+        if (!pdata->candash && ((DashCrystal*)trigger)->is_active) {
             pdata->Movement_ResetDash();
             pdata->Movement_ResetStamina();
-            ((DashRefresh*)trigger)->is_active = false;
-            ((DashRefresh*)trigger)->last_triggered_time = sk_time::current_time;
+            ((DashCrystal*)trigger)->OnPlayerInteract();
         }
         return;
     }
@@ -664,7 +792,10 @@ void Player::OnTrigger(Entity* trigger) {
 }
 void Player::OnTrigger(uint64_t trigger_tag) {
     if (CheckTag(trigger_tag, etag::DAMAGE)) {
-        pdata->is_dead = true;
+        if (CheckTag(trigger_tag, etag::PHY_DIR_U)) pdata->SetDead({ -pdata->facing, 1 });
+        else if (CheckTag(trigger_tag, etag::PHY_DIR_D)) pdata->SetDead({ -pdata->facing, -1 });
+        else if (CheckTag(trigger_tag, etag::PHY_DIR_L)) pdata->SetDead({ -2.5f, 0 });
+        else if (CheckTag(trigger_tag, etag::PHY_DIR_R)) pdata->SetDead({ 2.5f, 0 });
     }
 }
 void Player::Draw() {
@@ -673,17 +804,7 @@ void Player::Draw() {
     //sk_graphic::Renderer2D_AddBBox(collider_bound, 2, glm::vec4(1));
 
     sk_graphic::Renderer2D_AddDotX(glm::vec3(pdata->spawn_point, 4), { 0,0,1,1 });
-    //sk_graphic::Renderer2D_AddDotX(glm::vec3(get_pivot_pos({ 0.5,0 }, collider_bound), 4), { 0,0,1,1 });
-    /*sprite.Draw(
-        get_pivot_pos({ 0.5,0 }, collider_bound) - glm::vec2(0, 1.0f / 8.0f), // lower center
-        1,
-        { 0.5,0 }
-    );*/
-    pdata->p_ani.Draw(
-        get_pivot_pos({ 0.5,0 }, collider_bound) - glm::vec2(0, 1.0f / 8.0f), // lower center
-        -1,
-        { 0.5,0 }
-    );
+    pdata->Draw();
 }
 
 void Player::SetSpawnPoint(glm::vec2 p) {

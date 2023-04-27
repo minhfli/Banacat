@@ -45,10 +45,5 @@ class Player:public Entity {
     void SetSpawnPoint(glm::vec2 p);
 
     glm::vec2 GetCameraTarget();
-    private:
-    void SolveMovement();
-    void SolveAnimation();
-    void SolveDeath();
-
 };
 

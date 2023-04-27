@@ -108,6 +108,7 @@ void Level::LoadStaticBody(int type, glm::vec2 body_topleft_pos) {
     int tag = 0;
 
     glm::vec2 body_lowleft_pos = body_topleft_pos + glm::vec2(0, -1);
+    float spike_width = 0.3f;
     switch (type) {
         case 1: //? normal tile collider
             AddTag(tag, etag::PHY_SOLID);
@@ -129,17 +130,47 @@ void Level::LoadStaticBody(int type, glm::vec2 body_topleft_pos) {
             break;
         case 3: //? spike, point up
             AddTag(tag, etag::PHY_TRIGGER);
+            AddTag(tag, etag::PHY_DIR_U);
             AddTag(tag, etag::DAMAGE);
             static_collider_list.emplace_back(
             physic_world->Create_Body(sk_physic2d::Body_Def(
-                sk_physic2d::irect::irect_fray(body_lowleft_pos, glm::vec2(1, 0.375f)),
+                sk_physic2d::irect::irect_fray(body_lowleft_pos, glm::vec2(1, spike_width)),
+                tag
+            )));
+            break;
+        case 4: //? spike, point left
+            AddTag(tag, etag::PHY_TRIGGER);
+            AddTag(tag, etag::PHY_DIR_L);
+            AddTag(tag, etag::DAMAGE);
+            static_collider_list.emplace_back(
+            physic_world->Create_Body(sk_physic2d::Body_Def(
+                sk_physic2d::irect::irect_fray(body_lowleft_pos + glm::vec2(1, 0), glm::vec2(-spike_width, 1)),
+                tag
+            )));
+            break;
+        case 5: //? spike, point right
+            AddTag(tag, etag::PHY_TRIGGER);
+            AddTag(tag, etag::PHY_DIR_R);
+            AddTag(tag, etag::DAMAGE);
+            static_collider_list.emplace_back(
+            physic_world->Create_Body(sk_physic2d::Body_Def(
+                sk_physic2d::irect::irect_fray(body_lowleft_pos, glm::vec2(spike_width, 1)),
+                tag
+            )));
+            break;
+        case 6: //? spike, point down
+            AddTag(tag, etag::PHY_TRIGGER);
+            AddTag(tag, etag::PHY_DIR_D);
+            AddTag(tag, etag::DAMAGE);
+            static_collider_list.emplace_back(
+            physic_world->Create_Body(sk_physic2d::Body_Def(
+                sk_physic2d::irect::irect_fray(body_lowleft_pos + glm::vec2(0, 1), glm::vec2(1, -spike_width)),
                 tag
             )));
             break;
         default:
             break;
     }
-
 }
 
 void Level::LoadEntity(nlohmann::json jentity) {
@@ -160,8 +191,8 @@ void Level::LoadEntity(nlohmann::json jentity) {
         e->OnJsonCreate(m_area, this, jentity);
         return;
     }
-    if (jentity["__identifier"] == "dash_refresh") {
-        DashRefresh* e = new DashRefresh();
+    if (jentity["__identifier"] == "dash_crystal") {
+        DashCrystal* e = new DashCrystal();
         m_entity.emplace_back(e);
         e->OnJsonCreate(m_area, this, jentity);
         return;
