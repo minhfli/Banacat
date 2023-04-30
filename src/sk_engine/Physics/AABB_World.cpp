@@ -16,9 +16,8 @@ namespace sk_physic2d {
     void AABB_World::Hint_WorldBound(glm::vec2 center, float size) { world_bound = { center - glm::vec2(size) * 0.5f,center + glm::vec2(size) * 0.5f }; }
 
     void AABB_World::Init() {
-        m_Body.reserve(100);
-        solids.reserve(100);
-        actors.reserve(10);
+        solids.reserve(1000);
+        actors.reserve(100);
         quad_tree.Init(irect::irect_fbound(world_bound));
 
         std::cout << "world_bound: ";
@@ -102,17 +101,6 @@ namespace sk_physic2d {
         // s: position
         // v: velocity
         // a: acceleration 
-        /*glm::vec2 move_amount =
-            a_body.RECT.offset +
-            a_body.velocity * sk_time::delta_time * (float)INTCOORD_PRECISION;*/
-        bool isplayer = (a_body.velocity.x == 7.5f);
-
-        if (a_body.velocity.y > 100) std::cout << "too fast \n";
-        /*glm::vec2 move_amount =
-            a_body.RECT.offset +
-            a_body.prev_velocity * sk_time::delta_time * (float)INTCOORD_PRECISION +
-            (a_body.velocity - a_body.prev_velocity) * 0.5f * sk_time::delta_time * sk_time::delta_time * (float)INTCOORD_PRECISION
-            ;*/
         glm::vec2 move_amount =
             a_body.RECT.offset +
             a_body.velocity * sk_time::delta_time * (float)INTCOORD_PRECISION;
@@ -127,7 +115,6 @@ namespace sk_physic2d {
         a_body.RECT.offset = move_amount - glm::vec2(x_move, y_move);
 
         irect query_rect = a_body.RECT.extend_(x_query, y_query);
-        if (isplayer) std::cout << x_query << " " << y_query << " \n";
 
         std::vector<int> possible_collision = Query(query_rect);
 
@@ -158,7 +145,6 @@ namespace sk_physic2d {
                         s_body.RECT.bound.x - a_body.RECT.bound.z
                     );
                     if (x_move >= distant) {
-                        if (isplayer) std::cout << "hit \n";
                         x_move = distant;
                         a_body.RECT.offset.x = 0;
                         a_body.velocity.x = 0;

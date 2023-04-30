@@ -4,6 +4,7 @@
 #include "AABB_QuadTree.h"
 
 #include <vector>
+#include <deque>
 /*
     currently only support rect
 */
@@ -14,7 +15,7 @@ namespace sk_physic2d {
         private:
 
         /// @brief list of physic body
-        std::vector <Body> m_Body = std::vector<Body>();
+        std::deque <Body> m_Body = std::deque<Body>();
         int body_counts = 0;
         /// @brief stack of avaiable index for createing new physic body
         std::vector <int> avaiable_mbody_index = std::vector<int>();

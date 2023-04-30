@@ -168,6 +168,15 @@ void Level::LoadStaticBody(int type, glm::vec2 body_topleft_pos) {
                 tag
             )));
             break;
+        case 7: //? trigger kill player that went out of play area
+            AddTag(tag, etag::PHY_TRIGGER);
+            AddTag(tag, etag::DAMAGE);
+            static_collider_list.emplace_back(
+            physic_world->Create_Body(sk_physic2d::Body_Def(
+                sk_physic2d::irect::irect_fray(body_lowleft_pos, glm::vec2(1)),
+                tag
+            )));
+            break;
         default:
             break;
     }
@@ -215,8 +224,6 @@ void Level::OnActive() {
     // set camera bound
     auto cam = sk_graphic::Renderer2D_GetCam();
     cam->focus.cambound = special_level_data.camera_bound;
-    // set player default spawn point
-    m_area->GetPlayer()->SetSpawnPoint(special_level_data.default_spawn_point);
 
     for (auto e : m_entity) e->OnActive();
 }

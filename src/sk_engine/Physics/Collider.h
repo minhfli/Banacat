@@ -144,25 +144,20 @@ namespace  sk_physic2d {
     struct Body {
         public:
         bool is_active = false;
-        uint64_t tag;
-
-        /// @brief this should be set to true for the physic world to know and update 
-        bool modified = false;
+        uint64_t tag; //physic body should have tag actor or moveable for physic system to update it position
 
         irect RECT;
+
+        // use for dynamic movement of physic body (for actor movement)
         glm::vec2 velocity = glm::vec2(0);
-        //glm::vec2 prev_velocity = glm::vec2(0); // previous frame velocity
+        // use for precise movement of phyisc body (for moveable solid movement)
+        glm::vec2 move_amount = glm::vec2(0);
 
         Entity* entity;
-
-        //bool is_solid() const { return is_active && type == 0; }
-        //bool is_actor() const { return is_active && type == 1; }
-        //bool is_trigg() const { return is_active && type == 2; }
 
         Body() {}
         Body(Body_Def def):
             is_active(true),
-            modified(false),
             RECT(def.RECT),
             tag(def.tag),
             entity(def.entity) {}

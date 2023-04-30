@@ -74,6 +74,12 @@ void Area::UnLoadLevels(const std::vector<int> unloadlist) {
 void Area::SetTransition(int to_level) {
     if (active_level_index == to_level) return;
 
+    // wait for thread to done
+    std::cout << "New active level: " << m_levels[to_level].level_name << "\n";
+    if (!thread_LOAD_UNLOAD_LEVEL_done)
+        std::cout << "NOT DONE (UN)LOAD levels when trying to call NEW THREAD\n";
+    if (thread_LOAD_UNLOAD_LEVEL.joinable()) thread_LOAD_UNLOAD_LEVEL.join();
+
     Active_level->OnDeActive();
     active_level_index = to_level;
     Active_level = &m_levels[to_level];
@@ -88,11 +94,6 @@ void Area::SetTransition(int to_level) {
     cam->focus.SetTransition(current_cam_pos, new_cam_pos, level_transition_time);
 
     // loading new level
-    std::cout << "New active level: " << Active_level->level_name << "\n";
-    if (!thread_LOAD_UNLOAD_LEVEL_done)
-        std::cout << "NOT DONE (UN)LOAD levels when trying to call NEW THREAD\n";
-    if (thread_LOAD_UNLOAD_LEVEL.joinable()) thread_LOAD_UNLOAD_LEVEL.join();
-
     std::vector<bool> should_load(level_counts, 0);
 
     in_level_transition = true;
@@ -108,8 +109,9 @@ void Area::SetTransition(int to_level) {
         if (!should_load[i] && m_levels[i].Loaded) unloadlist.emplace_back(i);
         if (should_load[i] && m_levels[i].Loaded) draw_in_transition.emplace_back(i);
     }
-    //std::cout << "load list:   \n"; for (int i : loadlist) std::cout << i; std::cout << '\n';
-    //std::cout << "unload list: \n"; for (int i : unloadlist) std::cout << i; std::cout << '\n';
+    std::cout << "load list:            \n"; for (int i : loadlist) std::cout << i; std::cout << '\n';
+    std::cout << "unload list:          \n"; for (int i : unloadlist) std::cout << i; std::cout << '\n';
+    std::cout << "transition draw list: \n"; for (int i : draw_in_transition) std::cout << i; std::cout << '\n';
 
     thread_LOAD_UNLOAD_LEVEL = std::thread(
             [=]() {
@@ -117,6 +119,7 @@ void Area::SetTransition(int to_level) {
                 LoadLevels(loadlist);
                 UnLoadLevels(unloadlist);
                 thread_LOAD_UNLOAD_LEVEL_done = true;
+                std::cout << "thread done\n";
             }
     );
 }
@@ -132,7 +135,7 @@ void Area::Start() {
             Active_level = &m_levels[i];
 
             thread_LOAD_UNLOAD_LEVEL = std::thread(
-                [&]() {
+                [=]() {
                     thread_LOAD_UNLOAD_LEVEL_done = false;
                     LoadLevels(neighborlist[i]);
                     thread_LOAD_UNLOAD_LEVEL_done = true;
@@ -143,6 +146,7 @@ void Area::Start() {
     }
     // load player
     m_player.OnCreate(this, Active_level);
+    m_player.OnNewLevel();
     m_player.Start();
 }
 void Area::Update() {
@@ -156,27 +160,30 @@ void Area::Update() {
         for (int neighbor_index : neighborlist[active_level_index]) {
             if (sk_physic2d::contain(level_bound_list[neighbor_index], player_bound)) {
                 SetTransition(neighbor_index);
+                m_player.OnNewLevel();
                 return;
             }
         }
 
     // normal update
-    if (in_level_transition)
-        if (sk_time::current_time > level_transition_start_time + level_transition_time) {
+    if (in_level_transition) {
+        if (sk_time::current_time > level_transition_start_time + level_transition_time)
             in_level_transition = false;
-            m_player.OnNewLevel();
-        }
+    }
+
     if (!in_level_transition) {
         m_player.Update();
         Active_level->Update();
         physic_world.Update();
+
     }
 }
 
 void Area::Draw() {
     if (in_level_transition) {
-        for (int index : draw_in_transition)
+        for (int index : draw_in_transition) {
             m_levels[index].Draw();
+        }
         m_player.Draw();
     }
     else {
@@ -187,7 +194,8 @@ void Area::Draw() {
 }
 
 void Area::LateUpdate() {
-    if (in_level_transition);
+    if (in_level_transition) {
+    }
     else {
         m_player.LateUpdate();
         Active_level->LateUpdate();

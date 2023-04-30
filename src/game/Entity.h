@@ -44,6 +44,10 @@ inline uint64_t AddTag(int& i, int tag) {
 class Area;
 class Level;
 
+namespace sk_physic2d {
+    class Body;
+}
+
 class Entity {
     public:
     Entity() {}
@@ -79,4 +83,6 @@ class Entity {
     virtual void Draw() {}
     virtual void DebugDraw() {}
 
+    // check if actor is riding a solid,  
+    virtual bool IsRiding(sk_physic2d::Body solid) { return false; }
 };

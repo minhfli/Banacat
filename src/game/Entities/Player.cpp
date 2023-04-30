@@ -75,7 +75,7 @@ struct Player::playerdata { // value only
     float accel_after_wallkick;
     float accel_after_springpush;
     float accel = 60;
-    float runspeed = 6.5f;
+    float runspeed = 7.2f;
 
     bool is_grounded = false;
     bool is_touching_wall_left = false;     // stand next to a wall
@@ -109,7 +109,7 @@ struct Player::playerdata { // value only
     bool is_walljump = false; // jump straight up when grabing wall
     bool is_jumping = false;
     bool is_solving_afterjump = false;
-    float jump_maxheight = 3.7;
+    float jump_maxheight = 3.2;
     float jump_maxduration = sqrt(2.0f * jump_maxheight / gravity_low);
 
     float jumpvelocity = sqrt(jump_maxheight * gravity_low * 2);
@@ -167,7 +167,7 @@ struct Player::playerdata { // value only
         if (is_dead) {
             death_pos.x = move_to(death_pos.x, death_target_pos.x, sk_time::delta_time * 10);
             death_pos.y = move_to(death_pos.y, death_target_pos.y, sk_time::delta_time * 10);
-            anim_death.Draw(death_pos, 2, glm::vec2(0.5f, 1.0f / 3));
+            anim_death.Draw(death_pos, 2, glm::vec2(0.5f, 0.333f));
         }
         else anim_main.Draw(
             get_pivot_pos({ 0.5,0 }, m_body->RECT.true_bound()) - glm::vec2(0, 1.0f / 8.0f), // lower center
@@ -198,6 +198,15 @@ struct Player::playerdata { // value only
     // direction to move player to when it dead
     void SetDead(glm::vec2 pushback_dir = glm::vec2(0)) {
         anim_death.SetState("death");
+        if (candash) anim_death.SetLayer("yellow");
+        else anim_death.SetLayer("green");
+
+        // stop all movement
+        is_jumping = false;
+        is_dashing = false;
+        is_solving_afterjump = false;
+        is_spring_pushed = false;
+        is_wall_grabing = false;
 
         is_dead = true;
         death_time = sk_time::current_time;
@@ -626,7 +635,7 @@ struct Player::playerdata { // value only
     Animation anim_death;
     void SetupAnimation() {
         anim_main.Init("Assets/bananacat", true);
-        anim_death.Init("Assets/Entity/Player/death");
+        anim_death.Init("Assets/Entity/Player/death", true);
     }
     void Animation_SM() { // state machine
         Ani_State newstate = IDLE;
@@ -715,10 +724,12 @@ Player::~Player() {
     delete pdata;
 }
 void Player::OnNewLevel() {
+
     pdata->Movement_ResetDash();
     pdata->Movement_ResetStamina();
 
     m_level = m_area->Active_level;
+    pdata->spawn_point = m_level->special_level_data.default_spawn_point;
 }
 
 void Player::OnCreate(Area* area, Level* level) {
@@ -739,6 +750,8 @@ void Player::OnCreate(Area* area, Level* level) {
         this
     );
     m_body_index = physic_world->Create_Body(player_bodydef);
+    pdata->m_body = physic_world->Get_Body(m_body_index);
+
     pdata->SetupAnimation();
 }
 void Player::OnDestroy() {
@@ -750,8 +763,6 @@ void Player::Start() {
 void Player::Update() {
     //std::cout << "player update called\n";
     //std::cout << "player body ptr: " << m_body << '\n';
-
-    pdata->m_body = physic_world->Get_Body(m_body_index);
 
     if (sk_input::KeyDown(sk_key::R)) pdata->SetDead();
     pdata->Update();
@@ -796,12 +807,10 @@ void Player::OnTrigger(uint64_t trigger_tag) {
         else if (CheckTag(trigger_tag, etag::PHY_DIR_D)) pdata->SetDead({ -pdata->facing, -1 });
         else if (CheckTag(trigger_tag, etag::PHY_DIR_L)) pdata->SetDead({ -2.5f, 0 });
         else if (CheckTag(trigger_tag, etag::PHY_DIR_R)) pdata->SetDead({ 2.5f, 0 });
+        else pdata->SetDead({ -pdata->facing, 1 });
     }
 }
 void Player::Draw() {
-    auto m_body = physic_world->Get_Body(m_body_index);
-    glm::vec4 collider_bound = m_body->RECT.true_bound();
-    //sk_graphic::Renderer2D_AddBBox(collider_bound, 2, glm::vec4(1));
 
     sk_graphic::Renderer2D_AddDotX(glm::vec3(pdata->spawn_point, 4), { 0,0,1,1 });
     pdata->Draw();
