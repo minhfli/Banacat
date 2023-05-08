@@ -4,7 +4,7 @@
 #include <nlohmann/json.hpp>
 
 // entity tag, entity can have multiple tag
-enum etag: uint64_t {
+enum etag : uint64_t {
 
     // for physic
     PHY_SOLID,
@@ -76,6 +76,8 @@ class Entity {
 
     virtual void OnTrigger(Entity* trigger) {}
     virtual void OnTrigger(uint64_t trigger_tag) {}
+    //special type of trigger, only called for moveable solid collider
+    virtual void OnRiding(Entity* entity) {}
 
     virtual void Start() {}
     virtual void Update() {}

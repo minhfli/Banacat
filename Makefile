@@ -24,7 +24,7 @@ LIBS =
 LIB_DIRS = 
 #* SDL flags
 LIB_DIRS += -Lvendor/lib/SDL2
-LIBS     += -lmingw32 -lSDL2main -lSDL2 
+LIBS     += -lmingw32 -lSDL2main -lSDL2 -lSDL2_mixer
 
 #* GLAD flags
 LIB_DIRS += -Lvendor/lib/GLAD

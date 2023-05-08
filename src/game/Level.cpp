@@ -15,7 +15,7 @@
 void Level::Init() {
     std::string level_path = get_path();
     std::cout << level_path << '\n';
-    DATA = ReadJsonFile(level_path);
+    //DATA = ReadJsonFile(level_path);
 
     std::cout << "level json data loaded\n";
 

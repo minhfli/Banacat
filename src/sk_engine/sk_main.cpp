@@ -9,6 +9,8 @@
 #include "Window/skWindow.h"
 #include "Window/Input.h"
 
+#include "Audio/skAudio.h"
+
 #include <STB/stb_image.h>
 
 #include <GLM/glm.hpp>
@@ -19,6 +21,7 @@ namespace sk_main {
 
     void Init() {
         sk_window::Init("SDL window", window_w, window_h);
+        sk_audio::Init();
 
         //? stbi will now read image from bottom to top
         //stbi_set_flip_vertically_on_load(1);
@@ -75,6 +78,7 @@ namespace sk_main {
 
         sk_graphic::Renderer2D_ShutDown();
         sk_window::ShutDown();
+        sk_audio::ShutDown();
         sk_input::ShutDown();
         SDL_Delay(500);
         SDL_Quit();

@@ -2,6 +2,7 @@
 #include <sk_engine/Graphics/Graphics.h>
 #include <sk_engine/Window/Input.h>
 #include <sk_engine/Common/sk_time.h>
+#include <sk_engine/Audio/skAudio.h>
 
 #include <game/Area.h>
 #include <game/Scene/SceneManager.h>
@@ -42,6 +43,7 @@ namespace sk_game {
         cam->ProjectionO(camsize, 1280, 720);
         cam->position = glm::vec3(0.0f, 0.0f, 0.0f);
 
+
     }
 
     void Start() {
@@ -50,6 +52,8 @@ namespace sk_game {
         //GameArea.Start();
 
         SceneManager::LoadScene(Scene::MAIN_MENU);
+        int hapi = sk_audio::LoadMusic("Assets/Audio/myhappysong.mp3");
+        sk_audio::PlayMusic(hapi);
     }
 
     //! update cam size and positon, temporary

@@ -17,9 +17,9 @@ void Area::Init() {
     physic_world.enable_debug_draw = false;
 
     std::string area_ldtk = get_path();
-    nlohmann::json area_data = ReadJsonFile(area_ldtk);
+    nlohmann::json area_data = ReadJsonFile(area_ldtk)["worlds"][0];
 
-    this->grid_size = area_data["defaultGridSize"];
+    this->grid_size = 8;
 
     this->level_counts = area_data["levels"].size();
     this->m_levels.assign(level_counts, Level());
@@ -30,6 +30,7 @@ void Area::Init() {
         std::cout << "Calling init: level " << i << '\n';
         m_levels[i].area_name = this->area_name;
         m_levels[i].level_name = area_data["levels"][i]["identifier"];
+        m_levels[i].DATA = area_data["levels"][i];
         m_levels[i].m_area = this;
         m_levels[i].physic_world = &this->physic_world;
         m_levels[i].grid_size = this->grid_size;
