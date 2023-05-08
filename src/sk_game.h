@@ -14,11 +14,16 @@ namespace sk_game {
 
     void Start();
 
+    void GameLoop();
+    void OnBeginLoop();
+    void OnEndLoop();
+
     void UpdateN();
     void UpdateL();
-    void UpdateF();
 
     void Draw();
+
+
 
     void Stop();
 }

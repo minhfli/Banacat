@@ -2,13 +2,12 @@
 
 #include "../Entity.h"
 
-#include <sk_engine/Graphics/Graphic2D.h>
 #include <sk_engine/Physics/Collider.h>
 #include <sk_engine/Physics/AABB.h>
 #include <GLM/glm.hpp>
 
 
-class Player:public Entity {
+class Player :public Entity {
     public:
     Player();
     ~Player();

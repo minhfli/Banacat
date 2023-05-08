@@ -758,7 +758,8 @@ void Player::OnDestroy() {
     physic_world->Remove_Body(m_body_index);
 }
 void Player::Start() {
-
+    sk_graphic::Renderer2D_GetCam()->position = glm::vec3(GetCameraTarget(), 0);
+    sk_graphic::Renderer2D_GetCam()->focus.pos = GetCameraTarget();
 }
 void Player::Update() {
     //std::cout << "player update called\n";

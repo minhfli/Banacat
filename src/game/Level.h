@@ -4,6 +4,7 @@
 #include <GLM/glm.hpp>
 #include <nlohmann/json.hpp>
 #include <sk_engine/Physics/AABB_World.h>
+#include <sk_engine/Graphics/Graphics.h>
 
 #include "Entity.h"
 
@@ -16,6 +17,7 @@ class Level {
     // top left pos of level in world coord
     int grid_size;
     glm::vec2 pos_topleft;
+    glm::vec2 size;
 
     bool Loaded = false;
     bool Active = false;
@@ -27,7 +29,11 @@ class Level {
 
     inline std::string get_path() { return "Assets/World/Areas/" + area_name + "/" + level_name + ".ldtkl"; }
 
-    Tilemap m_tilemap;
+    Tilemap mg_tile;
+    Tilemap bg_tile;
+
+    sk_graphic::Sprite2D bg_sprite;
+
     // list of static collider in physic world, use for unload
     std::vector<int> static_collider_list;
 

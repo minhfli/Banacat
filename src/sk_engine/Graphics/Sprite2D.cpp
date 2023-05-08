@@ -5,13 +5,17 @@ namespace sk_graphic {
 
     Sprite2D::Sprite2D() {}
 
-    void Sprite2D::LoadTexture(Texture2D texture, glm::vec2 s_size, glm::ivec4 uv = glm::ivec4(-1)) {
+    void Sprite2D::LoadTexture(Texture2D texture, glm::vec2 s_size, glm::ivec4 uv) {
+        this->texture_id = texture.ID;
+
         if (uv.x == -1)
             this->tex_uv = glm::ivec4(0, 0, texture.size);
         else
             this->tex_uv = uv;
-        this->texture_id = texture.ID;
-        this->size = s_size;
+        if (s_size.x == -1)
+            this->size = glm::vec2(abs(uv.z - uv.x), abs(uv.w - uv.y));
+        else
+            this->size = s_size;
     }
     void Sprite2D::Draw(glm::vec2 pos, float depth, glm::vec2 pivot, bool flipx, bool flipy, glm::vec4 color) {
         glm::vec4 uv = tex_uv;

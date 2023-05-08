@@ -5,6 +5,9 @@
 class BaseScene {
 
     public:
+    BaseScene() {}
+    virtual ~BaseScene() {}
+
     // basic setup of new scene, call before scene create
     virtual void HintString(int type, std::string hint) {}
     virtual void HintFloat(int type, float hint) {}
@@ -14,8 +17,8 @@ class BaseScene {
     virtual void OnCreate() {}
     virtual void OnDestroy() {}
 
-    virtual void OnActive() {}
-    virtual void OnDeActive() {}
+    virtual void Start() {}
+    virtual void Stop() {}
 
     // game loop
     virtual void Update() {}

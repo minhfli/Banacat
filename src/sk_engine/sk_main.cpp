@@ -63,7 +63,7 @@ namespace sk_main {
                 sk_window::Clear();
 
                 sk_graphic::Renderer2D_Begin();
-                GameLoop();
+                sk_game::GameLoop();
 
                 sk_graphic::Renderer2D_End();
                 sk_window::Swapbuffer();

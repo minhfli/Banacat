@@ -1,6 +1,6 @@
 #pragma once
 
-#include <sk_engine/Graphics/Graphic2D.h>
+#include <sk_engine/Graphics/Graphics.h>
 #include <vector>
 #include <string>
 #include <unordered_map>

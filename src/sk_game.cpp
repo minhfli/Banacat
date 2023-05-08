@@ -4,6 +4,7 @@
 #include <sk_engine/Common/sk_time.h>
 
 #include <game/Area.h>
+#include <game/Scene/SceneManager.h>
 
 #include <iostream>
 /*
@@ -40,12 +41,15 @@ namespace sk_game {
         cam = sk_graphic::Renderer2D_GetCam();
         cam->ProjectionO(camsize, 1280, 720);
         cam->position = glm::vec3(0.0f, 0.0f, 0.0f);
+
     }
 
     void Start() {
         //test_level::Start();
-        GameArea.Init();
-        GameArea.Start();
+        //GameArea.Init();
+        //GameArea.Start();
+
+        SceneManager::LoadScene(Scene::MAIN_MENU);
     }
 
     //! update cam size and positon, temporary
@@ -65,11 +69,16 @@ namespace sk_game {
         UpdateCam();
         cam->Update();
         //test_level::Update();
-        GameArea.Update();
+        //GameArea.Update();
+
+        if (sk_input::KeyDown(sk_key::P)) SceneManager::LoadScene(Scene::GAMEAREA_TEST);
+        SceneManager::Update();
+
     }
     //? late update, call after draw
     void UpdateL() {
-        GameArea.LateUpdate();
+        //GameArea.LateUpdate();
+        SceneManager::LateUpdate();
     }
 
     void Draw() {
@@ -78,16 +87,22 @@ namespace sk_game {
 
         cam->Draw();
         //test_level::Draw();
-        GameArea.Draw();
+        //GameArea.Draw();
+        SceneManager::Draw();
     }
 
-    //? fixed update, called after every fixed amount of time
-    void UpdateF() { }
+    void GameLoop() {
+        SceneManager::OnBeginLoop();
+        UpdateN();
+        Draw();
+        UpdateL();
+        SceneManager::OnEndLoop();
+    }
 
     //? call when game stop, use to free data, save, ....
     void Stop() {
         //test_level::Stop();
-        GameArea.Stop();
-        GameArea.Destroy();
+        //GameArea.Stop();
+        //GameArea.Destroy();
     }
 }

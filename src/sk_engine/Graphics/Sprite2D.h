@@ -15,7 +15,7 @@ namespace sk_graphic {
 
         Sprite2D();
 
-        void LoadTexture(Texture2D texture, glm::vec2 s_size, glm::ivec4 uv);
+        void LoadTexture(Texture2D texture, glm::vec2 s_size = glm::vec2(-1), glm::ivec4 uv = glm::ivec4(-1));
 
         /// @brief 
         /// @param pivot {0,0} lower left, {1,1} upper right

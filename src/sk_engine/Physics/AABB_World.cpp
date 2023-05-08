@@ -33,6 +33,7 @@ namespace sk_physic2d {
     }
     void AABB_World::Clear() {
         m_Body.clear();
+        avaiable_mbody_index.clear();
         quad_tree.Clear();
     }
 

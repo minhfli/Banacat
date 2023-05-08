@@ -58,6 +58,7 @@ void Area::Init() {
     //Start();
 }
 void Area::Destroy() {
+
     for (Level& level : m_levels)
         if (level.Loaded) level.UnLoad();
     physic_world.Clear();

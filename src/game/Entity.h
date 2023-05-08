@@ -51,7 +51,7 @@ namespace sk_physic2d {
 class Entity {
     public:
     Entity() {}
-    ~Entity() {}
+    virtual ~Entity() {}
 
     Area* m_area = nullptr;
     Level* m_level = nullptr;
@@ -84,5 +84,5 @@ class Entity {
     virtual void DebugDraw() {}
 
     // check if actor is riding a solid,  
-    virtual bool IsRiding(sk_physic2d::Body solid) { return false; }
+    virtual bool IsRiding(sk_physic2d::Body* solid) { return false; }
 };

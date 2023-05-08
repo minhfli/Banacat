@@ -24,62 +24,52 @@ void Level::Init() {
     pos_topleft.x = (int)DATA["worldX"] / 8;
     pos_topleft.y = -(int)DATA["worldY"] / 8;
 
-    m_tilemap.tile_set.Load("Assets/TileSet.png");
+    size.x = (int)DATA["pxWid"] / 8;
+    size.y = (int)DATA["pxHei"] / 8;
+
+    mg_tile.tile_set.Load("Assets/TileSet.png");
+    bg_tile.tile_set.Load("Assets/TileSet.png");
+
+    sk_graphic::Texture2D temp;
+    temp.Load("Assets/BackGrounds/sky.png");
+
+    bg_sprite.LoadTexture(temp, glm::vec2(45, 25));
 
     std::cout << "Level Initialize done: " << level_name << '\n';
 }
 void Level::Load() {
+    if (Loaded) return;
     std::cout << "Loading level: " << level_name << '\n';
     for (nlohmann::json layer : DATA["layerInstances"]) {
+        std::cout << "loading layer:  " << layer["__identifier"] << "\n";
         if (layer["__identifier"] == "entities") {
             for (nlohmann::json jentity : layer["entityInstances"]) {
                 LoadEntity(jentity);
             }
             continue;
         }
-        if (layer["__identifier"] == "basicgound_layer") {
-            m_tilemap.width = layer["__cWid"];
-            m_tilemap.height = layer["__cHei"];
-
-            m_tilemap.grid_size = layer["__gridSize"];
-            m_tilemap.tile_count = layer["autoLayerTiles"].size();
-
-            m_tilemap.tiles.reserve(m_tilemap.tile_count);
-            for (int i = 0;i <= m_tilemap.tile_count - 1; i++) {
-                m_tilemap.tiles.emplace_back();
-                Tile_data& cur_tile = m_tilemap.tiles[i];
-
-                //* set tile's position
-                cur_tile.pos.x = (float)layer["autoLayerTiles"][i]["px"][0] / m_tilemap.grid_size + 0.5f + pos_topleft.x; // 0.5 : offset
-                cur_tile.pos.y = -(float)layer["autoLayerTiles"][i]["px"][1] / m_tilemap.grid_size - 0.5f + pos_topleft.y;
-
-                //* set tile's texture coordinate
-                cur_tile.uv.x = layer["autoLayerTiles"][i]["src"][0];
-                cur_tile.uv.y = layer["autoLayerTiles"][i]["src"][1];
-
-                cur_tile.uv.z = cur_tile.uv.x + m_tilemap.grid_size;
-                cur_tile.uv.w = cur_tile.uv.y + m_tilemap.grid_size;
-
-                //* set tile's flip 
-                int flip = layer["autoLayerTiles"][i]["f"];
-                if ((flip & 1)) std::swap(cur_tile.uv.x, cur_tile.uv.z);    // flip x
-                if ((flip & 2)) std::swap(cur_tile.uv.y, cur_tile.uv.w);    // flip y
-            }
+        if (layer["__identifier"] == "test_main_tile_layer") {
+            mg_tile.LoadLayer(layer, pos_topleft);
+            continue;
+        }
+        if (layer["__identifier"] == "background_tile") {
+            bg_tile.LoadLayer(layer, pos_topleft);
             continue;
         }
         if (layer["__identifier"] == "static_colliders") {
-            //if (physic_world == nullptr) std::cout << "f\n";
+            int width = layer["__cWid"];
+            int height = layer["__cHei"];
             nlohmann::json collider_csv = layer["intGridCsv"];
             //static_collider_list.clear();
-            for (int i = 0; i <= m_tilemap.height - 1; i++) {
-                for (int j = 0; j <= m_tilemap.width - 1; j++) {
-                    int csv_index = i * m_tilemap.width + j;
+            for (int i = 0; i <= height - 1; i++) {
+                for (int j = 0; j <= width - 1; j++) {
+                    int csv_index = i * width + j;
                     if (collider_csv[csv_index] == 1) {
-                        if (i == 0 || i == m_tilemap.height - 1 || j == 0 || j == m_tilemap.width - 1 || // check if is edge
+                        if (i == 0 || i == height - 1 || j == 0 || j == width - 1 || // check if is edge
                             collider_csv[csv_index - 1] != 1 ||                     // check if there is air next to it
                             collider_csv[csv_index + 1] != 1 ||
-                            collider_csv[csv_index - m_tilemap.width] != 1 ||
-                            collider_csv[csv_index + m_tilemap.width] != 1
+                            collider_csv[csv_index - width] != 1 ||
+                            collider_csv[csv_index + width] != 1
                         )
                             LoadStaticBody(1, pos_topleft + glm::vec2(j, -i));
                     }
@@ -96,7 +86,7 @@ void Level::Load() {
 void Level::UnLoad() {
     std::cout << "Unloading level: " << level_name << '\n';
 
-    m_tilemap.tiles.clear();
+    mg_tile.tiles.clear();
     for (int index : static_collider_list) physic_world->Remove_Body(index);
     static_collider_list.clear();
 
@@ -236,19 +226,11 @@ void Level::Update() {
 
 }
 void Level::Draw() {
-    for (int i = 0;i <= m_tilemap.tile_count - 1; i++) {
-        Tile_data& cur_tile = m_tilemap.tiles[i];
+    mg_tile.Draw(0);
+    bg_tile.Draw(-1);
 
-        sk_graphic::Renderer2D_AddQuad(
-            glm::vec2(cur_tile.pos.x, cur_tile.pos.y),
-            glm::vec2(1),
-            0,
-            cur_tile.uv,
-            m_tilemap.tile_set,
-            glm::vec4(1)
-        );
-    }
-
+    glm::vec2 campos = sk_graphic::Renderer2D_GetCam()->position;
+    bg_sprite.Draw(campos, -5, glm::vec2(.5f, .5f));
     for (Entity* e : m_entity) {
         e->Draw();
         if (e->CheckTag_(etag::SPAWN_POINT))

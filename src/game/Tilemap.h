@@ -4,6 +4,7 @@
 
 #include <sk_engine/Graphics/Texture2D.h>
 #include <vector>
+#include <nlohmann/json.hpp>
 
 struct Tile_data {
     /// @brief texture coordinate, real pixel coordinate
@@ -23,4 +24,10 @@ struct Tilemap {
     int width, height;
     /// @brief grid size in pixel
     int grid_size = 8;
+
+    //float depth = 0;
+
+    void LoadLayer(const nlohmann::json jlayer, const glm::vec2 level_topleft_pos);
+    void LoadTiles(const nlohmann::json jtiles, const glm::vec2 level_topleft_pos);
+    void Draw(float depth);
 };
