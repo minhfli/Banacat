@@ -63,5 +63,11 @@ namespace sk_physic2d {
         void ResolveSolid(int id);
         void ResolveActor(int id);
 
+        void MoveActorX(Body& a_body, int x_move, bool force = false);
+        void MoveActorY(Body& a_body, int y_move, bool force = false);
+
+        void MoveSolidX(Body& s_body, int x_amount, const std::vector <Body*>& riding_list);
+        void MoveSolidY(Body& s_body, int y_amount, const std::vector <Body*>& riding_list);
+
     };
 }

@@ -16,7 +16,7 @@ namespace  sk_physic2d {
         /// @brief half size
         glm::vec2 hsize = glm::vec2(1);
 
-        rect(glm::vec2 p = glm::vec2(0), glm::vec2 hs = glm::vec2(1)): pos(p), hsize(hs) {}
+        rect(glm::vec2 p = glm::vec2(0), glm::vec2 hs = glm::vec2(1)) : pos(p), hsize(hs) {}
         rect(glm::vec4 bound) {
             pos = (glm::vec2(bound.z, bound.w) + glm::vec2(bound.x, bound.y)) / 2.0f;
             hsize = (glm::vec2(bound.z, bound.w) - glm::vec2(bound.x, bound.y)) / 2.0f;
@@ -55,9 +55,9 @@ namespace  sk_physic2d {
         glm::vec2 offset = glm::vec2(0);
 
         // simple constuctors
-        irect():bound(0) {}
-        irect(const int x, const int y, const int z, const int w): bound(x, y, z, w) {}
-        irect(const glm::ivec4 b): bound(b) {}
+        irect() :bound(0) {}
+        irect(const int x, const int y, const int z, const int w) : bound(x, y, z, w) {}
+        irect(const glm::ivec4 b) : bound(b) {}
 
         /// @brief advanced contructor, world size, world position   
         static irect irect_fsize_fpos(glm::vec2 hsize, glm::vec2 pos);
@@ -71,7 +71,7 @@ namespace  sk_physic2d {
         /// @brief true center of rect in world coordinate
         glm::vec2 true_center()const;
         /// @brief true bound of rect in world coordinate
-        glm::vec4 true_bound(bool add_offset = 1) const;
+        glm::vec4 true_bound(bool add_offset = true) const;
 
         /// @brief move rect in integer coordinate
         /// @param offset_0 if true, set offset to 0
@@ -96,7 +96,7 @@ namespace  sk_physic2d {
         glm::vec2 dir = glm::vec2(0, 1); // default is up
 
         ray() {};
-        ray(const glm::vec2 p = glm::vec2(0), const glm::vec2 d = glm::vec2(0, 1)): pos(p), dir(d) {}
+        ray(const glm::vec2 p = glm::vec2(0), const glm::vec2 d = glm::vec2(0, 1)) : pos(p), dir(d) {}
 
         inline rect bounding_box() const {
             glm::vec2 p = pos;
@@ -136,7 +136,7 @@ namespace  sk_physic2d {
         Entity* entity;
         /// @param t collider type, 0:solid, 1:actor, 2:triggerer
         /// @param tg tag
-        Body_Def(irect r, uint32_t tg = 0, Entity* e = nullptr):
+        Body_Def(irect r, uint32_t tg = 0, Entity* e = nullptr) :
             RECT(r),
             tag(tg),
             entity(e) {}
@@ -148,19 +148,21 @@ namespace  sk_physic2d {
 
         irect RECT;
 
-        // use for dynamic movement of physic body (for actor movement)
+        // use for dynamic movement of physic body, should be 0 if use moveamount to move body
         glm::vec2 velocity = glm::vec2(0);
-        // use for precise movement of phyisc body (for moveable solid movement)
+        // use for precise movement of phyisc body, reset every frame, should be 0 if use velocity to move body
         glm::vec2 move_amount = glm::vec2(0);
 
         Entity* entity;
 
         Body() {}
-        Body(Body_Def def):
+        Body(Body_Def def) :
             is_active(true),
             RECT(def.RECT),
             tag(def.tag),
             entity(def.entity) {}
+
+        void set_moveto(glm::vec2 pivot, glm::vec2 target);
     };
 
 }

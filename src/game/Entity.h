@@ -76,8 +76,10 @@ class Entity {
 
     virtual void OnTrigger(Entity* trigger) {}
     virtual void OnTrigger(uint64_t trigger_tag) {}
-    //special type of trigger, only called for moveable solid collider
+    //special type of trigger, call if a moveable solid is having an actor riding on it or an actor riding on the moveable solid
     virtual void OnRiding(Entity* entity) {}
+    // call when actor is overlap a solid
+    virtual void OnSquish() {}
 
     virtual void Start() {}
     virtual void Update() {}

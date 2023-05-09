@@ -92,130 +92,9 @@ namespace sk_physic2d {
 
     }
 
-    void AABB_World::ResolveActor(int id) {
-        Body& a_body = m_Body[id];
 
-        //std::cout << "Resolving Actor, id: " << id << "  " << "ptr: " << &m_Body[id] << '\n';
-        //std::cout << "New velocity: " << a_body.velocity.x << " " << a_body.velocity.y << '\n';
-        //postion equation: 
-        // s = s + v*t + 0.5*a*t*t
-        // s: position
-        // v: velocity
-        // a: acceleration 
-        glm::vec2 move_amount =
-            a_body.RECT.offset +
-            a_body.velocity * sk_time::delta_time * (float)INTCOORD_PRECISION;
-
-        // round away from 0, use to query
-        int x_query = (move_amount.x < 0) ? floor(move_amount.x) : ceil(move_amount.x);
-        int y_query = (move_amount.y < 0) ? floor(move_amount.y) : ceil(move_amount.y);
-        // round toward, use to move body
-        int x_move = trunc(move_amount.x);
-        int y_move = trunc(move_amount.y);
-
-        a_body.RECT.offset = move_amount - glm::vec2(x_move, y_move);
-
-        irect query_rect = a_body.RECT.extend_(x_query, y_query);
-
-        std::vector<int> possible_collision = Query(query_rect);
-
-        // draw query rects
-        if (enable_debug_draw)
-            for (int index : possible_collision)
-                sk_graphic::Renderer2D_AddBBox(m_Body[index].RECT.true_bound(), 2, { 1,1,1,1 });
-
-        for (int s_index : possible_collision)
-            if (m_Body[s_index].is_active && CheckTag(m_Body[s_index].tag, etag::PHY_SOLID) && !CheckTag(m_Body[s_index].tag, etag::PHY_ONE_WAY)) {
-                if (a_body.RECT.overlap(m_Body[s_index].RECT)) std::cout << "Physic Error: rect overlap\n";
-            }
-        if (x_query != 0) { // solve x
-            //get direction
-            int xdir = 1;
-            if (x_move < 0) {
-                xdir = -1;
-                x_move = -x_move;
-            }
-            // solve for each static body
-            for (int s_index : possible_collision) if (m_Body[s_index].is_active && CheckTag(m_Body[s_index].tag, etag::PHY_SOLID)) {
-                if (CheckTag(m_Body[s_index].tag, etag::PHY_ONE_WAY)) continue; // skip solve in x if is oneway
-                Body& s_body = m_Body[s_index];
-
-                if (s_body.RECT.bound.w > a_body.RECT.bound.y && a_body.RECT.bound.w > s_body.RECT.bound.y) { // y overlap
-                    int distant = std::max(
-                        a_body.RECT.bound.x - s_body.RECT.bound.z,
-                        s_body.RECT.bound.x - a_body.RECT.bound.z
-                    );
-                    if (x_move >= distant) {
-                        x_move = distant;
-                        a_body.RECT.offset.x = 0;
-                        a_body.velocity.x = 0;
-                    }
-                }
-            }
-            // after solve, apply movement
-            a_body.RECT.bound.x += x_move * xdir;
-            a_body.RECT.bound.z += x_move * xdir;
-        }
-        if (y_query != 0) { // solve y
-            //get direction
-            int ydir = 1;
-            if (y_move < 0) {
-                ydir = -1;
-                y_move = -y_move;
-            }
-            // solve for each static body
-            for (int s_index : possible_collision) if (m_Body[s_index].is_active && CheckTag(m_Body[s_index].tag, etag::PHY_SOLID)) {
-                Body& s_body = m_Body[s_index];
-
-                if (s_body.RECT.bound.z > a_body.RECT.bound.x && a_body.RECT.bound.z > s_body.RECT.bound.x) { // x overlap
-                    if (CheckTag(m_Body[s_index].tag, etag::PHY_ONE_WAY) && a_body.RECT.bound.y < s_body.RECT.bound.w) continue;
-                    int distant = std::max(
-                        a_body.RECT.bound.y - s_body.RECT.bound.w,
-                        s_body.RECT.bound.y - a_body.RECT.bound.w
-                    );
-                    if (y_move >= distant) {
-                        y_move = distant;
-                        a_body.RECT.offset.y = 0;
-                        a_body.velocity.y = 0;
-                    }
-                }
-            }
-            // after solve, apply movement
-            a_body.RECT.bound.y += y_move * ydir;
-            a_body.RECT.bound.w += y_move * ydir;
-        }
-
-        if (a_body.entity != nullptr)
-            for (int index : possible_collision) {
-                Body& t_body = m_Body[index];
-                if (CheckTag(t_body.tag, etag::PHY_DIR_U) && a_body.velocity.y > 0) continue;
-                if (CheckTag(t_body.tag, etag::PHY_DIR_D) && a_body.velocity.y < 0) continue;
-                if (CheckTag(t_body.tag, etag::PHY_DIR_L) && a_body.velocity.x < 0) continue;
-                if (CheckTag(t_body.tag, etag::PHY_DIR_R) && a_body.velocity.x > 0) continue;
-                if (CheckTag(t_body.tag, etag::PHY_TRIGGER) && id != index && a_body.RECT.overlap(t_body.RECT)) {
-                    a_body.entity->OnTrigger(t_body.tag);
-                    if (t_body.entity) {
-                        a_body.entity->OnTrigger(t_body.entity);
-                        t_body.entity->OnTrigger(a_body.entity);
-                        t_body.entity->OnTrigger(a_body.tag);
-                    }
-                }
-            }
-
-    }
-    void AABB_World::ResolveSolid(int id) {
-
-    }
 
     //* check touching and raycasting --------------------------------------------------------------------------------------
-
-    /// @brief check touching solid, using integer based bounding box 
-    bool AABB_World::TouchSolid_ibound(glm::ivec4 ibound) {
-        auto possible_collision = Query(irect(ibound));
-        for (int body_id : possible_collision) if (m_Body[body_id].is_active && CheckTag(m_Body[body_id].tag, etag::PHY_SOLID))
-            return true;
-        return 0;
-    }
 
     bool AABB_World::BoxCast(glm::ivec4 ibound, uint64_t tag, uint64_t null_tag) {
         auto possible_collision = Query(irect(ibound));
@@ -225,7 +104,7 @@ namespace sk_physic2d {
         return 0;
     }
 
-//* Debug draw and Update ----------------------------------------------------------------------------------------------
+    //* Debug draw and Update ----------------------------------------------------------------------------------------------
 
     void AABB_World::Draw() {
         if (!enable_debug_draw) return;
@@ -242,6 +121,6 @@ namespace sk_physic2d {
         for (int index : solids) ResolveSolid(index);
 
         for (int index : actors) quad_tree.UpdateValue(m_Body[index].RECT, index);
-        //for (int index : solids) quad_tree.UpdateValue(m_Body[index].RECT, index);
+        for (int index : solids) quad_tree.UpdateValue(m_Body[index].RECT, index);
     }
 }
