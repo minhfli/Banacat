@@ -15,9 +15,28 @@ Scene_GameArea::~Scene_GameArea() {
     delete sdata;
 }
 
-void Scene_GameArea::HintString(int type, std::string hint) {}
-void Scene_GameArea::HintFloat(int type, float hint) {}
-void Scene_GameArea::HintInt(int type, int hint) {}
+void Scene_GameArea::HintStr(int type, std::string hint) {
+    switch (type) {
+        case WORLD_NAME______:
+            sdata->area.hint.area_name = hint;
+            break;
+        case START_LEVEL_____:
+            sdata->area.hint.start_level = hint;
+            break;
+        default:
+            break;
+    }
+}
+void Scene_GameArea::HintFlt(int type, float hint) {}
+void Scene_GameArea::HintInt(int type, int hint) {
+    switch (type) {
+        case WORLD_INDEX_____:
+            sdata->area.hint.world_index = hint;
+            break;
+        default:
+            break;
+    }
+}
 
 // load and unload scene
 void Scene_GameArea::OnCreate() {

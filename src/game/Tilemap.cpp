@@ -10,13 +10,14 @@ void Tilemap::LoadLayer(const nlohmann::json jlayer, const glm::vec2 level_tople
 
     grid_size = jlayer["__gridSize"];
 
-    if (!jlayer["autoLayerTiles"].is_null() && jlayer["autoLayerTiles"].size() != 0)
+    if (jlayer["autoLayerTiles"].size() != 0)
         LoadTiles(jlayer["autoLayerTiles"], level_topleft_pos);
-    if (!jlayer["gridTiles"].is_null() && jlayer["gridTiles"].size() != 0)
+    if (jlayer["gridTiles"].size() != 0)
         LoadTiles(jlayer["gridTiles"], level_topleft_pos);
 
 }
 void Tilemap::LoadTiles(const nlohmann::json jtiles, const glm::vec2 level_topleft_pos) {
+    //std::cout << "loading tiles " << jtiles.size() << '\n';
     tile_count = jtiles.size();
     tiles.assign(tile_count, Tile_data());
     for (int i = 0;i <= tile_count - 1; i++) {

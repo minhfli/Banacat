@@ -3,6 +3,8 @@
 #include "SceneManager.h"
 #include "AllScene.h"
 
+#include <sk_engine/Window/Input.h>
+
 namespace SceneManager {
 
     BaseScene* ActiveScene = nullptr;
@@ -10,7 +12,7 @@ namespace SceneManager {
 
     bool new_scene_loaded = false;
     Scene scene_to_load = Scene::NONE;
-
+    Scene current_scene = Scene::NONE;
 
     void StartScene(BaseScene* scene) {
         if (scene == nullptr) return;
@@ -32,16 +34,31 @@ namespace SceneManager {
         if (ActiveScene) delete ActiveScene;
 
         switch (scene_to_load) {
-            case Scene::GAMEAREA_TEST:
-                ActiveScene = new Scene_GameArea();
-                break;
             case Scene::MAIN_MENU:
                 ActiveScene = new Scene_MainMenu();
                 break;
-            default:
-                ActiveScene = nullptr;
+            case Scene::GAMEAREA_TEST:
+                ActiveScene = new Scene_GameArea();
+                ActiveScene->HintInt(WORLD_INDEX_____, 0);
+                ActiveScene->HintStr(START_LEVEL_____, "level_0");
+                break;
+            case Scene::GAMEAREA_TUTORIAL:
+                ActiveScene = new Scene_GameArea();
+                ActiveScene->HintInt(WORLD_INDEX_____, 0);
+                ActiveScene->HintStr(START_LEVEL_____, "level_0");
+                break;
+            case Scene::GAMEAREA_ABANDONED_CITY:
+                ActiveScene = new Scene_GameArea();
+                ActiveScene->HintInt(WORLD_INDEX_____, 1);
+                ActiveScene->HintStr(START_LEVEL_____, "level_5");
+                break;
+            default: // if scene not defined, load main menu
+                //ActiveScene = nullptr;
+                scene_to_load = Scene::MAIN_MENU;
+                ActiveScene = new Scene_MainMenu();
                 break;
         }
+        current_scene = scene_to_load;
         scene_to_load = Scene::NONE;
 
         StartScene(ActiveScene);
@@ -49,6 +66,9 @@ namespace SceneManager {
 
     void OnBeginLoop() {}
     void OnEndLoop() {
+        //! dangerous, for fast changing between level only
+        if (sk_input::KeyDown(sk_key::M)) scene_to_load = (Scene)((int)current_scene + 1);
+        if (sk_input::KeyDown(sk_key::N)) scene_to_load = (Scene)((int)current_scene - 1);
         if (scene_to_load != Scene::NONE) SetLoadScene();
     }
 

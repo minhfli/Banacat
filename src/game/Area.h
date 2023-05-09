@@ -9,23 +9,32 @@
 #include <sk_engine/Physics/AABB_World.h>
 #include "Entities/Player.h"
 
+// Game area, set hint for game area before call Init()
 class Area {
     public:
     Area() {}
     ~Area() {}
 
+    struct HINT {
+        /// @brief world index in the ldtk project file
+        int world_index = -1;
+        std::string area_name = "";
+        std::string start_level = "";
+
+    } hint;
+
     std::thread thread_LOAD_UNLOAD_LEVEL;
     bool thread_LOAD_UNLOAD_LEVEL_done = true;
 
     std::string area_name = "test";
-    inline std::string get_path() { return "Assets/World/Areas/" + area_name + ".ldtk"; }
+    const std::string LDTK_PROJECT_FILE = "Assets/World/Areas/test.ldtk";
 
     bool Loaded = false;
     bool in_level_transition = false;
 
     int grid_size;
 
-    std::string start_level = "level_0";
+    std::string start_level = "";
 
     int level_counts = 0;
 

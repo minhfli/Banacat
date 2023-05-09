@@ -14,8 +14,8 @@ Scene_MainMenu:: ~Scene_MainMenu() {
     delete sdata;
 }
 
-void Scene_MainMenu::HintString(int type, std::string hint) {}
-void Scene_MainMenu::HintFloat(int type, float hint) {}
+void Scene_MainMenu::HintStr(int type, std::string hint) {}
+void Scene_MainMenu::HintFlt(int type, float hint) {}
 void Scene_MainMenu::HintInt(int type, int hint) {}
 
 void Scene_MainMenu::OnCreate() {
@@ -36,7 +36,7 @@ void Scene_MainMenu::Start() {}
 void Scene_MainMenu::Stop() {}
 
 void Scene_MainMenu::Update() {
-    if (sk_input::KeyDown(sk_key::J)) SceneManager::LoadScene(Scene::GAMEAREA_TEST);
+    if (sk_input::KeyDown(sk_key::J)) SceneManager::LoadScene(Scene::GAMEAREA_TUTORIAL);
 }
 
 void Scene_MainMenu::Draw() {

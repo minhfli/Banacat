@@ -59,7 +59,7 @@ namespace sk_physic2d {
             Body& s_body = m_Body[s_index];
             if (!s_body.is_active) continue;
             if (!CheckTag(s_body.tag, etag::PHY_SOLID)) continue;
-            if (CheckTag(s_body.tag, etag::PHY_ONE_WAY)) continue;
+            if (CheckTag(s_body.tag, etag::PHY_ONE_WAY) && a_body.RECT.bound.y < s_body.RECT.bound.w) continue;
             if (force && a_body.entity != nullptr) { a_body.entity->OnSquish(); return; }
             int distant = std::max(
                 a_body.RECT.bound.y - s_body.RECT.bound.w,

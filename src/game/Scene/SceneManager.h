@@ -12,7 +12,11 @@ enum class Scene {
     OPTION_MENU,
 
     GAMEAREA_TEST,
-    GAMEAREA,
+    GAMEAREA_TUTORIAL,
+    GAMEAREA_ABANDONED_CITY,
+    GAMEAREA_THE_GARDEN,
+    GAMEAREA_DREAM,
+
 };
 namespace SceneManager {
 

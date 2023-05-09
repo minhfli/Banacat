@@ -10,14 +10,43 @@
 #include <sk_engine/Common/sk_time.h>
 #include <sk_engine/Window/Input.h>
 
+namespace {
+    bool ldtk_data_loaded = false;
+    nlohmann::json LDTK_PROJECT_DATA;
+}
 void Area::Init() {
     physic_world.Hint_WorldBound(glm::vec2(0), 512);
     physic_world.Init();
-
     physic_world.enable_debug_draw = false;
 
-    std::string area_ldtk = get_path();
-    nlohmann::json area_data = ReadJsonFile(area_ldtk)["worlds"][0];
+    if (!ldtk_data_loaded) {
+        std::cout << "load main ldtk project data\n";
+        LDTK_PROJECT_DATA = ReadJsonFile(LDTK_PROJECT_FILE);
+    }
+    nlohmann::json area_data;
+    if (hint.world_index != -1)
+        area_data = LDTK_PROJECT_DATA["worlds"][hint.world_index];
+    else if (hint.area_name != "") {
+        bool found = false;
+        for (auto world : LDTK_PROJECT_DATA["worlds"])
+            if ((std::string)world["identifier"] == area_name) {
+                area_data = world;
+                found = true;
+                break;
+            }
+        if (!found) {
+            Error("Cannot find Area: " + hint.area_name + ". Make sure you typed correctly");
+            Error("Area not set, loading default world");
+            area_data = LDTK_PROJECT_DATA["worlds"][0];
+        }
+        else std::cout << "Use hint.world_index for faster loading\n";
+    }
+    else {
+        Error("Area not set, loading default world");
+        area_data = LDTK_PROJECT_DATA["worlds"][0];
+    }
+    area_name = area_data["identifier"];
+    std::cout << "Initializing area(world): " << area_name;
 
     this->grid_size = 8;
 
@@ -28,24 +57,16 @@ void Area::Init() {
 
     for (int i = 0; i <= level_counts - 1; i++) {
         std::cout << "Calling init: level " << i << '\n';
-        m_levels[i].area_name = this->area_name;
-        m_levels[i].level_name = area_data["levels"][i]["identifier"];
         m_levels[i].DATA = area_data["levels"][i];
         m_levels[i].m_area = this;
-        m_levels[i].physic_world = &this->physic_world;
-        m_levels[i].grid_size = this->grid_size;
-
         m_levels[i].Init();
 
-        glm::ivec4 level_bound = glm::ivec4(
+        level_bound_list[i] = glm::ivec4(
             (int)area_data["levels"][i]["worldX"],
             -(int)area_data["levels"][i]["worldY"] - (int)area_data["levels"][i]["pxHei"],
             (int)area_data["levels"][i]["worldX"] + (int)area_data["levels"][i]["pxWid"],
             -(int)area_data["levels"][i]["worldY"]
         ) / grid_size * sk_physic2d::INTCOORD_PRECISION;
-        level_bound_list[i] = level_bound;
-        sk_physic2d::Body_Def level_bound_def(level_bound, 2, 0);
-        //physic_world.Create_Body(level_bound_def);
 
         neighborlist[i].reserve(area_data["levels"][i]["__neighbours"].size());
         for (int j = 0; j < i; j++)
@@ -55,8 +76,9 @@ void Area::Init() {
                     neighborlist[j].emplace_back(i);
                 }
     }
+
+    if (start_level == "") start_level = m_levels[0].level_name;
     std::cout << "Area Initialize done\n";
-    //Start();
 }
 void Area::Destroy() {
 

@@ -1,7 +1,7 @@
 #pragma once
 #include "BaseScene.h"
 
-class Scene_MainMenu: public BaseScene {
+class Scene_MainMenu : public BaseScene {
 
     private:
     struct Private_Data;
@@ -11,8 +11,8 @@ class Scene_MainMenu: public BaseScene {
     Scene_MainMenu();
     ~Scene_MainMenu();
     // basic setup of new scene, call before scene create
-    void HintString(int type, std::string hint) override;
-    void HintFloat(int type, float hint)override;
+    void HintStr(int type, std::string hint) override;
+    void HintFlt(int type, float hint)override;
     void HintInt(int type, int hint)override;
 
    // load and unload scene

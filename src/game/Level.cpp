@@ -13,13 +13,11 @@
 #include "Area.h"
 
 void Level::Init() {
-    std::string level_path = get_path();
-    std::cout << level_path << '\n';
-    //DATA = ReadJsonFile(level_path);
-
-    std::cout << "level json data loaded\n";
-
     level_iid = DATA["iid"];
+    level_name = DATA["identifier"];
+
+    physic_world = m_area->GetPhysicWorld();
+    grid_size = m_area->grid_size;
 
     pos_topleft.x = (int)DATA["worldX"] / 8;
     pos_topleft.y = -(int)DATA["worldY"] / 8;
@@ -29,6 +27,7 @@ void Level::Init() {
 
     mg_tile.tile_set.Load("Assets/TileSet.png");
     bg_tile.tile_set.Load("Assets/TileSet.png");
+    m2_tile.tile_set.Load("Assets/TileSet.png");
 
     sk_graphic::Texture2D temp;
     temp.Load("Assets/BackGrounds/sky.png");
@@ -43,17 +42,20 @@ void Level::Load() {
     for (nlohmann::json layer : DATA["layerInstances"]) {
         std::cout << "loading layer:  " << layer["__identifier"] << "\n";
         if (layer["__identifier"] == "entities") {
-            for (nlohmann::json jentity : layer["entityInstances"]) {
+            for (nlohmann::json jentity : layer["entityInstances"])
                 LoadEntity(jentity);
-            }
             continue;
         }
-        if (layer["__identifier"] == "test_main_tile_layer") {
+        if (layer["__identifier"] == "main_tile_layer") {
             mg_tile.LoadLayer(layer, pos_topleft);
             continue;
         }
         if (layer["__identifier"] == "background_tile") {
             bg_tile.LoadLayer(layer, pos_topleft);
+            continue;
+        }
+        if (layer["__identifier"] == "static_collider_layer") {
+            m2_tile.LoadLayer(layer, pos_topleft);
             continue;
         }
         if (layer["__identifier"] == "static_colliders") {
@@ -226,8 +228,10 @@ void Level::Update() {
 
 }
 void Level::Draw() {
+    m2_tile.Draw(0);
     mg_tile.Draw(0);
     bg_tile.Draw(-1);
+    //spike_tile.Draw(0);
 
     glm::vec2 campos = sk_graphic::Renderer2D_GetCam()->position;
     bg_sprite.Draw(campos, -5, glm::vec2(.5f, .5f));

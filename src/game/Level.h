@@ -21,16 +21,14 @@ class Level {
 
     bool Loaded = false;
     bool Active = false;
-    std::string area_name;
     std::string level_name;
     std::string level_iid;
 
     nlohmann::json DATA; // this is set when call Init, to keep level progression
 
-    inline std::string get_path() { return "Assets/World/Areas/" + area_name + "/" + level_name + ".ldtkl"; }
-
     Tilemap mg_tile;
     Tilemap bg_tile;
+    Tilemap m2_tile;
 
     sk_graphic::Sprite2D bg_sprite;
 
