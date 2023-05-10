@@ -634,7 +634,7 @@ struct Player::playerdata { // value only
     Animation anim_main;
     Animation anim_death;
     void SetupAnimation() {
-        anim_main.Init("Assets/bananacat", true);
+        anim_main.Init("Assets/Entity/Player/bananacat", true);
         anim_death.Init("Assets/Entity/Player/death", true);
     }
     void Animation_SM() { // state machine

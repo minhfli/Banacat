@@ -1,0 +1,13 @@
+#pragma once
+
+#include <GLM/glm.hpp>
+#include <nlohmann/json.hpp>
+
+inline glm::vec4 j_getbound(nlohmann::json jentity, const int gridsize, const glm::vec2 level_topleft) {
+    glm::vec2 pos = glm::vec2((int)jentity["px"][0], -(int)jentity["px"][1]) / (float)gridsize;
+    glm::vec2 pivot = glm::vec2((float)jentity["__pivot"][0], 1 - (float)jentity["__pivot"][1]);
+    glm::vec2 size = glm::vec2((int)jentity["width"], (int)jentity["height"]) / (float)gridsize;
+
+    glm::vec2 lowleft = pos - size * pivot;
+    return glm::vec4(lowleft + level_topleft, lowleft + level_topleft + size);
+}

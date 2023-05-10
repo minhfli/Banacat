@@ -28,6 +28,7 @@ enum etag : uint64_t {
 
     // each entity should not share tag
     SPAWN_POINT,
+    AREA_FINISH,
     PLAYER,
     DASH_CRYSTAL,
     SPRING,

@@ -34,8 +34,6 @@ class Area {
 
     int grid_size;
 
-    std::string start_level = "";
-
     int level_counts = 0;
 
     int active_level_index = -1;

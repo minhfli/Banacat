@@ -21,6 +21,7 @@ enum class Scene {
 namespace SceneManager {
 
     BaseScene* GetActiveScene();
+    int GetCurrentSceneType();
 
     //scene wont be loaded till the end of game loop, undefine behavior if called multiple time, each scene is indepentdant, cant pass data between scene
     void LoadScene(Scene toload);

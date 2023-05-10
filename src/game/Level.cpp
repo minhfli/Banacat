@@ -204,6 +204,13 @@ void Level::LoadEntity(nlohmann::json jentity) {
         e->OnJsonCreate(m_area, this, jentity);
         return;
     }
+    if (jentity["__identifier"] == "area_finish") {
+        std::cout << "area finish ---------------------------------------------------";
+        AreaFinish* e = new AreaFinish();
+        m_entity.emplace_back(e);
+        e->OnJsonCreate(m_area, this, jentity);
+        return;
+    }
 }
 void Level::UnLoadEntity() {
     for (Entity* e : m_entity) {

@@ -13,6 +13,7 @@ namespace SceneManager {
     bool new_scene_loaded = false;
     Scene scene_to_load = Scene::NONE;
     Scene current_scene = Scene::NONE;
+    int GetCurrentSceneType() { return (int)current_scene; }
 
     void StartScene(BaseScene* scene) {
         if (scene == nullptr) return;
@@ -45,7 +46,7 @@ namespace SceneManager {
             case Scene::GAMEAREA_TUTORIAL:
                 ActiveScene = new Scene_GameArea();
                 ActiveScene->HintInt(WORLD_INDEX_____, 0);
-                ActiveScene->HintStr(START_LEVEL_____, "level_0");
+                ActiveScene->HintStr(START_LEVEL_____, "level_4");
                 break;
             case Scene::GAMEAREA_ABANDONED_CITY:
                 ActiveScene = new Scene_GameArea();

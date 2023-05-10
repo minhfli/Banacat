@@ -77,7 +77,7 @@ void Area::Init() {
                 }
     }
 
-    if (start_level == "") start_level = m_levels[0].level_name;
+    if (hint.start_level == "") hint.start_level = m_levels[0].level_name;
     std::cout << "Area Initialize done\n";
 }
 void Area::Destroy() {
@@ -152,7 +152,7 @@ void Area::Start() {
     std::cout << "Play area: start";
     for (int i = 0; i <= level_counts; i++) {
         if (i == level_counts) FatalError("START LEVEL NOT FOUND");
-        if (m_levels[i].level_name == start_level) {
+        if (m_levels[i].level_name == hint.start_level) {
             m_levels[i].Load();
             m_levels[i].OnActive();
             active_level_index = i;
