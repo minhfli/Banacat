@@ -3,6 +3,9 @@
 #include "../Level.h"
 #include <sk_engine/Physics/AABB.h>
 #include <sk_engine/Common/sk_time.h>
+#include <iostream>
+
+//sk_graphic::Sprite2D spring_sprite;
 
 void Spring::OnJsonCreate(Area* area, Level* level, nlohmann::json jentity) {
     m_area = area;
@@ -51,17 +54,22 @@ void Spring::OnJsonCreate(Area* area, Level* level, nlohmann::json jentity) {
         this
     ));
 
-    ani.Init("Assets/Entity/Spring/spring");
-    if (CheckTag_(etag::DIR_U)) ani.SetState("up");
-    if (CheckTag_(etag::DIR_R)) ani.SetState("right");
-    if (CheckTag_(etag::DIR_L)) ani.SetState("left");
+    ani.Init("Assets/Entity/Spring/spring", true);
+    if (CheckTag_(etag::DIR_U)) ani.SetLayer("up");
+    if (CheckTag_(etag::DIR_R)) ani.SetLayer("right");
+    if (CheckTag_(etag::DIR_L)) ani.SetLayer("left");
+
+    ani.SetState("idle");
+    //sk_graphic::Texture2D tex;
+    //tex.Load("Assets/Entity/Spring/spring.png");
+    //spring_sprite.LoadTexture(tex, glm::vec2(2), glm::vec4(0, 0, 16, 16));
 }
 
 void Spring::OnDestroy() {
     m_area->GetPhysicWorld()->Remove_Body(trigger_body);
 }
 void Spring::Update() {
-    ani.SetFrame_byDuration(sk_time::current_tick - trigger_start_tick, false);
+    ani.SetFrame_byCurrentTick(false);
 }
 void Spring::Draw() {
     ani.Draw(pos, 2, glm::vec2(0));
@@ -69,6 +77,6 @@ void Spring::Draw() {
 
 void Spring::OnTrigger(uint64_t trigger_tag) {
     if (CheckTag(trigger_tag, etag::PLAYER)) {
-        trigger_start_tick = sk_time::current_tick;
+        ani.SetState("active");
     }
 }

@@ -33,6 +33,8 @@ enum etag : uint64_t {
     DASH_CRYSTAL,
     SPRING,
 
+    LEVEL_TRANS_FORCE_UP, // push player upward when transtion to an upper level
+
     DAMAGE
 };
 inline bool CheckTag(int i, int tag) {

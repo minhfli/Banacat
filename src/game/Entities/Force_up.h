@@ -1,18 +1,18 @@
 #pragma once
+
+#include <sk_engine/Physics/AABB.h>
 #include "../Entity.h"
 #include <GLM/glm.hpp>
-#include "Animation.h"
 
-class Spring : public Entity {
+class Area;
+class Level;
+
+class Force_up : public Entity {
     public:
-    Spring(/* args */) {}
-    ~Spring() {}
+    Force_up() {}
+    ~Force_up() {}
 
-    int trigger_body = -1;
-    glm::vec2 pos;
-
-    int trigger_start_tick = -10000;
-    Animation ani;
+    int trigger_body;
 
     void OnJsonCreate(Area* area, Level* level, nlohmann::json jentity) override;
     void OnCreate(Area* area, Level* level) override {}
@@ -22,11 +22,12 @@ class Spring : public Entity {
     void OnDeActive() override {}
 
     void OnTrigger(Entity* trigger) override {}
-    void OnTrigger(uint64_t trigger_tag) override;
+    void OnTrigger(uint64_t trigger_tag) override {}
 
-    void Start() override {};
-    void Update() override;
+    void Start() override {}
+    void Update() override {}
     void LateUpdate() override {}
-    void Draw() override;
+    void Draw() override {}
 };
+
 

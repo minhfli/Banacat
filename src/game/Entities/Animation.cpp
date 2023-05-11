@@ -9,12 +9,14 @@
 void Animation::Init(std::string Asset_path, bool multi_layer, int pixel_grid_size) {
     json_path = Asset_path + ".json";
     png_path = Asset_path + ".png";
+
     nlohmann::json ani_data = ReadJsonFile(json_path);
 
     texture.Load(png_path);
 
     // load frames -------------------------------------------------------------------------------------------------
     m_frame.assign(ani_data["frames"].size(), Frame());
+
     for (int i = 0; i <= m_frame.size() - 1; i++) {
         glm::ivec4 uv = glm::ivec4(
             (int)ani_data["frames"][i]["frame"]["x"],
@@ -24,10 +26,10 @@ void Animation::Init(std::string Asset_path, bool multi_layer, int pixel_grid_si
         );
 
         glm::vec2 size = glm::vec2(uv.z - uv.x, uv.w - uv.y) / (float)pixel_grid_size;
-        m_frame[i].name = ani_data["frames"][i]["filename"];
         m_frame[i].sprite.LoadTexture(texture, size, uv);
         m_frame[i].duration = (int)ani_data["frames"][i]["duration"];
     }
+
     // load states -------------------------------------------------------------------------------------------------
     m_state.assign(ani_data["meta"]["frameTags"].size(), State());
     for (int i = 0; i <= m_state.size() - 1; i++) {

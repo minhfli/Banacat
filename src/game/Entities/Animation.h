@@ -14,7 +14,6 @@ class Animation {
     std::string json_path = ".json";
 
     struct Frame { // all frame should have the same size both in world and texture coordinate
-        std::string name; // only needed for mult
         sk_graphic::Sprite2D sprite;
         int duration;
     };
@@ -45,7 +44,7 @@ class Animation {
     void SetState(std::string name);
     void SetLayer(std::string name);
 
-    unsigned int state_start_tick; // start tick of current state
+    int state_start_tick; // start tick of current state
 
     void SetFrame_byDuration(int x, bool loop = true);
     void SetFrame_byCurrentTick(bool loop = true);

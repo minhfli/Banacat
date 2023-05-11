@@ -46,7 +46,7 @@ namespace SceneManager {
             case Scene::GAMEAREA_TUTORIAL:
                 ActiveScene = new Scene_GameArea();
                 ActiveScene->HintInt(WORLD_INDEX_____, 0);
-                ActiveScene->HintStr(START_LEVEL_____, "level_4");
+                ActiveScene->HintStr(START_LEVEL_____, "level_0");
                 break;
             case Scene::GAMEAREA_ABANDONED_CITY:
                 ActiveScene = new Scene_GameArea();

@@ -65,6 +65,10 @@ struct Player::playerdata { // value only
     glm::vec2 death_target_pos;
     float death_duration = 1.0f;
 
+    bool in_transition_force_up = false;
+    // if false, take away player control from player (for cut scene, transition, etc)
+    bool allow_keyboard_movement = true;
+
     // x: ad    y: ws
     glm::vec2 wasd_dir;
     float facing = 1;
@@ -179,12 +183,27 @@ struct Player::playerdata { // value only
         GetMovement_Input();
         Movement_PhysicCheck();
         // solving
-        Movement_Run();
-        Movement_Jump();
-        Movement_Dash();
-        Movement_WallGrab();
-        Movement_Spring();
-        Movement_Apply_Normal_Gravity();
+        allow_keyboard_movement = !in_transition_force_up;
+        if (allow_keyboard_movement) {
+            Movement_Run();
+            Movement_Jump();
+            Movement_Dash();
+            Movement_WallGrab();
+            Movement_Spring();
+            Movement_Apply_Normal_Gravity();
+        }
+        else {
+            is_dashing = false;
+            is_jumping = false;
+            is_solving_afterjump = false;
+            is_spring_pushed = false;
+            is_wall_grabing = false;
+        }
+        if (in_transition_force_up) {
+            in_transition_force_up = false;
+            if (m_body->velocity.y > 0)
+                m_body->velocity.y = 13;
+        }
     }
     void Solve_Death() {
         if (sk_time::current_time >= death_time + death_duration) {
@@ -426,7 +445,6 @@ struct Player::playerdata { // value only
                     is_walljump = false;
                     accel_after_wallkick = 0;
                     m_body->velocity.x = -runspeed - 1;
-                    std::cout << "wall kick " << m_body->velocity.x << '\n';
                 }
             }
         }
@@ -809,6 +827,10 @@ void Player::OnTrigger(uint64_t trigger_tag) {
         else if (CheckTag(trigger_tag, etag::PHY_DIR_L)) pdata->SetDead({ -2.5f, 0 });
         else if (CheckTag(trigger_tag, etag::PHY_DIR_R)) pdata->SetDead({ 2.5f, 0 });
         else pdata->SetDead({ -pdata->facing, 1 });
+        return;
+    }
+    if (CheckTag(trigger_tag, etag::LEVEL_TRANS_FORCE_UP)) {
+        pdata->in_transition_force_up = true;
     }
 }
 void Player::Draw() {

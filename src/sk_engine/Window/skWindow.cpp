@@ -36,7 +36,7 @@ namespace sk_window {
             SDL_WINDOW_OPENGL
         );
 
-        SDL_GL_CreateContext(window);
+        SDL_GLContext main_glcontext = SDL_GL_CreateContext(window);
 
         gladLoadGLLoader(SDL_GL_GetProcAddress);
 

@@ -175,6 +175,7 @@ void Level::LoadStaticBody(int type, glm::vec2 body_topleft_pos) {
 }
 
 void Level::LoadEntity(nlohmann::json jentity) {
+    std::cout << jentity["__identifier"] << '\n';
     if (jentity["__identifier"] == "camerabound") {
         special_level_data.camera_bound =
             glm::vec4(pos_topleft, pos_topleft) +
@@ -187,26 +188,31 @@ void Level::LoadEntity(nlohmann::json jentity) {
         return;
     }
     if (jentity["__identifier"] == "player_spawn") {
-        PlayerSpawn* e = new PlayerSpawn();
+        auto e = new PlayerSpawn();
         m_entity.emplace_back(e);
         e->OnJsonCreate(m_area, this, jentity);
         return;
     }
     if (jentity["__identifier"] == "dash_crystal") {
-        DashCrystal* e = new DashCrystal();
+        auto e = new DashCrystal();
         m_entity.emplace_back(e);
         e->OnJsonCreate(m_area, this, jentity);
         return;
     }
     if (jentity["__identifier"] == "spring") {
-        Spring* e = new Spring();
+        auto e = new Spring();
         m_entity.emplace_back(e);
         e->OnJsonCreate(m_area, this, jentity);
         return;
     }
     if (jentity["__identifier"] == "area_finish") {
-        std::cout << "area finish ---------------------------------------------------";
-        AreaFinish* e = new AreaFinish();
+        auto e = new AreaFinish();
+        m_entity.emplace_back(e);
+        e->OnJsonCreate(m_area, this, jentity);
+        return;
+    }
+    if (jentity["__identifier"] == "force_up") {
+        auto e = new Force_up();
         m_entity.emplace_back(e);
         e->OnJsonCreate(m_area, this, jentity);
         return;

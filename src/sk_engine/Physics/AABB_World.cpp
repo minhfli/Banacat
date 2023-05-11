@@ -92,8 +92,6 @@ namespace sk_physic2d {
 
     }
 
-
-
     //* check touching and raycasting --------------------------------------------------------------------------------------
 
     bool AABB_World::BoxCast(glm::ivec4 ibound, uint64_t tag, uint64_t null_tag) {

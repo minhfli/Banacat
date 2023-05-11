@@ -14,7 +14,7 @@ namespace sk_graphic {
     void Camera::ProjectionO(float size, int width, int height) {
         this->size = size;
         aspect = (float)width / height;
-        projection = glm::ortho(-aspect * size, aspect * size, -size, size, -10.0f, 10.0f);
+        projection = glm::ortho(-aspect * size, aspect * size, -size, size, -50.0f, 50.0f);
     }
 
     void Camera::CamMatrix(GLSLprogram& shader) {

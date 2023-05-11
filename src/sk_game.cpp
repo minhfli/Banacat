@@ -7,6 +7,8 @@
 #include <game/Area.h>
 #include <game/Scene/SceneManager.h>
 
+#include <game/_GAME_SETUP.h>
+
 #include <iostream>
 /*
     WRITE ALL GAME LOGIC HERE
@@ -43,7 +45,7 @@ namespace sk_game {
         cam->ProjectionO(camsize, 1280, 720);
         cam->position = glm::vec3(0.0f, 0.0f, 0.0f);
 
-
+        GAME_SETUP();
     }
 
     void Start() {
