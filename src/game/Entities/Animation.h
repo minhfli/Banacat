@@ -50,5 +50,10 @@ class Animation {
     void SetFrame_byCurrentTick(bool loop = true);
     void SetFrame_byIndex(int x, bool loop = false);
 
-    void Draw(glm::vec2 pos, float depth, glm::vec2 pivot);
+    /// @brief 
+    /// @param pos 
+    /// @param depth 
+    /// @param pivot 
+    /// @param layer_offset fast changing between layer for animation with multiple variant(color, texture, ..)
+    void Draw(glm::vec2 pos, float depth, glm::vec2 pivot, int layer_offset = 0);
 };

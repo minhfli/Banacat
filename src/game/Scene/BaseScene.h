@@ -6,6 +6,7 @@ enum Hint_type {
     WORLD_INDEX_____,
     WORLD_NAME______,
     START_LEVEL_____,
+    BACK_GROUND_____,
 
     HINT_NONE
 };

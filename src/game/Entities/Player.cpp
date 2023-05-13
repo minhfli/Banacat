@@ -76,10 +76,11 @@ struct Player::playerdata { // value only
     float terminal_velocity = -30.0f;
 
     // acceleration amount, time to get to top speed = runspeed/accel
-    float accel_after_wallkick;
-    float accel_after_springpush;
-    float accel = 60;
-    float runspeed = 7.2f;
+    //float accel_after_wallkick;
+    //float accel_after_springpush;
+    float run_accel = 75;
+    float run_decel = 35;
+    float runspeed = 7.8f;
 
     bool is_grounded = false;
     bool is_touching_wall_left = false;     // stand next to a wall
@@ -111,9 +112,11 @@ struct Player::playerdata { // value only
 
     bool is_wallkick = false; // jump away from wall
     bool is_walljump = false; // jump straight up when grabing wall
+    bool is_superjump = false;
     bool is_jumping = false;
     bool is_solving_afterjump = false;
-    float jump_maxheight = 3.2;
+
+    float jump_maxheight = 3.6;
     float jump_maxduration = sqrt(2.0f * jump_maxheight / gravity_low);
 
     float jumpvelocity = sqrt(jump_maxheight * gravity_low * 2);
@@ -124,16 +127,20 @@ struct Player::playerdata { // value only
     float gravity_transition_start_time;
     float gravity_transition_time;
 
+    // for super(dash) jump
+    float superjump_xvel = 30;
+
+
     // for spring jump
     bool start_spring_jump = false;
-    float spring_jump_velocity = 25;
+    float spring_jump_velocity = 27;
 
     bool start_spring_push = false;
     bool is_spring_pushed = false;
     float spring_push_time = 0.4f;
     float spring_push_start_time;
     float spring_push_dir;
-    glm::vec2 spring_push_velocity = { 23,10 };
+    glm::vec2 spring_push_velocity = { 28,12 };
 
     // for dashing
     bool candash = false;
@@ -183,23 +190,21 @@ struct Player::playerdata { // value only
         GetMovement_Input();
         Movement_PhysicCheck();
         // solving
-        allow_keyboard_movement = !in_transition_force_up;
+        //allow_keyboard_movement = !in_transition_force_up;
         if (allow_keyboard_movement) {
             Movement_Run();
-            Movement_Jump();
             Movement_Dash();
+            Movement_Jump();
             Movement_WallGrab();
             Movement_Spring();
             Movement_Apply_Normal_Gravity();
         }
-        else {
+        if (in_transition_force_up) {
             is_dashing = false;
             is_jumping = false;
             is_solving_afterjump = false;
             is_spring_pushed = false;
             is_wall_grabing = false;
-        }
-        if (in_transition_force_up) {
             in_transition_force_up = false;
             if (m_body->velocity.y > 0)
                 m_body->velocity.y = 13;
@@ -282,22 +287,22 @@ struct Player::playerdata { // value only
             (1 << etag::GROUND)
         );
         is_touching_wall_left = physic_world->BoxCast(
-            m_body->RECT.bound + glm::ivec4(-1, 8, -1, -16),
+            m_body->RECT.bound + glm::ivec4(-1, 8, -1, -12),
             (1 << etag::PHY_SOLID) +
             (1 << etag::GROUND)
         );
         is_touching_wall_left_up = physic_world->BoxCast(
-            m_body->RECT.bound + glm::ivec4(-1, 12, -1, -16),
+            m_body->RECT.bound + glm::ivec4(-1, 12, -1, -12),
             (1 << etag::PHY_SOLID) +
             (1 << etag::GROUND)
         );
         is_touching_wall_right = physic_world->BoxCast(
-            m_body->RECT.bound + glm::ivec4(1, 8, 1, -16),
+            m_body->RECT.bound + glm::ivec4(1, 8, 1, -12),
             (1 << etag::PHY_SOLID) +
             (1 << etag::GROUND)
         );
         is_touching_wall_right_up = physic_world->BoxCast(
-            m_body->RECT.bound + glm::ivec4(1, 12, 1, -16),
+            m_body->RECT.bound + glm::ivec4(1, 12, 1, -12),
             (1 << etag::PHY_SOLID) +
             (1 << etag::GROUND)
         );
@@ -338,69 +343,73 @@ struct Player::playerdata { // value only
         if (is_dashing) return;
         if (is_wall_grabing) return;
         if (is_wallkick) {
-            accel_after_wallkick = move_to(
-                accel_after_wallkick,
-                accel,
-                50.0f * sk_time::delta_time
-            );
             m_body->velocity.x = move_to(
-                    m_body->velocity.x,
-                    runspeed * wasd_dir.x,
-                    accel_after_wallkick * sk_time::delta_time
-            );
-            //if (m_body->velocity.x < 0) std::cout << "error\n";
-        }
-        else if (is_spring_pushed) {
-            if (wasd_dir.x == -spring_push_dir)
-                accel_after_springpush = move_to(
-                    accel_after_springpush,
-                    accel,
-                    160.0f * sk_time::delta_time
-                );
-            if (wasd_dir.x == spring_push_dir)
-                accel_after_springpush = move_to(
-                    accel_after_springpush,
-                    accel,
-                    30.0f * sk_time::delta_time
-                );
-            if (wasd_dir.x == 0)
-                accel_after_springpush = move_to(
-                    accel_after_springpush,
-                    accel,
-                    80.0f * sk_time::delta_time
-                );
-            m_body->velocity.x = move_to(
-                    m_body->velocity.x,
-                    runspeed * wasd_dir.x,
-                    accel_after_springpush * sk_time::delta_time
-            );
-        }
-        else m_body->velocity.x = move_to(
                 m_body->velocity.x,
                 runspeed * wasd_dir.x,
-                accel * sk_time::delta_time
-        );
+                run_accel * 0.1f * sk_time::delta_time
+            );
+            return;
+        }
+
+        if (abs(m_body->velocity.x) < runspeed)
+            m_body->velocity.x = move_to(
+                    m_body->velocity.x,
+                    runspeed * wasd_dir.x,
+                    run_accel * sk_time::delta_time
+            );
+        else {
+            m_body->velocity.x = move_to(
+                    m_body->velocity.x,
+                    runspeed * wasd_dir.x,
+                    run_decel * sk_time::delta_time
+            );
+        }
     }
     void Movement_Jump() {
-        if (is_dashing) return;
         if (sk_input::KeyDown(sk_key::SPACE)) JUMP_input_time = sk_time::current_time;
         if (is_grounded && !is_jumping) last_grounded_time = sk_time::current_time;
-        if (JUMP_input_time + input_buffer_time >= sk_time::current_time && last_grounded_time + coyote_time > sk_time::current_time) { // normal jump
+
+        if (JUMP_input_time + input_buffer_time >= sk_time::current_time &&
+            last_grounded_time + coyote_time > sk_time::current_time &&
+            !is_dashing
+            ) { // normal jump
             JUMP_input_time = -100;
             is_jumping = true;
             is_wallkick = false;
             is_walljump = false;
+            is_superjump = false;
             in_gravity_transition = false;
             is_solving_afterjump = false;
             jump_start_time = sk_time::current_time;
             m_body->velocity.y = jumpvelocity;
         }
-        if (JUMP_input_time + input_buffer_time >= sk_time::current_time && last_grounded_time + coyote_time <= sk_time::current_time) { // wall jump/kick
+        if (JUMP_input_time + input_buffer_time >= sk_time::current_time &&
+            last_grounded_time + coyote_time > sk_time::current_time &&
+            is_dashing
+            ) { // super jump (dash jump)
+            JUMP_input_time = -100;
+            is_jumping = true;
+            is_wallkick = false;
+            is_walljump = false;
+            is_superjump = true;
+            is_dashing = false;
+            in_gravity_transition = false;
+            is_solving_afterjump = false;
+            jump_start_time = sk_time::current_time;
+            m_body->velocity.y = jumpvelocity;
+            m_body->velocity.x = superjump_xvel * wasd_dir.x;
+        }
+
+        if (JUMP_input_time + input_buffer_time >= sk_time::current_time &&
+            last_grounded_time + coyote_time <= sk_time::current_time &&
+            !is_dashing
+            ) { // wall jump/kick
             if (is_near_wall_left_3px && is_near_wall_right_3px) { // touch both wall, do a normal jump
                 JUMP_input_time = -100;
                 is_jumping = true;
                 is_wallkick = false;
                 is_walljump = false;
+                is_superjump = false;
                 in_gravity_transition = false;
                 is_solving_afterjump = false;
                 m_body->velocity.y = jumpvelocity;
@@ -413,6 +422,7 @@ struct Player::playerdata { // value only
                 in_gravity_transition = false;
                 is_solving_afterjump = false;
                 is_jumping = true;
+                is_superjump = false;
                 m_body->velocity.y = jumpvelocity;
 
                 if (is_wall_grabing && wasd_dir.x <= 0 && wallgrab_current_stamina >= wallgrab_jump_staminia) { // wall jump
@@ -423,7 +433,6 @@ struct Player::playerdata { // value only
                 else { // wall kick
                     is_wallkick = true;
                     is_walljump = false;
-                    accel_after_wallkick = 0;
                     m_body->velocity.x = runspeed + 1;
                 }
             }
@@ -433,6 +442,7 @@ struct Player::playerdata { // value only
                 in_gravity_transition = false;
                 is_solving_afterjump = false;
                 is_jumping = true;
+                is_superjump = false;
                 m_body->velocity.y = jumpvelocity;
 
                 if (is_wall_grabing && wasd_dir.x >= 0 && wallgrab_current_stamina >= wallgrab_jump_staminia) { // wall jump
@@ -443,7 +453,6 @@ struct Player::playerdata { // value only
                 else { // wall kick
                     is_wallkick = true;
                     is_walljump = false;
-                    accel_after_wallkick = 0;
                     m_body->velocity.x = -runspeed - 1;
                 }
             }
@@ -455,23 +464,21 @@ struct Player::playerdata { // value only
                     is_walljump = false;
                     is_wallkick = true;
                     m_body->velocity.x = runspeed + 1;
-                    accel_after_wallkick = 0;
                     std::cout << "wall jump to kick \n";
                 }
                 if (is_touching_wall_right && wasd_dir.x == -1) {
                     wallgrab_current_stamina += wallgrab_jump_staminia;
                     is_walljump = false;
                     is_wallkick = true;
-                    m_body->velocity.x = runspeed + 1;
-                    accel_after_wallkick = 0;
+                    m_body->velocity.x = -runspeed - 1;
                     std::cout << "wall jump to kick \n";
                 }
-
             }
             if (m_body->velocity.y <= jumpvelocity_peak) { // stop jumping
                 is_jumping = false;
                 is_wallkick = false;
                 is_walljump = false;
+                is_superjump = false;
             }
             else if (!sk_input::Key(sk_key::SPACE)) {
                 is_jumping = false;
@@ -486,6 +493,7 @@ struct Player::playerdata { // value only
                 is_solving_afterjump = false;
                 is_wallkick = false;
                 is_walljump = false;
+                is_superjump = false;
             }
             else {
                 if (!in_gravity_transition) {
@@ -520,7 +528,7 @@ struct Player::playerdata { // value only
 
     }
     void Movement_Dash() {
-        if (is_grounded) Movement_ResetDash();
+        if (is_grounded && !is_dashing) Movement_ResetDash();
         if (is_dashing && sk_time::current_time > last_dash_time + dashtime) {
             is_dashing = false;
             m_body->velocity.x = std::clamp(m_body->velocity.x, -8.0f, 8.0f);
@@ -630,7 +638,6 @@ struct Player::playerdata { // value only
             is_solving_afterjump = false;
             is_wall_grabing = false;
             m_body->velocity = spring_push_velocity * glm::vec2(spring_push_dir, 1);
-            accel_after_springpush = 0;
         }
         if (is_spring_pushed) if (sk_time::current_time > spring_push_start_time + spring_push_time) is_spring_pushed = false;
     }
@@ -667,7 +674,9 @@ struct Player::playerdata { // value only
         else if (wasd_dir.x != 0) newstate = RUN;
         else newstate = IDLE;
 
-        anim_main.flipx = (facing == -1);
+        if (m_body->velocity.x < -4)        anim_main.flipx = true;
+        else if (m_body->velocity.x > 4)    anim_main.flipx = false;
+        else                                anim_main.flipx = (facing == -1);
 
         if (candash)
             if (dash_reset_start_time + dash_reset_time >= sk_time::current_time)
@@ -832,6 +841,32 @@ void Player::OnTrigger(uint64_t trigger_tag) {
     if (CheckTag(trigger_tag, etag::LEVEL_TRANS_FORCE_UP)) {
         pdata->in_transition_force_up = true;
     }
+}
+bool Player::IsRiding(sk_physic2d::Body* body) {
+    sk_physic2d::irect prect = pdata->m_body->RECT;
+
+    if (pdata->is_wall_grabing) {
+        if (pdata->wallgrab_dir == -1 &&
+            prect.bound.x == body->RECT.bound.z &&
+            prect.bound.w > body->RECT.bound.y &&   // y overlap
+            prect.bound.y < body->RECT.bound.w      // y overlap
+        ) return true;
+        if (pdata->wallgrab_dir == 1 &&
+            prect.bound.z == body->RECT.bound.x &&
+            prect.bound.w > body->RECT.bound.y &&   // y overlap
+            prect.bound.y < body->RECT.bound.w      // y overlap
+        ) return true;
+    }
+    else if (//pdata->is_grounded &&   //? player touch fast then is gounded is still false
+            !pdata->is_dashing &&
+            prect.bound.y == body->RECT.bound.w &&
+            prect.bound.z > body->RECT.bound.x &&
+            prect.bound.x < body->RECT.bound.z
+            ) return true;
+    return false;
+}
+void Player::OnSquish() {
+    pdata->SetDead();
 }
 void Player::Draw() {
 

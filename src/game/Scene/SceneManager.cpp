@@ -40,18 +40,20 @@ namespace SceneManager {
                 break;
             case Scene::GAMEAREA_TEST:
                 ActiveScene = new Scene_GameArea();
-                ActiveScene->HintInt(WORLD_INDEX_____, 0);
-                ActiveScene->HintStr(START_LEVEL_____, "level_0");
+                ActiveScene->HintInt(WORLD_INDEX_____, 2);
+                ActiveScene->HintStr(START_LEVEL_____, "level_18");
                 break;
             case Scene::GAMEAREA_TUTORIAL:
                 ActiveScene = new Scene_GameArea();
                 ActiveScene->HintInt(WORLD_INDEX_____, 0);
                 ActiveScene->HintStr(START_LEVEL_____, "level_0");
+                ActiveScene->HintStr(BACK_GROUND_____, "forest");
                 break;
             case Scene::GAMEAREA_ABANDONED_CITY:
                 ActiveScene = new Scene_GameArea();
                 ActiveScene->HintInt(WORLD_INDEX_____, 1);
                 ActiveScene->HintStr(START_LEVEL_____, "level_5");
+                ActiveScene->HintStr(BACK_GROUND_____, "city");
                 break;
             default: // if scene not defined, load main menu
                 //ActiveScene = nullptr;

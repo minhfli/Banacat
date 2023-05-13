@@ -137,9 +137,10 @@ namespace sk_physic2d {
                 sk_graphic::Renderer2D_AddBBox(m_Body[index].RECT.true_bound(), 2, { 1,1,1,1 });
         if (a_body.entity != nullptr) for (int index : possible_collision) {
             Body& t_body = m_Body[index];
+            if (!t_body.is_active) continue;
             if (CheckTag(t_body.tag, etag::PHY_TRIGGER)) { // check trigger
                 if (CheckTag(t_body.tag, etag::PHY_DIR_U) && a_body.velocity.y > 0) continue;
-                if (CheckTag(t_body.tag, etag::PHY_DIR_D) && a_body.velocity.y < 0) continue;
+                if (CheckTag(t_body.tag, etag::PHY_DIR_D) && a_body.velocity.y < -1) continue;
                 if (CheckTag(t_body.tag, etag::PHY_DIR_L) && a_body.velocity.x < 0) continue;
                 if (CheckTag(t_body.tag, etag::PHY_DIR_R) && a_body.velocity.x > 0) continue;
                 if (id != index) {

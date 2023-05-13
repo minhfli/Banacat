@@ -10,9 +10,11 @@ namespace {
         //? opengl cant work on multiple thead 
         //? -> load all texture before game start
         sk_graphic::Texture2D tex;
-        tex.Load("Assets/BackGrounds/sky.png");
+        tex.Load("Assets/BackGrounds/forest.png");
+        tex.Load("Assets/BackGrounds/city.png");
         tex.Load("Assets/Entity/Spring/spring.png");
         tex.Load("Assets/Entity/Dash_crystal/dash_crystal.png");
+        tex.Load("Assets/Entity/crumble_platform/crumble_platform.png");
         tex.Load("Assets/Entity/Player/bananacat.png");
         tex.Load("Assets/Entity/Player/death.png");
         tex.Load("Assets/TileSet.png");

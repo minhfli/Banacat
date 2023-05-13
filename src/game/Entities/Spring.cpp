@@ -72,7 +72,8 @@ void Spring::Update() {
     ani.SetFrame_byCurrentTick(false);
 }
 void Spring::Draw() {
-    ani.Draw(pos, 2, glm::vec2(0));
+    ani.Draw(pos, 0, glm::vec2(0));
+    //sk_graphic::Renderer2D_AddDotX(glm::vec3(pos, 0));
 }
 
 void Spring::OnTrigger(uint64_t trigger_tag) {

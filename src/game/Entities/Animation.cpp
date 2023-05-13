@@ -50,11 +50,11 @@ void Animation::Init(std::string Asset_path, bool multi_layer, int pixel_grid_si
     if (multilayer) frame_count = m_frame.size() / m_layer.size();
     else frame_count = m_frame.size();
 }
-void Animation::Draw(glm::vec2 pos, float depth, glm::vec2 pivot) {
+void Animation::Draw(glm::vec2 pos, float depth, glm::vec2 pivot, int layer_offset) {
     if (!multilayer)
         m_frame[current_Frame].sprite.Draw(pos, depth, pivot, flipx, flipy);
     else {
-        m_frame[current_Frame + frame_count * current_Layer].sprite.Draw(pos, depth, pivot, flipx, flipy);
+        m_frame[current_Frame + frame_count * (current_Layer + layer_offset)].sprite.Draw(pos, depth, pivot, flipx, flipy);
     }
 }
 void Animation::SetLayer(std::string name) {

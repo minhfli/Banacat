@@ -33,6 +33,8 @@ enum etag : uint64_t {
     DASH_CRYSTAL,
     SPRING,
 
+    PLATFORM_CRUMBLE,
+
     LEVEL_TRANS_FORCE_UP, // push player upward when transtion to an upper level
 
     DAMAGE

@@ -28,9 +28,10 @@ class Level {
 
     Tilemap mg_tile;
     Tilemap bg_tile;
-    Tilemap m2_tile;
+    Tilemap m2_tile; // second main tile
 
-    sk_graphic::Sprite2D bg_sprite;
+    Tilemap bg_prop;
+    Tilemap fg_prop;
 
     // list of static collider in physic world, use for unload
     std::vector<int> static_collider_list;

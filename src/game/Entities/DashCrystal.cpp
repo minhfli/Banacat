@@ -24,7 +24,6 @@ void DashCrystal::OnJsonCreate(Area* area, Level* level, nlohmann::json jentity)
 
     ani.Init("Assets/Entity/Dash_crystal/dash_crystal");
 
-    m_texture.Load("Assets/dash_refresh.png");
     ani.SetState("active");
 }
 void DashCrystal::OnDestroy() {
@@ -45,5 +44,5 @@ void DashCrystal::Update() {
     ani.SetFrame_byCurrentTick();
 }
 void DashCrystal::Draw() {
-    ani.Draw(pos, -1, glm::vec2(0.5f));
+    ani.Draw(pos, -.5f, glm::vec2(0.5f));
 }

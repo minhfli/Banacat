@@ -28,11 +28,8 @@ void Level::Init() {
     mg_tile.tile_set.Load("Assets/TileSet.png");
     bg_tile.tile_set.Load("Assets/TileSet.png");
     m2_tile.tile_set.Load("Assets/TileSet.png");
-
-    sk_graphic::Texture2D temp;
-    temp.Load("Assets/BackGrounds/sky.png");
-
-    bg_sprite.LoadTexture(temp, glm::vec2(45, 25));
+    bg_prop.tile_set.Load("Assets/TileSet.png");
+    fg_prop.tile_set.Load("Assets/TileSet.png");
 
     std::cout << "Level Initialize done: " << level_name << '\n';
 }
@@ -56,6 +53,14 @@ void Level::Load() {
         }
         if (layer["__identifier"] == "static_collider_layer") {
             m2_tile.LoadLayer(layer, pos_topleft);
+            continue;
+        }
+        if (layer["__identifier"] == "bg_props") {
+            bg_prop.LoadLayer(layer, pos_topleft);
+            continue;
+        }
+        if (layer["__identifier"] == "fg_props") {
+            fg_prop.LoadLayer(layer, pos_topleft);
             continue;
         }
         if (layer["__identifier"] == "static_colliders") {
@@ -105,6 +110,14 @@ void Level::LoadStaticBody(int type, glm::vec2 body_topleft_pos) {
         case 1: //? normal tile collider
             AddTag(tag, etag::PHY_SOLID);
             AddTag(tag, etag::GROUND);
+            static_collider_list.emplace_back(
+            physic_world->Create_Body(sk_physic2d::Body_Def(
+                sk_physic2d::irect::irect_fray(body_topleft_pos, glm::vec2(1, -1)),
+                tag
+            )));
+            break;
+        case 8: //? barrier, like normal tile collider but dont have ground tag
+            AddTag(tag, etag::PHY_SOLID);
             static_collider_list.emplace_back(
             physic_world->Create_Body(sk_physic2d::Body_Def(
                 sk_physic2d::irect::irect_fray(body_topleft_pos, glm::vec2(1, -1)),
@@ -217,6 +230,12 @@ void Level::LoadEntity(nlohmann::json jentity) {
         e->OnJsonCreate(m_area, this, jentity);
         return;
     }
+    if (jentity["__identifier"] == "crumble_platform") {
+        auto e = new Crumble_Platform();
+        m_entity.emplace_back(e);
+        e->OnJsonCreate(m_area, this, jentity);
+        return;
+    }
 }
 void Level::UnLoadEntity() {
     for (Entity* e : m_entity) {
@@ -243,11 +262,11 @@ void Level::Update() {
 void Level::Draw() {
     m2_tile.Draw(0);
     mg_tile.Draw(0);
-    bg_tile.Draw(-1);
+    bg_tile.Draw(-2);
+    bg_prop.Draw(-1);
     //spike_tile.Draw(0);
 
-    glm::vec2 campos = sk_graphic::Renderer2D_GetCam()->position;
-    bg_sprite.Draw(campos, -5, glm::vec2(.5f, .5f));
+
     for (Entity* e : m_entity) {
         e->Draw();
         if (e->CheckTag_(etag::SPAWN_POINT))

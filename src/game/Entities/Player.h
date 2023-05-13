@@ -39,9 +39,12 @@ class Player :public Entity {
 
     void OnTrigger(Entity* trigger) override;
     void OnTrigger(uint64_t trigger_tag) override;
+    void OnSquish() override;
 
     void OnNewLevel();
     void SetSpawnPoint(glm::vec2 p);
+
+    bool IsRiding(sk_physic2d::Body* body) override;
 
     glm::vec2 GetCameraTarget();
 };

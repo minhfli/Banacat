@@ -115,8 +115,8 @@ namespace sk_physic2d {
 
     void AABB_World::Update() {
         GetSABodyList();
-        for (int index : actors) ResolveActor(index);
         for (int index : solids) ResolveSolid(index);
+        for (int index : actors) ResolveActor(index);
 
         for (int index : actors) quad_tree.UpdateValue(m_Body[index].RECT, index);
         for (int index : solids) quad_tree.UpdateValue(m_Body[index].RECT, index);

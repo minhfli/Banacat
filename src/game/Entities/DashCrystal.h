@@ -6,7 +6,7 @@
 #include <sk_engine/Physics/AABB.h>
 #include <sk_engine/Graphics/Texture2D.h>
 
-class DashCrystal:public Entity {
+class DashCrystal :public Entity {
     public:
     DashCrystal() {}
     ~DashCrystal() {}
@@ -14,7 +14,6 @@ class DashCrystal:public Entity {
     glm::vec2 pos;
     sk_physic2d::AABB_World* physic_world;
     int trigger_body;
-    sk_graphic::Texture2D m_texture;
 
     Animation ani;
     bool is_active = true;

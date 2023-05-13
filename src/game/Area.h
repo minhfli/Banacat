@@ -20,6 +20,7 @@ class Area {
         int world_index = -1;
         std::string area_name = "";
         std::string start_level = "";
+        std::string background = "";
 
     } hint;
 
@@ -51,6 +52,8 @@ class Area {
     sk_physic2d::AABB_World physic_world;
 
     Player m_player;
+
+    sk_graphic::Sprite2D background;
 
     void Init();
     void Destroy();

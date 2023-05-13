@@ -15,10 +15,12 @@ namespace {
     nlohmann::json LDTK_PROJECT_DATA;
 }
 void Area::Init() {
+    //* init physic world
     physic_world.Hint_WorldBound(glm::vec2(0), 512);
     physic_world.Init();
     physic_world.enable_debug_draw = false;
 
+    //* init play area 
     if (!ldtk_data_loaded) {
         std::cout << "load main ldtk project data\n";
         LDTK_PROJECT_DATA = ReadJsonFile(LDTK_PROJECT_FILE);
@@ -78,6 +80,16 @@ void Area::Init() {
     }
 
     if (hint.start_level == "") hint.start_level = m_levels[0].level_name;
+
+    //* init background
+    sk_graphic::Texture2D temp;
+    if (hint.background == "") {
+        std::cout << "area backgound not set";
+        hint.background = "default";
+    }
+    temp.Load("Assets/BackGrounds/" + hint.background + ".png");
+    background.LoadTexture(temp, glm::vec2(45, 25));
+
     std::cout << "Area Initialize done\n";
 }
 void Area::Destroy() {
@@ -204,6 +216,9 @@ void Area::Update() {
 }
 
 void Area::Draw() {
+    glm::vec2 campos = sk_graphic::Renderer2D_GetCam()->position;
+    background.Draw(campos, -5, glm::vec2(.5f, .5f));
+
     if (in_level_transition) {
         for (int index : draw_in_transition) {
             m_levels[index].Draw();

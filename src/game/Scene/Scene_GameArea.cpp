@@ -23,6 +23,9 @@ void Scene_GameArea::HintStr(int type, std::string hint) {
         case START_LEVEL_____:
             sdata->area.hint.start_level = hint;
             break;
+        case BACK_GROUND_____:
+            sdata->area.hint.background = hint;
+            break;
         default:
             break;
     }
