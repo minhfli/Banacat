@@ -132,11 +132,12 @@ namespace  sk_physic2d {
 
     struct Body_Def {
         irect RECT;
-        uint32_t tag;
+        uint64_t tag;
         Entity* entity;
+
         /// @param t collider type, 0:solid, 1:actor, 2:triggerer
         /// @param tg tag
-        Body_Def(irect r, uint32_t tg = 0, Entity* e = nullptr) :
+        Body_Def(irect r, uint64_t tg = 0, Entity* e = nullptr) :
             RECT(r),
             tag(tg),
             entity(e) {}
@@ -145,6 +146,7 @@ namespace  sk_physic2d {
         public:
         bool is_active = false;
         uint64_t tag; //physic body should have tag actor or moveable for physic system to update it position
+        uint64_t ignore = 0;
 
         irect RECT;
 
@@ -158,8 +160,9 @@ namespace  sk_physic2d {
         Body() {}
         Body(Body_Def def) :
             is_active(true),
-            RECT(def.RECT),
             tag(def.tag),
+            ignore(0),
+            RECT(def.RECT),
             entity(def.entity) {}
 
         void set_moveto(glm::vec2 pivot, glm::vec2 target);

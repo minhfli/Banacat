@@ -11,6 +11,8 @@
 
 #include <sk_engine/Graphics/Graphics.h>
 
+#include <sk_engine/Audio/skAudio.h>
+
 #include "AllEntity.h"
 #include "../Area.h"
 #include "../Level.h"
@@ -79,8 +81,8 @@ struct Player::playerdata { // value only
     //float accel_after_wallkick;
     //float accel_after_springpush;
     float run_accel = 75;
-    float run_decel = 35;
-    float runspeed = 7.8f;
+    float run_decel = 40;
+    float runspeed = 8.f;
 
     bool is_grounded = false;
     bool is_touching_wall_left = false;     // stand next to a wall
@@ -93,6 +95,8 @@ struct Player::playerdata { // value only
     bool is_near_wall_right_3px = false;    // stand near a wall
     bool is_near_spike_left = false;     // near spike
     bool is_near_spike_right = false;    // near spike
+
+    bool in_dream_block = false;
 
     // for jumping
     float coyote_time = 0.1f;
@@ -130,6 +134,10 @@ struct Player::playerdata { // value only
     // for super(dash) jump
     float superjump_xvel = 30;
 
+    bool exit_dream_block = false;
+    float exit_dreamblock_time = -100;
+    float exit_dreamblock_xvel = 18;
+    float exit_dreamblock_yvel = 18;
 
     // for spring jump
     bool start_spring_jump = false;
@@ -137,7 +145,7 @@ struct Player::playerdata { // value only
 
     bool start_spring_push = false;
     bool is_spring_pushed = false;
-    float spring_push_time = 0.4f;
+    float spring_push_time = 0.1f;
     float spring_push_start_time;
     float spring_push_dir;
     glm::vec2 spring_push_velocity = { 28,12 };
@@ -169,10 +177,20 @@ struct Player::playerdata { // value only
     float wallgrab_climb_staminia = 50;
     float wallgrab_jump_staminia = 25;
 
+    int sfx_jump; //= sk_audio::LoadSound("Assets/Audio/player_jump.ogg");
+    int sfx_dash; //= sk_audio::LoadSound("Assets/Audio/player_dash.ogg");
+    int sfx_spring;
+    int sfx_dashcrystal;
+    int sfx_footstep;
+    int sfx_death;
+    float last_footstep = -100;
+
     void Update() {
         if (is_dead) Solve_Death();
         else Solve_Movement();
         Animation_SM();
+
+        Solve_Physic();
     }
     void Draw() {
         if (is_dead) {
@@ -185,6 +203,10 @@ struct Player::playerdata { // value only
             -1,
             glm::vec2(0.5f, 0)
         );
+    }
+    void Solve_Physic() {
+        m_body->ignore = 0;
+        if (is_dashing) AddTag(m_body->ignore, etag::DREAM_BLOCK);
     }
     void Solve_Movement() {
         GetMovement_Input();
@@ -209,18 +231,20 @@ struct Player::playerdata { // value only
             if (m_body->velocity.y > 0)
                 m_body->velocity.y = 13;
         }
+
     }
     void Solve_Death() {
         if (sk_time::current_time >= death_time + death_duration) {
             SetAlive();
             return;
         }
-        anim_death.SetFrame_byCurrentTick();
+        anim_death.SetFrame_byCurrentTick(false);
     }
 #pragma region Player death
 
     // direction to move player to when it dead
     void SetDead(glm::vec2 pushback_dir = glm::vec2(0)) {
+        sk_audio::PlaySound(sfx_death, 15);
         anim_death.SetState("death");
         if (candash) anim_death.SetLayer("yellow");
         else anim_death.SetLayer("green");
@@ -245,7 +269,15 @@ struct Player::playerdata { // value only
         m_body->velocity = glm::vec2(0);
         m_body->is_active = true;
         is_dead = false;
+        is_dashing = false;
+        is_jumping = false;
+        is_solving_afterjump = false;
+        is_spring_pushed = false;
+        is_wall_grabing = false;
+        in_dream_block = false;
+        exit_dream_block = false;
     }
+#pragma endregion
 #pragma region Movement code
     void GetMovement_Input() {
         if (!sk_input::Key(sk_key::A) && !sk_input::Key(sk_key::D)) wasd_dir.x = 0;
@@ -269,17 +301,20 @@ struct Player::playerdata { // value only
         if (!is_wall_grabing && wasd_dir.x != 0) facing = wasd_dir.x;
     }
     void Movement_PhysicCheck() {
-        is_grounded = physic_world->BoxCast(
-            m_body->RECT.bound + glm::ivec4(0, -1, 0, -1),
-            (1 << etag::PHY_SOLID) +
-            (1 << etag::GROUND)
-        );
-        if (is_grounded == false)
+        if (m_body->velocity.y < 1) {
             is_grounded = physic_world->BoxCast(
                 m_body->RECT.bound + glm::ivec4(0, -1, 0, -1),
                 (1 << etag::PHY_SOLID) +
-                (1 << etag::PHY_ONE_WAY)
-            ) && m_body->velocity.y == 0;
+                (1 << etag::GROUND)
+            );
+            if (is_grounded == false)
+                is_grounded = physic_world->BoxCast(
+                    m_body->RECT.bound + glm::ivec4(0, -1, 0, -1),
+                    (1 << etag::PHY_SOLID) +
+                    (1 << etag::PHY_ONE_WAY)
+                ) && m_body->velocity.y == 0;
+        }
+        else is_grounded = false;
 
         is_touching_wall_up = physic_world->BoxCast(
             m_body->RECT.bound + glm::ivec4(0, 1, 0, 1),
@@ -325,6 +360,22 @@ struct Player::playerdata { // value only
             (1 << etag::DAMAGE)
         );
 
+        bool was_in_dream_block = in_dream_block;
+        in_dream_block = physic_world->BoxCast(
+            m_body->RECT.bound,
+            (1 << etag::DREAM_BLOCK)
+        );
+        if (was_in_dream_block && !in_dream_block) {
+            exit_dream_block = true;
+            exit_dreamblock_time = sk_time::current_time;
+        }
+        else exit_dream_block = false;
+
+        if (in_dream_block) {
+            if (dash_dir.x) if (m_body->velocity.x == 0) SetDead(-dash_dir * glm::vec2(2, 1));
+            if (dash_dir.y) if (m_body->velocity.y == 0) SetDead(-dash_dir * glm::vec2(2, 1));
+            is_grounded = false;
+        }
     }
 
     void Movement_ResetDash() {
@@ -369,24 +420,12 @@ struct Player::playerdata { // value only
         if (sk_input::KeyDown(sk_key::SPACE)) JUMP_input_time = sk_time::current_time;
         if (is_grounded && !is_jumping) last_grounded_time = sk_time::current_time;
 
-        if (JUMP_input_time + input_buffer_time >= sk_time::current_time &&
-            last_grounded_time + coyote_time > sk_time::current_time &&
-            !is_dashing
-            ) { // normal jump
-            JUMP_input_time = -100;
-            is_jumping = true;
-            is_wallkick = false;
-            is_walljump = false;
-            is_superjump = false;
-            in_gravity_transition = false;
-            is_solving_afterjump = false;
-            jump_start_time = sk_time::current_time;
-            m_body->velocity.y = jumpvelocity;
-        }
+        if (in_dream_block) return;
         if (JUMP_input_time + input_buffer_time >= sk_time::current_time &&
             last_grounded_time + coyote_time > sk_time::current_time &&
             is_dashing
             ) { // super jump (dash jump)
+            sk_audio::PlaySound(sfx_jump, 30);
             JUMP_input_time = -100;
             is_jumping = true;
             is_wallkick = false;
@@ -399,12 +438,50 @@ struct Player::playerdata { // value only
             m_body->velocity.y = jumpvelocity;
             m_body->velocity.x = superjump_xvel * wasd_dir.x;
         }
+        if (JUMP_input_time + input_buffer_time >= sk_time::current_time &&
+            exit_dreamblock_time + coyote_time >= sk_time::current_time &&
+            dash_dir.x != 0
+            ) { // super jump (dash jump)
+            sk_audio::PlaySound(sfx_jump, 30);
+            JUMP_input_time = -100;
+            is_jumping = true;
+            is_wallkick = false;
+            is_walljump = false;
+            is_superjump = true;
+            is_dashing = false;
+            in_gravity_transition = false;
+            is_solving_afterjump = false;
+            jump_start_time = sk_time::current_time;
+
+            if (dash_dir.y == 1) m_body->velocity.y = jumpvelocity * 1.1f;
+            else m_body->velocity.y = jumpvelocity;
+
+            if (dash_dir.y == 0)
+                m_body->velocity.x = superjump_xvel * dash_dir.x;
+            else m_body->velocity.x = superjump_xvel * dash_dir.x * 0.8f;
+        }
+        if (JUMP_input_time + input_buffer_time >= sk_time::current_time &&
+            last_grounded_time + coyote_time > sk_time::current_time &&
+            !is_dashing
+            ) { // normal jump
+            sk_audio::PlaySound(sfx_jump, 30);
+            JUMP_input_time = -100;
+            is_jumping = true;
+            is_wallkick = false;
+            is_walljump = false;
+            is_superjump = false;
+            in_gravity_transition = false;
+            is_solving_afterjump = false;
+            jump_start_time = sk_time::current_time;
+            m_body->velocity.y = jumpvelocity;
+        }
 
         if (JUMP_input_time + input_buffer_time >= sk_time::current_time &&
             last_grounded_time + coyote_time <= sk_time::current_time &&
             !is_dashing
             ) { // wall jump/kick
             if (is_near_wall_left_3px && is_near_wall_right_3px) { // touch both wall, do a normal jump
+                sk_audio::PlaySound(sfx_jump, 30);
                 JUMP_input_time = -100;
                 is_jumping = true;
                 is_wallkick = false;
@@ -417,6 +494,7 @@ struct Player::playerdata { // value only
             }
             // if player want to do a walljump but not enough stamina, player will do a wallkick
             else if (is_near_wall_left_3px) {
+                sk_audio::PlaySound(sfx_jump, 30);
                 jump_start_time = sk_time::current_time;
                 JUMP_input_time = -100;
                 in_gravity_transition = false;
@@ -437,6 +515,7 @@ struct Player::playerdata { // value only
                 }
             }
             else if (is_near_wall_right_3px) {
+                sk_audio::PlaySound(sfx_jump, 30);
                 jump_start_time = sk_time::current_time;
                 JUMP_input_time = -100;
                 in_gravity_transition = false;
@@ -529,12 +608,26 @@ struct Player::playerdata { // value only
     }
     void Movement_Dash() {
         if (is_grounded && !is_dashing) Movement_ResetDash();
-        if (is_dashing && sk_time::current_time > last_dash_time + dashtime) {
+        if (is_dashing && sk_time::current_time > last_dash_time + dashtime && !in_dream_block) {
             is_dashing = false;
             m_body->velocity.x = std::clamp(m_body->velocity.x, -8.0f, 8.0f);
             m_body->velocity.y = std::clamp(m_body->velocity.y, -15.0f, 4.0f);
         }
         if (sk_input::KeyDown(sk_key::K)) DASH_input_time = sk_time::current_time;
+
+        if (in_dream_block) return;
+        if (exit_dream_block) {
+            glm::vec2 exit_dir = glm::normalize(dash_dir);
+
+            m_body->velocity.x = exit_dir.x * exit_dreamblock_xvel;
+            if (exit_dir.y > 0)
+                m_body->velocity.y = exit_dir.y * exit_dreamblock_yvel;
+
+            is_dashing = false;
+            Movement_ResetDash();
+            Movement_ResetStamina();
+            return;
+        }
         if (DASH_input_time + input_buffer_time >= sk_time::current_time &&
             candash &&
             !is_dashing &&
@@ -542,6 +635,7 @@ struct Player::playerdata { // value only
             !start_spring_jump &&
             !start_spring_push
             ) {
+            sk_audio::PlaySound(sfx_dash, 50);
             candash = 0;
             last_dash_time = sk_time::current_time;
             DASH_input_time = -100;
@@ -557,9 +651,13 @@ struct Player::playerdata { // value only
     }
     void Movement_WallGrab() {
         if (is_grounded) wallgrab_current_stamina = wallgrab_max_stamina;
+        if (in_dream_block) {
+            wallgrab_current_stamina = wallgrab_max_stamina;
+            return;
+        }
         is_wall_grabing =
             !is_jumping && !is_solving_afterjump && !is_dashing && sk_input::Key(sk_key::J) &&
-            //m_body->velocity.y <= wall_climb_speed &&
+           //m_body->velocity.y <= wall_climb_speed &&
             ((is_touching_wall_left && facing == -1) ||
             (is_touching_wall_right && facing == 1));
 
@@ -610,7 +708,7 @@ struct Player::playerdata { // value only
 
     }
     void Movement_Apply_Normal_Gravity() {
-        if (!is_jumping && !is_dashing && !is_wall_grabing && !is_solving_afterjump)
+        if (!is_jumping && !is_dashing && !is_wall_grabing && !is_solving_afterjump && !in_dream_block)
             if (jumpvelocity_peak >= m_body->velocity.y && m_body->velocity.y >= -0.05f)
                 m_body->velocity.y -= gravity_peak * sk_time::delta_time;
             else {
@@ -622,7 +720,9 @@ struct Player::playerdata { // value only
 
     void Movement_Spring() {
         if (start_spring_jump) {
+            if (!is_spring_pushed) sk_audio::PlaySound(sfx_spring);
             start_spring_jump = false;
+            is_spring_pushed = true;
             is_jumping = false;
             is_dashing = false;
             is_solving_afterjump = false;
@@ -630,6 +730,7 @@ struct Player::playerdata { // value only
             m_body->velocity.y = spring_jump_velocity;
         }
         if (start_spring_push) {
+            if (!is_spring_pushed) sk_audio::PlaySound(sfx_spring);
             start_spring_push = false;
             is_spring_pushed = true;
             spring_push_start_time = sk_time::current_time;
@@ -661,6 +762,14 @@ struct Player::playerdata { // value only
     void SetupAnimation() {
         anim_main.Init("Assets/Entity/Player/bananacat", true);
         anim_death.Init("Assets/Entity/Player/death", true);
+    }
+    void SetupSoundFX() {
+        sfx_jump = sk_audio::LoadSound("Assets/Audio/player_jump.ogg");
+        sfx_dash = sk_audio::LoadSound("Assets/Audio/player_dash.ogg");
+        sfx_spring = sk_audio::LoadSound("Assets/Audio/spring.ogg");
+        sfx_dashcrystal = sk_audio::LoadSound("Assets/Audio/dashcrystal_interact.ogg");
+        sfx_footstep = sk_audio::LoadSound("Assets/Audio/player_footstep.ogg");
+        sfx_death = sk_audio::LoadSound("Assets/Audio/player_death.ogg");
     }
     void Animation_SM() { // state machine
         Ani_State newstate = IDLE;
@@ -700,7 +809,6 @@ struct Player::playerdata { // value only
 
                 default: break;
             }
-
         }
         switch (current_state) {
             case IDLE:          Animation_Idle();       break;
@@ -712,6 +820,10 @@ struct Player::playerdata { // value only
             case WALL_SLIDE:    Animation_WallGrab();   break;
 
             default: break;
+        }
+        if (current_state == RUN && last_footstep <= sk_time::current_time - 0.3f) {
+            sk_audio::PlaySound(sfx_footstep, 15);
+            last_footstep = sk_time::current_time;
         }
     }
     void Animation_Idle() {
@@ -780,6 +892,7 @@ void Player::OnCreate(Area* area, Level* level) {
     pdata->m_body = physic_world->Get_Body(m_body_index);
 
     pdata->SetupAnimation();
+    pdata->SetupSoundFX();
 }
 void Player::OnDestroy() {
     physic_world->Remove_Body(m_body_index);
@@ -807,6 +920,7 @@ void Player::OnTrigger(Entity* trigger) {
     }
     if (trigger->CheckTag_(etag::DASH_CRYSTAL)) {
         if (!pdata->candash && ((DashCrystal*)trigger)->is_active) {
+            sk_audio::PlaySound(pdata->sfx_dashcrystal, 80);
             pdata->Movement_ResetDash();
             pdata->Movement_ResetStamina();
             ((DashCrystal*)trigger)->OnPlayerInteract();

@@ -61,13 +61,15 @@ namespace sk_audio {
         return m_MUSIC.size() - 1;
     }
 
-    void PlaySound(int index) {
-        Mix_PlayChannel(-1, m_SOUND[index], 0);
+    void PlaySound(int index, int volume) {
+        int channel = Mix_PlayChannel(-1, m_SOUND[index], 0);
+        Mix_Volume(channel, volume);
     }
-    void PlayMusic(int index) {
+    void PlayMusic(int index, int volume) {
+        Mix_VolumeMusic(volume);
         Mix_PlayMusic(m_MUSIC[index], -1);
     }
-    void setVolume(int x) {
+    void setVolume(int x, int volume) {
         volume = x;
         Mix_MasterVolume(volume);
     }

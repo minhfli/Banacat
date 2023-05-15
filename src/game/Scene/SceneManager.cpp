@@ -55,6 +55,12 @@ namespace SceneManager {
                 ActiveScene->HintStr(START_LEVEL_____, "level_5");
                 ActiveScene->HintStr(BACK_GROUND_____, "city");
                 break;
+            case Scene::GAMEAREA_THE_GARDEN:
+                ActiveScene = new Scene_GameArea();
+                ActiveScene->HintInt(WORLD_INDEX_____, 3);
+                ActiveScene->HintStr(START_LEVEL_____, "level_28");
+                ActiveScene->HintStr(BACK_GROUND_____, "city");
+                break;
             default: // if scene not defined, load main menu
                 //ActiveScene = nullptr;
                 scene_to_load = Scene::MAIN_MENU;

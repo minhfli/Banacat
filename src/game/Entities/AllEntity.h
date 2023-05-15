@@ -7,5 +7,6 @@
 #include "AreaFinish.h"
 #include "Force_up.h"
 #include "Crumble_platform.h"
+#include "Dream_block.h"
 
 #include "_helperFunc"

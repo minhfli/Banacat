@@ -12,6 +12,6 @@ namespace sk_audio {
     int LoadSound(const std::string& path);
     int LoadMusic(const std::string& path);
 
-    void PlaySound(int index);
-    void PlayMusic(int index);
+    void PlaySound(int index, int volume = 128);
+    void PlayMusic(int index, int volume = 128);
 }

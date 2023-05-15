@@ -102,7 +102,7 @@ void Level::UnLoad() {
 }
 
 void Level::LoadStaticBody(int type, glm::vec2 body_topleft_pos) {
-    int tag = 0;
+    uint64_t tag = 0;
 
     glm::vec2 body_lowleft_pos = body_topleft_pos + glm::vec2(0, -1);
     float spike_width = 0.3f;
@@ -118,6 +118,16 @@ void Level::LoadStaticBody(int type, glm::vec2 body_topleft_pos) {
             break;
         case 8: //? barrier, like normal tile collider but dont have ground tag
             AddTag(tag, etag::PHY_SOLID);
+            static_collider_list.emplace_back(
+            physic_world->Create_Body(sk_physic2d::Body_Def(
+                sk_physic2d::irect::irect_fray(body_topleft_pos, glm::vec2(1, -1)),
+                tag
+            )));
+            break;
+        case 9: //? dream block tile
+            AddTag(tag, etag::PHY_SOLID);
+            AddTag(tag, etag::GROUND);
+            AddTag(tag, etag::DREAM_BLOCK);
             static_collider_list.emplace_back(
             physic_world->Create_Body(sk_physic2d::Body_Def(
                 sk_physic2d::irect::irect_fray(body_topleft_pos, glm::vec2(1, -1)),
@@ -236,6 +246,12 @@ void Level::LoadEntity(nlohmann::json jentity) {
         e->OnJsonCreate(m_area, this, jentity);
         return;
     }
+    if (jentity["__identifier"] == "dream_block") {
+        auto e = new Dream_block();
+        m_entity.emplace_back(e);
+        e->OnJsonCreate(m_area, this, jentity);
+        return;
+    }
 }
 void Level::UnLoadEntity() {
     for (Entity* e : m_entity) {
@@ -264,6 +280,7 @@ void Level::Draw() {
     mg_tile.Draw(0);
     bg_tile.Draw(-2);
     bg_prop.Draw(-1);
+    fg_prop.Draw(5);
     //spike_tile.Draw(0);
 
 

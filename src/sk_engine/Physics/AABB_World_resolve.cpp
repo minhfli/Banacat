@@ -23,6 +23,7 @@ namespace sk_physic2d {
         for (int s_index : possible_collision) {
             Body& s_body = m_Body[s_index];
             if (!s_body.is_active) continue;
+            if ((a_body.ignore & s_body.tag)) continue; // check if ignore
             if (!CheckTag(s_body.tag, etag::PHY_SOLID)) continue;
             if (CheckTag(s_body.tag, etag::PHY_ONE_WAY)) continue;
             if (force && a_body.entity != nullptr) {
@@ -58,6 +59,7 @@ namespace sk_physic2d {
         for (int s_index : possible_collision) {
             Body& s_body = m_Body[s_index];
             if (!s_body.is_active) continue;
+            if ((a_body.ignore & s_body.tag)) continue; // check if ignore
             if (!CheckTag(s_body.tag, etag::PHY_SOLID)) continue;
             if (CheckTag(s_body.tag, etag::PHY_ONE_WAY) && a_body.RECT.bound.y < s_body.RECT.bound.w) continue;
             if (force && a_body.entity != nullptr) { a_body.entity->OnSquish(); return; }
@@ -130,6 +132,7 @@ namespace sk_physic2d {
 
     void AABB_World::ResolveActor(int id) {
         Body& a_body = m_Body[id];
+
         //* check overlap ------------------------------------------------------------------------------------
         std::vector<int> possible_collision = Query(a_body.RECT);
         if (enable_debug_draw)
@@ -137,6 +140,7 @@ namespace sk_physic2d {
                 sk_graphic::Renderer2D_AddBBox(m_Body[index].RECT.true_bound(), 2, { 1,1,1,1 });
         if (a_body.entity != nullptr) for (int index : possible_collision) {
             Body& t_body = m_Body[index];
+            if ((a_body.ignore & t_body.tag)) continue; // check if ignore
             if (!t_body.is_active) continue;
             if (CheckTag(t_body.tag, etag::PHY_TRIGGER)) { // check trigger
                 if (CheckTag(t_body.tag, etag::PHY_DIR_U) && a_body.velocity.y > 0) continue;

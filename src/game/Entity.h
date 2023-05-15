@@ -34,15 +34,16 @@ enum etag : uint64_t {
     SPRING,
 
     PLATFORM_CRUMBLE,
+    DREAM_BLOCK,
 
     LEVEL_TRANS_FORCE_UP, // push player upward when transtion to an upper level
 
     DAMAGE
 };
-inline bool CheckTag(int i, int tag) {
+inline bool CheckTag(uint64_t i, int tag) {
     return ((i >> tag) & 1) != 0;
 }
-inline uint64_t AddTag(int& i, int tag) {
+inline uint64_t AddTag(uint64_t& i, int tag) {
     i += (1ll << tag);
 }
 
@@ -94,4 +95,5 @@ class Entity {
 
     // check if actor is riding a solid,  
     virtual bool IsRiding(sk_physic2d::Body* solid) { return false; }
+    virtual uint64_t getPhy_ignore() { return 0; }
 };
