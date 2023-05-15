@@ -73,7 +73,7 @@ class Entity {
         return ((tag >> t) & 1) != 0;
     }
 
-    virtual void OnJsonCreate(Area* area, Level* level, nlohmann::json jentity) {}
+    virtual void OnJsonCreate(Area* area, Level* level, nlohmann::json& jentity) {}
     virtual void OnCreate(Area* area, Level* level) {}
     virtual void OnDestroy() {}
 

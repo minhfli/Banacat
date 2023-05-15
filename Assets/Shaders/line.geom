@@ -1,4 +1,4 @@
-#version 450
+#version 450 core
 
 layout (lines) in;                              // now we can access 2 vertices
 layout (triangle_strip, max_vertices = 4) out;  // always (for now) producing 2 triangles (so 4 vertices)

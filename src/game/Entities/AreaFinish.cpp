@@ -10,7 +10,7 @@
 #include "../Area.h"
 #include "../Level.h"
 
-void AreaFinish::OnJsonCreate(Area* area, Level* level, nlohmann::json jentity) {
+void AreaFinish::OnJsonCreate(Area* area, Level* level, nlohmann::json& jentity) {
     m_area = area;
     m_level = level;
 

@@ -20,7 +20,7 @@ class DashCrystal :public Entity {
     float cooldown_time = 1.0f;
     float last_triggered_time;
 
-    void OnJsonCreate(Area* area, Level* level, nlohmann::json jentity) override;
+    void OnJsonCreate(Area* area, Level* level, nlohmann::json& jentity) override;
     void OnCreate(Area* area, Level* level) override {}
     void OnDestroy() override;
 

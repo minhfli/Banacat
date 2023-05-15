@@ -65,7 +65,7 @@ Crumble_Platform::Crumble_Platform() {
 Crumble_Platform::~Crumble_Platform() {
     delete pdata;
 }
-void Crumble_Platform::OnJsonCreate(Area* area, Level* level, nlohmann::json jentity) {
+void Crumble_Platform::OnJsonCreate(Area* area, Level* level, nlohmann::json& jentity) {
     m_level = level;
     m_area = area;
 

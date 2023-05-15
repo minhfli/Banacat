@@ -16,7 +16,7 @@ namespace {
 }
 void Area::Init() {
     //* init physic world
-    physic_world.Hint_WorldBound(glm::vec2(0), 512);
+    physic_world.Hint_WorldBound(glm::vec2(0), 1024);
     physic_world.Init();
     physic_world.enable_debug_draw = false;
 

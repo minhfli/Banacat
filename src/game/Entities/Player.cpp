@@ -137,7 +137,7 @@ struct Player::playerdata { // value only
     bool exit_dream_block = false;
     float exit_dreamblock_time = -100;
     float exit_dreamblock_xvel = 18;
-    float exit_dreamblock_yvel = 18;
+    float exit_dreamblock_yvel = 20;
 
     // for spring jump
     bool start_spring_jump = false;
@@ -153,7 +153,7 @@ struct Player::playerdata { // value only
     // for dashing
     bool candash = false;
     glm::vec2 dash_dir;
-    float dashspeed = 25;
+    float dashspeed = 27;
     float dashtime = 0.2f;
     float last_dash_time = -100;
     float dash_delay_time = 0.35f;
@@ -206,7 +206,19 @@ struct Player::playerdata { // value only
     }
     void Solve_Physic() {
         m_body->ignore = 0;
-        if (is_dashing) AddTag(m_body->ignore, etag::DREAM_BLOCK);
+        if (in_dream_block) AddTag(m_body->ignore, etag::DREAM_BLOCK);
+        else if (is_dashing &&
+            m_body->velocity == glm::normalize(dash_dir) * dashspeed &&
+            !physic_world->BoxCast(
+                m_body->RECT.extend_(
+                    (m_body->velocity.x * sk_physic2d::INTCOORD_PRECISION * sk_time::delta_time * 3.5),
+                    (m_body->velocity.y * sk_physic2d::INTCOORD_PRECISION * sk_time::delta_time * 3.5)
+                ).bound,
+                (1ll << etag::PHY_SOLID),
+                (1ll << etag::PHY_ONE_WAY) +
+                (1ll << etag::DREAM_BLOCK)
+            ))
+            AddTag(m_body->ignore, etag::DREAM_BLOCK);
     }
     void Solve_Movement() {
         GetMovement_Input();
@@ -608,11 +620,7 @@ struct Player::playerdata { // value only
     }
     void Movement_Dash() {
         if (is_grounded && !is_dashing) Movement_ResetDash();
-        if (is_dashing && sk_time::current_time > last_dash_time + dashtime && !in_dream_block) {
-            is_dashing = false;
-            m_body->velocity.x = std::clamp(m_body->velocity.x, -8.0f, 8.0f);
-            m_body->velocity.y = std::clamp(m_body->velocity.y, -15.0f, 4.0f);
-        }
+
         if (sk_input::KeyDown(sk_key::K)) DASH_input_time = sk_time::current_time;
 
         if (in_dream_block) return;
@@ -627,6 +635,11 @@ struct Player::playerdata { // value only
             Movement_ResetDash();
             Movement_ResetStamina();
             return;
+        }
+        if (is_dashing && sk_time::current_time > last_dash_time + dashtime && !in_dream_block) {
+            is_dashing = false;
+            m_body->velocity.x = std::clamp(m_body->velocity.x, -8.0f, 8.0f);
+            m_body->velocity.y = std::clamp(m_body->velocity.y, -15.0f, 6.0f);
         }
         if (DASH_input_time + input_buffer_time >= sk_time::current_time &&
             candash &&

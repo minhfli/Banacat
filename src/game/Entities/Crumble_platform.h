@@ -14,7 +14,7 @@ class Crumble_Platform :public Entity {
 
     public:
 
-    void OnJsonCreate(Area* area, Level* level, nlohmann::json jentity) override;
+    void OnJsonCreate(Area* area, Level* level, nlohmann::json& jentity) override;
     void OnCreate(Area* area, Level* level) override {}
     void OnDestroy() override;
 

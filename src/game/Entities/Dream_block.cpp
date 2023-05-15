@@ -6,7 +6,7 @@
 
 #include "sk_engine/Graphics/Graphics.h"
 
-void Dream_block::OnJsonCreate(Area* area, Level* level, nlohmann::json jentity) {
+void Dream_block::OnJsonCreate(Area* area, Level* level, nlohmann::json& jentity) {
     m_area = area;
     m_level = level;
 

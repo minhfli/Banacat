@@ -4,7 +4,7 @@
 #include "../Area.h"
 #include "../Level.h"
 
-void Force_up::OnJsonCreate(Area* area, Level* level, nlohmann::json jentity) {
+void Force_up::OnJsonCreate(Area* area, Level* level, nlohmann::json& jentity) {
     m_area = area;
     m_level = level;
 

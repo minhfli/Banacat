@@ -6,7 +6,7 @@
 #include <sk_engine/Common/sk_time.h>
 #include <iostream>
 
-void DashCrystal::OnJsonCreate(Area* area, Level* level, nlohmann::json jentity) {
+void DashCrystal::OnJsonCreate(Area* area, Level* level, nlohmann::json& jentity) {
     m_area = area;
     m_level = level;
     pos =
