@@ -145,7 +145,7 @@ struct Player::playerdata { // value only
 
     bool start_spring_push = false;
     bool is_spring_pushed = false;
-    float spring_push_time = 0.1f;
+    float spring_push_time = 0.3f;
     float spring_push_start_time;
     float spring_push_dir;
     glm::vec2 spring_push_velocity = { 28,12 };
