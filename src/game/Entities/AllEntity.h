@@ -8,5 +8,6 @@
 #include "Force_up.h"
 #include "Crumble_platform.h"
 #include "Dream_block.h"
+#include "Fish_biscuit.h"
 
 #include "_helperFunc"

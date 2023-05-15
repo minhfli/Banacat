@@ -7,7 +7,7 @@
 
 //sk_graphic::Sprite2D spring_sprite;
 
-void Spring::OnJsonCreate(Area* area, Level* level, nlohmann::json jentity) {
+void Spring::OnJsonCreate(Area* area, Level* level, nlohmann::json& jentity) {
     m_area = area;
     m_level = level;
 

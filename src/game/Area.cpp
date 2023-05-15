@@ -24,6 +24,7 @@ void Area::Init() {
     if (!ldtk_data_loaded) {
         std::cout << "load main ldtk project data\n";
         LDTK_PROJECT_DATA = ReadJsonFile(LDTK_PROJECT_FILE);
+        ldtk_data_loaded = true;
     }
     nlohmann::json area_data;
     if (hint.world_index != -1)

@@ -32,6 +32,7 @@ enum etag : uint64_t {
     PLAYER,
     DASH_CRYSTAL,
     SPRING,
+    FISH_BISCUIT,
 
     PLATFORM_CRUMBLE,
     DREAM_BLOCK,

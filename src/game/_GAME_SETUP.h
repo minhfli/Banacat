@@ -15,6 +15,7 @@ namespace {
         tex.Load("Assets/Entity/Spring/spring.png");
         tex.Load("Assets/Entity/Dash_crystal/dash_crystal.png");
         tex.Load("Assets/Entity/crumble_platform/crumble_platform.png");
+        tex.Load("Assets/Entity/fish_biscuit/fish_biscuit.png");
         tex.Load("Assets/Entity/Player/bananacat.png");
         tex.Load("Assets/Entity/Player/death.png");
         tex.Load("Assets/TileSet.png");

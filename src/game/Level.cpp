@@ -252,6 +252,12 @@ void Level::LoadEntity(nlohmann::json jentity) {
         e->OnJsonCreate(m_area, this, jentity);
         return;
     }
+    if (jentity["__identifier"] == "fish_biscuit") {
+        auto e = new Fish_biscuit();
+        m_entity.emplace_back(e);
+        e->OnJsonCreate(m_area, this, jentity);
+        return;
+    }
 }
 void Level::UnLoadEntity() {
     for (Entity* e : m_entity) {
