@@ -16,7 +16,13 @@ control:
     j: wall grab
     k: dash
 
+screen shots:
 
+    ![](./Screenshot/main_menu.png)
+    ![](./Screenshot/gameplay1.png)
+    ![](./Screenshot/gameplay2.png)
+    ![](./Screenshot/gameplay3.png)
+    ![](./Screenshot/gameplay4.png)
 
 sk engine is a simple 2d game engine using sdl and opengl written my Mr. MinhFli(me)
 
