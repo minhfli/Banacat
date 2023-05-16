@@ -1,6 +1,6 @@
 # BanKat Game project
 
-how to run: 
+how to compile and run: 
 
     open cmd
     make 
