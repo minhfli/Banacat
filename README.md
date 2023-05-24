@@ -18,6 +18,10 @@ control:
         j: wall grab
         k: dash
 
+youtube gameplay: 
+
+    https://youtu.be/s9Q_P6ta8XM
+
 screen shots:
 
 ![feature-image](./Screenshot/main_menu.png)
