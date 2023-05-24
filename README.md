@@ -19,8 +19,7 @@ control:
         k: dash
 
 youtube gameplay: 
-
-    https://youtu.be/s9Q_P6ta8XM
+![](https://youtu.be/s9Q_P6ta8XM)
 
 screen shots:
 
